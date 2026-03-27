@@ -14,7 +14,7 @@ import type {
   ActivateRunResponse,
 } from '@/types'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL!
+const BASE_URL = '/api/backend'
 
 // ─── Auth header ──────────────────────────────────────────────────────────────
 
@@ -96,10 +96,19 @@ export const projectsApi = {
     }),
 }
 
-// ─── Pipeline phases ──────────────────────────────────────────────────────────
+// ─── Pipeline phases (read directly from Supabase — no backend endpoint) ─────
 
 export const phasesApi = {
   list: () => apiFetch<PipelinePhase[]>('/pipeline-phases'),
+  // list: async (): Promise<PipelinePhase[]> => {
+  //   const supabase = createClient()
+  //   const { data, error } = await supabase
+  //     .from('pipeline_phases')
+  //     .select('*')
+  //     .order('order_index')
+  //   if (error) throw new Error(error.message)
+  //   return data as PipelinePhase[]
+  // },
 }
 
 // ─── Phase runs ───────────────────────────────────────────────────────────────
@@ -129,6 +138,15 @@ export const runsApi = {
 
   getActiveRuns: (projectId: string) =>
     apiFetch<ProjectActiveRun[]>(`/projects/${projectId}/active-runs`),
+  // getActiveRuns: async (projectId: string): Promise<ProjectActiveRun[]> => {
+  //     const supabase = createClient()
+  //     const { data, error } = await supabase
+  //       .from('project_active_runs')
+  //       .select('*')
+  //       .eq('project_id', projectId)
+  //     if (error) throw new Error(error.message)
+  //     return (data ?? []) as ProjectActiveRun[]
+  //   },
 }
 
 // ─── Documents ────────────────────────────────────────────────────────────────

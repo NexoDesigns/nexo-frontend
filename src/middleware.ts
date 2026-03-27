@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll() {
   const cookies = request.cookies.getAll()
-  console.log('MW cookies:', cookies.map(c => c.name))
+  // console.log('MW cookies:', cookies.map(c => c.name))
   return cookies
 },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
@@ -52,19 +52,27 @@ export async function middleware(request: NextRequest) {
 
   if (!user && !isPublicPath) {
     const loginUrl = new URL(`/${currentLocale}/login`, request.url)
-    return NextResponse.redirect(loginUrl)
+    const response = NextResponse.redirect(loginUrl)
+    supabaseResponse.headers.getSetCookie().forEach((cookie) => {
+      response.headers.append('Set-Cookie', cookie)
+    })
+    return response
   }
 
   if (user && isPublicPath) {
     const dashboardUrl = new URL(`/${currentLocale}`, request.url)
-    return NextResponse.redirect(dashboardUrl)
+    const response = NextResponse.redirect(dashboardUrl)
+    supabaseResponse.headers.getSetCookie().forEach((cookie) => {
+      response.headers.append('Set-Cookie', cookie)
+    })
+    return response
   }
 
-  // Run i18n middleware and merge cookies from supabase into its response
+  // Run i18n middleware and merge Supabase Set-Cookie headers (with all options)
   const intlResponse = intlMiddleware(request)
-  
-  supabaseResponse.cookies.getAll().forEach((cookie) => {
-    intlResponse.cookies.set(cookie.name, cookie.value)
+
+  supabaseResponse.headers.getSetCookie().forEach((cookie) => {
+    intlResponse.headers.append('Set-Cookie', cookie)
   })
 
   return intlResponse
@@ -72,6 +80,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

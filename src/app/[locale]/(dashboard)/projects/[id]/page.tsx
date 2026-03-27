@@ -33,6 +33,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const { id } = use(params)
   const t = useTranslations('projects')
   const tPipeline = useTranslations('pipeline')
+  const tCommon = useTranslations('common')
+  const tDocuments = useTranslations('documents')
   const locale = useLocale()
 
   const { data: project, isLoading: projectLoading } = useQuery({
@@ -85,7 +87,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <Link href="/projects">
               <Button variant="ghost" size="sm" className="gap-1.5">
                 <ArrowLeft className="h-3.5 w-3.5" />
-                {useTranslations('common')('back')}
+                {tCommon('back')}
               </Button>
             </Link>
           </div>
@@ -116,7 +118,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
               >
                 <FileText className="h-3.5 w-3.5" />
-                {useTranslations('documents')('title')}
+                {tDocuments('title')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -159,7 +161,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               <Separator />
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                  {useTranslations('documents')('projectDocs')}
+                  {tDocuments('projectDocs')}
                 </p>
                 <DocumentList
                   documents={documents ?? []}

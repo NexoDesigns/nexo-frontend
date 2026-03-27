@@ -51,6 +51,12 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
     queryFn: () => runsApi.list(projectId, phaseId),
   })
 
+  const { data: expandedRunDetail } = useQuery({
+    queryKey: ['run', projectId, phaseId, expandedRunId],
+    queryFn: () => runsApi.get(projectId, phaseId, expandedRunId!),
+    enabled: !!expandedRunId,
+  })
+
   const activateMutation = useMutation({
     mutationFn: (runId: string) => runsApi.activate(projectId, phaseId, runId),
     onSuccess: () => {
@@ -148,7 +154,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                   )}
 
                   {/* Output viewer */}
-                  {run.output_payload && (
+                  {expandedRunDetail?.output_payload && (
                     <div>
                       <p className="text-[11px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
                         {t('output')}
@@ -157,7 +163,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                         variant="outline"
                         size="sm"
                         className="text-xs"
-                        onClick={() => setViewingRun(run)}
+                        onClick={() => setViewingRun(expandedRunDetail)}
                       >
                         {t('viewOutput')}
                       </Button>

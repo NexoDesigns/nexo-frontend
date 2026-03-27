@@ -21,30 +21,30 @@ export default function LoginPage() {
 
   const locale = useLocale()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setLoading(true)
+  setError(null)
 
-const { data, error: authError } = await supabase.auth.signInWithPassword({
-  email,
-  password,
-})
+  const { error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
 
-console.log('Login result:', JSON.stringify(data?.session?.access_token?.slice(0, 20)), authError)
-
-    if (authError) {
-      setError(
-        authError.message.toLowerCase().includes('invalid')
-          ? t('invalidCredentials')
-          : t('genericError')
-      )
-      setLoading(false)
-      return
-    }
-
-    window.location.href = `/${locale}/`
+  if (authError) {
+    setError(
+      authError.message.toLowerCase().includes('invalid')
+        ? t('invalidCredentials')
+        : t('genericError')
+    )
+    setLoading(false)
+    return
   }
+
+  // Espera a que la sesión esté escrita antes de navegar
+  await new Promise(resolve => setTimeout(resolve, 500))
+  window.location.replace(`/${locale}`)
+}
 
   return (
     <div className="animate-fade-in">
