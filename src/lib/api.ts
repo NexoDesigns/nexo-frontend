@@ -147,16 +147,14 @@ export const documentsApi = {
   upload: async (file: File, meta: {
     type: Document['type']
     project_id?: string
-    name?: string
   }) => {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
 
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('type', meta.type)
+    formData.append('document_type', meta.type)
     if (meta.project_id) formData.append('project_id', meta.project_id)
-    if (meta.name) formData.append('name', meta.name)
 
     const res = await fetch(`${BASE_URL}/document/upload`, {
       method: 'POST',
