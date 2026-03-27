@@ -96,19 +96,10 @@ export const projectsApi = {
     }),
 }
 
-// ─── Pipeline phases (read directly from Supabase — no backend endpoint) ─────
+// ─── Pipeline phases ─────
 
 export const phasesApi = {
   list: () => apiFetch<PipelinePhase[]>('/pipeline-phases'),
-  // list: async (): Promise<PipelinePhase[]> => {
-  //   const supabase = createClient()
-  //   const { data, error } = await supabase
-  //     .from('pipeline_phases')
-  //     .select('*')
-  //     .order('order_index')
-  //   if (error) throw new Error(error.message)
-  //   return data as PipelinePhase[]
-  // },
 }
 
 // ─── Phase runs ───────────────────────────────────────────────────────────────
@@ -138,15 +129,6 @@ export const runsApi = {
 
   getActiveRuns: (projectId: string) =>
     apiFetch<ProjectActiveRun[]>(`/projects/${projectId}/active-runs`),
-  // getActiveRuns: async (projectId: string): Promise<ProjectActiveRun[]> => {
-  //     const supabase = createClient()
-  //     const { data, error } = await supabase
-  //       .from('project_active_runs')
-  //       .select('*')
-  //       .eq('project_id', projectId)
-  //     if (error) throw new Error(error.message)
-  //     return (data ?? []) as ProjectActiveRun[]
-  //   },
 }
 
 // ─── Documents ────────────────────────────────────────────────────────────────
@@ -176,7 +158,7 @@ export const documentsApi = {
     if (meta.project_id) formData.append('project_id', meta.project_id)
     if (meta.name) formData.append('name', meta.name)
 
-    const res = await fetch(`${BASE_URL}/documents/upload`, {
+    const res = await fetch(`${BASE_URL}/document/upload`, {
       method: 'POST',
       headers: {
         ...(session?.access_token
