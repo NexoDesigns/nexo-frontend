@@ -148,8 +148,12 @@ export function PhaseCard({
       )}
     >
       {/* Phase header */}
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-3">
+      <CardHeader className="pb-3 p-0">
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex w-full items-center justify-between gap-3 px-6 py-4 text-left"
+        >
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Phase number + icon */}
             <div
@@ -188,20 +192,13 @@ export function PhaseCard({
             {!isRunning && activeRun && (
               <RunStatusBadge status={activeRun.status} />
             )}
-
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? (
-                <ChevronUp className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
-            </Button>
+            {expanded ? (
+              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
           </div>
-        </div>
+        </button>
       </CardHeader>
 
       {/* Expanded panel */}
