@@ -5,7 +5,7 @@ import { runsApi, phasesApi } from '@/lib/api'
 import { PhaseCard } from './PhaseCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PHASE_ORDER } from '@/lib/utils'
-import type { PhaseId, PhaseRun, ProjectActiveRun } from '@/types'
+import type { PhaseId, ProjectActiveRun } from '@/types'
 import { ArrowRight } from 'lucide-react'
 
 interface PipelineViewProps {
@@ -55,7 +55,7 @@ export function PipelineView({ projectId }: PipelineViewProps) {
           <PhaseCard
             phase={phase}
             projectId={projectId}
-            activeRun={null} // RunsList manages its own active run state
+            activeRunId={activeRunMap[phase.id]?.run_id ?? null}
           />
           {/* Connector arrow between phases */}
           {idx < sortedPhases.length - 1 && (

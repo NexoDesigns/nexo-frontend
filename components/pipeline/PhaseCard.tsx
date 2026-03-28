@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { runsApi } from '@/lib/api'
 import { RunStatusBadge } from './RunStatusBadge'
 import { RunsList } from './RunsList'
@@ -17,7 +17,7 @@ import {
   RefreshCw,
   CheckCircle2,
 } from 'lucide-react'
-import type { PhaseRun, PipelinePhase, PhaseId } from '@/types'
+import type { PipelinePhase, PhaseId } from '@/types'
 import type { PhaseFormPayload } from './PhaseInputForm'
 import { cn } from '@/lib/utils'
 
@@ -39,20 +39,28 @@ const PHASE_ICONS: Record<PhaseId, React.ReactNode> = {
 interface PhaseCardProps {
   phase: PipelinePhase
   projectId: string
-  activeRun: PhaseRun | null
+  activeRunId: string | null
   isFirst?: boolean
 }
 
 export function PhaseCard({
   phase,
   projectId,
-  activeRun,
+  activeRunId,
   isFirst = false,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
+  const [historyExpanded, setHistoryExpanded] = useState(false)
   const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
+
+  // Fetch the active (selected output) run details
+  const { data: activeRun } = useQuery({
+    queryKey: ['run', projectId, phase.id, activeRunId],
+    queryFn: () => runsApi.get(projectId, phase.id, activeRunId!),
+    enabled: !!activeRunId,
+  })
 
   // Polling for in-flight run
   const { run: pollingRun } = useRunStatus({
@@ -198,27 +206,49 @@ export function PhaseCard({
           {/* Run history */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                {t('runHistory')}
-              </p>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() =>
-                  queryClient.invalidateQueries({
-                    queryKey: ['runs', projectId, phase.id],
-                  })
-                }
-                title="Actualizar"
+              <button
+                type="button"
+                onClick={() => setHistoryExpanded((v) => !v)}
+                className="flex items-center gap-2 cursor-pointer"
               >
-                <RefreshCw className="h-3 w-3" />
-              </Button>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                  {t('runHistory')}
+                </p>
+                {activeRun?.run_number && (
+                  <span className="text-[10px] text-primary font-medium">
+                    {t('runSelected', { number: activeRun.run_number })}
+                  </span>
+                )}
+                {historyExpanded ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </button>
+              {historyExpanded && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() =>
+                    queryClient.invalidateQueries({
+                      queryKey: ['runs', projectId, phase.id],
+                    })
+                  }
+                  title="Actualizar"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                </Button>
+              )}
             </div>
-            <RunsList
-              projectId={projectId}
-              phaseId={phase.id}
-              activeRunId={activeRun?.id}
-            />
+            {historyExpanded && (
+              <div className="max-h-[280px] overflow-y-auto animate-fade-in">
+                <RunsList
+                  projectId={projectId}
+                  phaseId={phase.id}
+                  activeRunId={activeRun?.id}
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       )}

@@ -22,7 +22,10 @@ import {
   Clock,
   Zap,
   AlertCircle,
+  ExternalLink,
+  Loader2,
 } from 'lucide-react'
+import { n8nExecutionUrl } from '@/lib/constants'
 import {
   formatRelativeDate,
   formatDuration,
@@ -51,7 +54,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
     queryFn: () => runsApi.list(projectId, phaseId),
   })
 
-  const { data: expandedRunDetail } = useQuery({
+  const { data: expandedRunDetail, isLoading: isDetailLoading } = useQuery({
     queryKey: ['run', projectId, phaseId, expandedRunId],
     queryFn: () => runsApi.get(projectId, phaseId, expandedRunId!),
     enabled: !!expandedRunId,
@@ -89,6 +92,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
         {runs.map((run) => {
           const isActive = run.id === activeRunId
           const isExpanded = expandedRunId === run.id
+          const isLoadingThisDetail = isExpanded && isDetailLoading
 
           return (
             <div
@@ -154,32 +158,50 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                   )}
 
                   {/* Output viewer + Actions */}
-                  {(expandedRunDetail?.output_payload || (run.status === 'completed' && !isActive)) && (
-                    <div className="flex items-center gap-2">
-                      {expandedRunDetail?.output_payload && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {run.status === 'completed' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs gap-1.5"
+                        disabled={isLoadingThisDetail || !expandedRunDetail?.output_payload}
+                        onClick={() => expandedRunDetail && setViewingRun(expandedRunDetail)}
+                      >
+                        {isLoadingThisDetail && <Loader2 className="h-3 w-3 animate-spin" />}
+                        {t('viewOutput')}
+                      </Button>
+                    )}
+                    {run.status === 'completed' && !isActive && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs gap-1.5"
+                        onClick={() => activateMutation.mutate(run.id)}
+                        disabled={activateMutation.isPending}
+                      >
+                        <Star className="h-3 w-3" />
+                        {t('activateRun')}
+                      </Button>
+                    )}
+                    {(() => {
+                      const execId = expandedRunDetail?.n8n_execution_id ?? run.n8n_execution_id
+                      const url = n8nExecutionUrl(phaseId, execId)
+                      if (!url) return null
+                      return (
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="text-xs"
-                          onClick={() => setViewingRun(expandedRunDetail)}
+                          variant="ghost"
+                          className="text-xs gap-1.5 text-muted-foreground"
+                          asChild
                         >
-                          {t('viewOutput')}
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3 w-3" />
+                            {t('viewInN8n')}
+                          </a>
                         </Button>
-                      )}
-                      {run.status === 'completed' && !isActive && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs gap-1.5"
-                          onClick={() => activateMutation.mutate(run.id)}
-                          disabled={activateMutation.isPending}
-                        >
-                          <Star className="h-3 w-3" />
-                          {t('activateRun')}
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                      )
+                    })()}
+                  </div>
                 </div>
               )}
             </div>
