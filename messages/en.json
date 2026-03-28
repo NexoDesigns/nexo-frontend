@@ -22,7 +22,8 @@
     "yes": "Yes",
     "no": "No",
     "errorMessage": "Error message",
-    "references": "References"
+    "references": "References",
+    "selected": "selected"
   },
   "nav": {
     "dashboard": "Dashboard",

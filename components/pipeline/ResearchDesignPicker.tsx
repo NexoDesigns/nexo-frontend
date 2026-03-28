@@ -11,6 +11,20 @@ interface ResearchDesignPickerProps {
   onToggle: (solution: ResearchSolution) => void
 }
 
+function isUrl(s: string): boolean {
+  return s.startsWith('http://') || s.startsWith('https://')
+}
+
+function formatUrl(url: string): string {
+  try {
+    const { hostname, pathname, search } = new URL(url)
+    const path = pathname + search
+    return hostname + (path.length > 30 ? path.slice(0, 30) + '…' : path)
+  } catch {
+    return url
+  }
+}
+
 function isResearchItem(item: unknown): item is ResearchOutputItem {
   return (
     typeof item === 'object' &&
@@ -127,14 +141,24 @@ export function ResearchDesignPicker({
                         <BookOpen className="h-2.5 w-2.5" />
                         <span>{tCommon('references')}</span>
                       </div>
-                      {solution.key_references.map((ref, i) => (
-                        <p
-                          key={i}
-                          className="text-[10px] text-muted-foreground/60 pl-3.5"
-                        >
-                          {ref}
-                        </p>
-                      ))}
+                      {solution.key_references.map((ref, i) =>
+                        isUrl(ref) ? (
+                          <a
+                            key={i}
+                            href={ref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[10px] text-primary/70 hover:text-primary hover:underline block pl-3.5 truncate"
+                          >
+                            {formatUrl(ref)}
+                          </a>
+                        ) : (
+                          <p key={i} className="text-[10px] text-muted-foreground/60 pl-3.5">
+                            {ref}
+                          </p>
+                        )
+                      )}
                     </div>
                   )}
                 </button>

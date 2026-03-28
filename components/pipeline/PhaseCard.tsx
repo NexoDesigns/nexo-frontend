@@ -63,10 +63,14 @@ export function PhaseCard({
   onSelectedSolutionsChange,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
+  const tCommon = useTranslations('common')
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
   const [historyExpanded, setHistoryExpanded] = useState(false)
+  const [designsExpanded, setDesignsExpanded] = useState(true)
   const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
+  // Independent of any run — persists across card expand/collapse
+  const [usePerplexity, setUsePerplexity] = useState(true)
 
   // Fetch the active (selected output) run details
   const { data: activeRun } = useQuery({
@@ -112,15 +116,17 @@ export function PhaseCard({
   }, [activeRun?.id, phase.id])
 
   const triggerMutation = useMutation({
-    mutationFn: ({ inputs, usePerplexity }: PhaseFormPayload) => {
+    mutationFn: ({ inputs }: PhaseFormPayload) => {
+      console.log('[PhaseCard] trigger — phase:', phase.id, '| usePerplexity state:', usePerplexity)
       const custom_inputs =
         phase.id === 'ic_selection' && selectedResearchSolutions?.length
           ? { ...inputs, selected_solutions: selectedResearchSolutions }
           : inputs
       const payload =
         phase.id === 'research'
-          ? { use_perplexity: usePerplexity ?? true, custom_inputs }
+          ? { use_perplexity: usePerplexity, custom_inputs }
           : { custom_inputs }
+      console.log('[PhaseCard] payload:', JSON.stringify(payload))
       return runsApi.trigger(projectId, phase.id, payload)
     },
     onSuccess: ({ run_id }) => {
@@ -216,9 +222,8 @@ export function PhaseCard({
               defaultInputs={
                 (activeRun?.input_payload?.custom_inputs as Record<string, unknown>) ?? {}
               }
-              defaultUsePerplexity={
-                (activeRun?.input_payload?.use_perplexity as boolean) ?? false
-              }
+              usePerplexity={usePerplexity}
+              onUsePerplexityChange={setUsePerplexity}
               isLoading={isRunning || triggerMutation.isPending}
               onSubmit={(payload) => triggerMutation.mutate(payload)}
             />
@@ -238,44 +243,64 @@ export function PhaseCard({
           {phase.id === 'research' && (
             <>
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  {t('selectedDesigns')}
-                </p>
-                {!activeRunId ? (
-                  <p className="text-xs text-muted-foreground italic">
-                    {t('selectRunFirst')}
+                <button
+                  type="button"
+                  onClick={() => setDesignsExpanded((v) => !v)}
+                  className="flex items-center gap-2 cursor-pointer mb-2"
+                >
+                  <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                    {t('selectedDesigns')}
                   </p>
-                ) : !activeRun ? (
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-32 flex-1 min-w-[180px]" />
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    {activeRun.output_payload ? (
-                      <ResearchDesignPicker
-                        output={activeRun.output_payload}
-                        selectedSolutions={selectedResearchSolutions ?? []}
-                        onToggle={(solution) => {
-                          if (!onSelectedSolutionsChange) return
-                          const current = selectedResearchSolutions ?? []
-                          const isSelected = current.some((s) => s.id === solution.id)
-                          if (isSelected) {
-                            if (current.length > 1) {
-                              onSelectedSolutionsChange(current.filter((s) => s.id !== solution.id))
-                            }
-                          } else {
-                            onSelectedSolutionsChange([...current, solution])
-                          }
-                        }}
-                      />
-                    ) : (
+                  {!designsExpanded && (selectedResearchSolutions ?? []).length > 0 && (
+                    <span className="text-[10px] text-primary font-medium">
+                      {(selectedResearchSolutions ?? []).map((s) => s.id).join(', ')} {tCommon('selected')}
+                    </span>
+                  )}
+                  {designsExpanded ? (
+                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </button>
+                {designsExpanded && (
+                  <div className="animate-fade-in">
+                    {!activeRunId ? (
                       <p className="text-xs text-muted-foreground italic">
-                        {t('noDesignsInOutput')}
+                        {t('selectRunFirst')}
                       </p>
+                    ) : !activeRun ? (
+                      <div className="flex gap-2">
+                        {[1, 2, 3].map((i) => (
+                          <Skeleton key={i} className="h-32 flex-1 min-w-[180px]" />
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        {activeRun.output_payload ? (
+                          <ResearchDesignPicker
+                            output={activeRun.output_payload}
+                            selectedSolutions={selectedResearchSolutions ?? []}
+                            onToggle={(solution) => {
+                              if (!onSelectedSolutionsChange) return
+                              const current = selectedResearchSolutions ?? []
+                              const isSelected = current.some((s) => s.id === solution.id)
+                              if (isSelected) {
+                                if (current.length > 1) {
+                                  onSelectedSolutionsChange(current.filter((s) => s.id !== solution.id))
+                                }
+                              } else {
+                                onSelectedSolutionsChange([...current, solution])
+                              }
+                            }}
+                          />
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">
+                            {t('noDesignsInOutput')}
+                          </p>
+                        )}
+                      </>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
               <Separator />

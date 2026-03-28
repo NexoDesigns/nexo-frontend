@@ -15,13 +15,13 @@ interface KeyValuePair {
 
 export interface PhaseFormPayload {
   inputs: Record<string, unknown>
-  usePerplexity?: boolean
 }
 
 interface PhaseInputFormProps {
   phaseId: string
   defaultInputs?: Record<string, unknown>
-  defaultUsePerplexity?: boolean
+  usePerplexity?: boolean
+  onUsePerplexityChange?: (v: boolean) => void
   isLoading?: boolean
   onSubmit: (payload: PhaseFormPayload) => void
   className?: string
@@ -30,7 +30,8 @@ interface PhaseInputFormProps {
 export function PhaseInputForm({
   phaseId,
   defaultInputs = {},
-  defaultUsePerplexity = true,
+  usePerplexity = true,
+  onUsePerplexityChange,
   isLoading = false,
   onSubmit,
   className,
@@ -47,8 +48,6 @@ export function PhaseInputForm({
       value: typeof value === 'string' ? value : JSON.stringify(value),
     }))
   })
-
-  const [usePerplexity, setUsePerplexity] = useState(defaultUsePerplexity)
 
   const addPair = () => {
     setPairs((prev) => [...prev, { key: '', value: '' }])
@@ -81,7 +80,8 @@ export function PhaseInputForm({
         }
       }
     })
-    onSubmit({ inputs, ...(isResearch && { usePerplexity }) })
+    console.log('[PhaseInputForm] handleSubmit — usePerplexity prop:', usePerplexity)
+    onSubmit({ inputs })
   }
 
   const hasValidPair = pairs.some((p) => p.key.trim())
@@ -94,7 +94,7 @@ export function PhaseInputForm({
             id="use-perplexity"
             type="checkbox"
             checked={usePerplexity}
-            onChange={(e) => setUsePerplexity(e.target.checked)}
+            onChange={(e) => onUsePerplexityChange?.(e.target.checked)}
             disabled={isLoading}
             className="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
           />
