@@ -153,36 +153,31 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                     </div>
                   )}
 
-                  {/* Output viewer */}
-                  {expandedRunDetail?.output_payload && (
-                    <div>
-                      <p className="text-[11px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
-                        {t('output')}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => setViewingRun(expandedRunDetail)}
-                      >
-                        {t('viewOutput')}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  {run.status === 'completed' && !isActive && (
-                    <div className="flex items-center gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs gap-1.5"
-                        onClick={() => activateMutation.mutate(run.id)}
-                        disabled={activateMutation.isPending}
-                      >
-                        <Star className="h-3 w-3" />
-                        {t('activateRun')}
-                      </Button>
+                  {/* Output viewer + Actions */}
+                  {(expandedRunDetail?.output_payload || (run.status === 'completed' && !isActive)) && (
+                    <div className="flex items-center gap-2">
+                      {expandedRunDetail?.output_payload && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setViewingRun(expandedRunDetail)}
+                        >
+                          {t('viewOutput')}
+                        </Button>
+                      )}
+                      {run.status === 'completed' && !isActive && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs gap-1.5"
+                          onClick={() => activateMutation.mutate(run.id)}
+                          disabled={activateMutation.isPending}
+                        >
+                          <Star className="h-3 w-3" />
+                          {t('activateRun')}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
