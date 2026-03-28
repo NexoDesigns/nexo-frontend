@@ -31,7 +31,7 @@
   },
   "auth": {
     "login": "Iniciar sesión",
-    "loginTitle": "Bienvenido a Nexo Designs",
+    "loginTitle": "Bienvenido a Nexo Design",
     "loginSubtitle": "Plataforma interna de diseño electrónico con IA",
     "email": "Email",
     "password": "Contraseña",
@@ -106,6 +106,8 @@
     "inputs": "Inputs",
     "output": "Output",
     "ragContext": "Contexto RAG",
+    "usePerplexity": "Usar Perplexity",
+    "perplexityTooltip": "Si está activado, el agente de IA usará Perplexity para buscar papers online. Si no, solo usará los documentos subidos en la base de datos interna.",
     "addInput": "Añadir input",
     "inputKey": "Clave",
     "inputValue": "Valor",

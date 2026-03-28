@@ -106,6 +106,8 @@
     "inputs": "Inputs",
     "output": "Output",
     "ragContext": "RAG context",
+    "usePerplexity": "Use Perplexity",
+    "perplexityTooltip": "When enabled, the AI agent will use Perplexity to search for papers online. Otherwise, it will only use documents uploaded to the internal database.",
     "addInput": "Add input",
     "inputKey": "Key",
     "inputValue": "Value",

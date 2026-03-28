@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { Button } from '@/components/ui/button'
-import { Input, Label, Textarea } from '@/components/ui/input'
-import { Plus, Trash2, Play, Loader2 } from 'lucide-react'
+import { Input, Textarea } from '@/components/ui/input'
+import { Plus, Trash2, Play, Loader2, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface KeyValuePair {
@@ -12,22 +13,30 @@ interface KeyValuePair {
   value: string
 }
 
+export interface PhaseFormPayload {
+  inputs: Record<string, unknown>
+  usePerplexity?: boolean
+}
+
 interface PhaseInputFormProps {
   phaseId: string
   defaultInputs?: Record<string, unknown>
+  defaultUsePerplexity?: boolean
   isLoading?: boolean
-  onSubmit: (inputs: Record<string, unknown>) => void
+  onSubmit: (payload: PhaseFormPayload) => void
   className?: string
 }
 
 export function PhaseInputForm({
   phaseId,
   defaultInputs = {},
+  defaultUsePerplexity = true,
   isLoading = false,
   onSubmit,
   className,
 }: PhaseInputFormProps) {
   const t = useTranslations('pipeline')
+  const isResearch = phaseId === 'research'
 
   // Hydrate from defaultInputs (previous run's inputs)
   const [pairs, setPairs] = useState<KeyValuePair[]>(() => {
@@ -38,6 +47,8 @@ export function PhaseInputForm({
       value: typeof value === 'string' ? value : JSON.stringify(value),
     }))
   })
+
+  const [usePerplexity, setUsePerplexity] = useState(defaultUsePerplexity)
 
   const addPair = () => {
     setPairs((prev) => [...prev, { key: '', value: '' }])
@@ -70,13 +81,49 @@ export function PhaseInputForm({
         }
       }
     })
-    onSubmit(inputs)
+    onSubmit({ inputs, ...(isResearch && { usePerplexity }) })
   }
 
   const hasValidPair = pairs.some((p) => p.key.trim())
 
   return (
     <form onSubmit={handleSubmit} className={cn('space-y-3', className)}>
+      {isResearch && (
+        <div className="flex items-center gap-2">
+          <input
+            id="use-perplexity"
+            type="checkbox"
+            checked={usePerplexity}
+            onChange={(e) => setUsePerplexity(e.target.checked)}
+            disabled={isLoading}
+            className="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+          />
+          <label
+            htmlFor="use-perplexity"
+            className="text-xs text-foreground cursor-pointer select-none flex items-center gap-1"
+          >
+            {t('usePerplexity')}
+            <TooltipPrimitive.Provider delayDuration={200}>
+              <TooltipPrimitive.Root>
+                <TooltipPrimitive.Trigger asChild>
+                  <Info className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />
+                </TooltipPrimitive.Trigger>
+                <TooltipPrimitive.Portal>
+                  <TooltipPrimitive.Content
+                    side="right"
+                    sideOffset={6}
+                    className="z-50 max-w-[220px] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-popover-foreground shadow-md"
+                  >
+                    {t('perplexityTooltip')}
+                    <TooltipPrimitive.Arrow className="fill-border" />
+                  </TooltipPrimitive.Content>
+                </TooltipPrimitive.Portal>
+              </TooltipPrimitive.Root>
+            </TooltipPrimitive.Provider>
+          </label>
+        </div>
+      )}
+
       <div className="space-y-2">
         {pairs.map((pair, i) => (
           <div key={i} className="flex gap-2 items-start">

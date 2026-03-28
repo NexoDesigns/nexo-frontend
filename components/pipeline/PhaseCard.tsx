@@ -18,6 +18,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import type { PhaseRun, PipelinePhase, PhaseId } from '@/types'
+import type { PhaseFormPayload } from './PhaseInputForm'
 import { cn } from '@/lib/utils'
 
 // Icon per phase
@@ -73,8 +74,13 @@ export function PhaseCard({
     pollingRun?.status === 'running' || pollingRun?.status === 'pending'
 
   const triggerMutation = useMutation({
-    mutationFn: (inputs: Record<string, unknown>) =>
-      runsApi.trigger(projectId, phase.id, { custom_inputs: inputs }),
+    mutationFn: ({ inputs, usePerplexity }: PhaseFormPayload) => {
+      const payload =
+        phase.id === 'research'
+          ? { use_perplexity: usePerplexity ?? true, custom_inputs: inputs }
+          : { custom_inputs: inputs }
+      return runsApi.trigger(projectId, phase.id, payload)
+    },
     onSuccess: ({ run_id }) => {
       setActivePollingRunId(run_id)
       queryClient.invalidateQueries({ queryKey: ['runs', projectId, phase.id] })
@@ -171,8 +177,11 @@ export function PhaseCard({
               defaultInputs={
                 (activeRun?.input_payload?.custom_inputs as Record<string, unknown>) ?? {}
               }
+              defaultUsePerplexity={
+                (activeRun?.input_payload?.use_perplexity as boolean) ?? false
+              }
               isLoading={isRunning || triggerMutation.isPending}
-              onSubmit={(inputs) => triggerMutation.mutate(inputs)}
+              onSubmit={(payload) => triggerMutation.mutate(payload)}
             />
           </div>
 
