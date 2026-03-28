@@ -55,6 +55,21 @@ export interface PipelinePhase {
   n8n_webhook_path: string
 }
 
+// ─── Research output ─────────────────────────────────────────────────────────
+
+export interface ResearchSolution {
+  id: string
+  title: string
+  description: string
+  key_references: string[]
+}
+
+export interface ResearchOutputItem {
+  query_summary: string
+  solutions: ResearchSolution[]
+  error: string | null
+}
+
 // ─── Phase Runs ───────────────────────────────────────────────────────────────
 
 export type RunStatus = 'pending' | 'running' | 'completed' | 'failed'

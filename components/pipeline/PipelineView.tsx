@@ -1,11 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { runsApi, phasesApi } from '@/lib/api'
 import { PhaseCard } from './PhaseCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PHASE_ORDER } from '@/lib/utils'
-import type { PhaseId, ProjectActiveRun } from '@/types'
+import type { PhaseId, ProjectActiveRun, ResearchSolution } from '@/types'
 import { ArrowRight } from 'lucide-react'
 
 interface PipelineViewProps {
@@ -13,6 +14,8 @@ interface PipelineViewProps {
 }
 
 export function PipelineView({ projectId }: PipelineViewProps) {
+  const [selectedResearchSolutions, setSelectedResearchSolutions] = useState<ResearchSolution[]>([])
+
   const { data: phases, isLoading: phasesLoading } = useQuery({
     queryKey: ['phases'],
     queryFn: phasesApi.list,
@@ -56,6 +59,8 @@ export function PipelineView({ projectId }: PipelineViewProps) {
             phase={phase}
             projectId={projectId}
             activeRunId={activeRunMap[phase.id]?.run_id ?? null}
+            selectedResearchSolutions={selectedResearchSolutions}
+            onSelectedSolutionsChange={setSelectedResearchSolutions}
           />
           {/* Connector arrow between phases */}
           {idx < sortedPhases.length - 1 && (

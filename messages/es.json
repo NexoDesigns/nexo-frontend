@@ -20,7 +20,9 @@
     "updatedAt": "Actualizado",
     "by": "por",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "errorMessage": "Mensaje de error",
+    "references": "Referencias"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -117,7 +119,9 @@
     "compareRuns": "Comparar runs",
     "jsonView": "JSON",
     "structuredView": "Estructurado",
-    "errorMessage": "Mensaje de error"
+    "selectedDesigns": "Diseños seleccionados",
+    "selectRunFirst": "Selecciona un run activo para ver los diseños",
+    "noDesignsInOutput": "No se encontraron diseños en el output de este run"
   },
   "runs": {
     "pending": "Pendiente",

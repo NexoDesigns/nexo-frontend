@@ -1,23 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { runsApi } from '@/lib/api'
 import { RunStatusBadge } from './RunStatusBadge'
 import { RunsList } from './RunsList'
 import { PhaseInputForm } from './PhaseInputForm'
+import { ResearchDesignPicker } from './ResearchDesignPicker'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/primitives'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
   CheckCircle2,
 } from 'lucide-react'
-import type { PipelinePhase, PhaseId } from '@/types'
+import type { PipelinePhase, PhaseId, ResearchSolution, ResearchOutputItem } from '@/types'
 import type { PhaseFormPayload } from './PhaseInputForm'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +30,15 @@ import {
   Package,
   FileCode2,
 } from 'lucide-react'
+
+function isResearchOutputItem(value: unknown): value is ResearchOutputItem {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'solutions' in value &&
+    Array.isArray((value as Record<string, unknown>).solutions)
+  )
+}
 
 const PHASE_ICONS: Record<PhaseId, React.ReactNode> = {
   research: <Search className="h-3.5 w-3.5" />,
@@ -40,14 +51,16 @@ interface PhaseCardProps {
   phase: PipelinePhase
   projectId: string
   activeRunId: string | null
-  isFirst?: boolean
+  selectedResearchSolutions?: ResearchSolution[]
+  onSelectedSolutionsChange?: (solutions: ResearchSolution[]) => void
 }
 
 export function PhaseCard({
   phase,
   projectId,
   activeRunId,
-  isFirst = false,
+  selectedResearchSolutions,
+  onSelectedSolutionsChange,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
   const queryClient = useQueryClient()
@@ -81,12 +94,33 @@ export function PhaseCard({
   const isRunning =
     pollingRun?.status === 'running' || pollingRun?.status === 'pending'
 
+  // Auto-select all solutions when research active run changes
+  useEffect(() => {
+    if (phase.id !== 'research' || !activeRun?.output_payload) return
+    const raw = activeRun.output_payload as unknown
+    let items: ResearchOutputItem[] = []
+    if (isResearchOutputItem(raw)) {
+      items = [raw]
+    } else if (Array.isArray(raw)) {
+      items = raw.filter(isResearchOutputItem)
+    }
+    const allSolutions = items.flatMap((item) => item.solutions)
+    if (allSolutions.length > 0 && onSelectedSolutionsChange) {
+      onSelectedSolutionsChange(allSolutions)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRun?.id, phase.id])
+
   const triggerMutation = useMutation({
     mutationFn: ({ inputs, usePerplexity }: PhaseFormPayload) => {
+      const custom_inputs =
+        phase.id === 'ic_selection' && selectedResearchSolutions?.length
+          ? { ...inputs, selected_solutions: selectedResearchSolutions }
+          : inputs
       const payload =
         phase.id === 'research'
-          ? { use_perplexity: usePerplexity ?? true, custom_inputs: inputs }
-          : { custom_inputs: inputs }
+          ? { use_perplexity: usePerplexity ?? true, custom_inputs }
+          : { custom_inputs }
       return runsApi.trigger(projectId, phase.id, payload)
     },
     onSuccess: ({ run_id }) => {
@@ -202,6 +236,54 @@ export function PhaseCard({
           )}
 
           <Separator />
+
+          {/* Selected designs — research phase only */}
+          {phase.id === 'research' && (
+            <>
+              <div>
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                  {t('selectedDesigns')}
+                </p>
+                {!activeRunId ? (
+                  <p className="text-xs text-muted-foreground italic">
+                    {t('selectRunFirst')}
+                  </p>
+                ) : !activeRun ? (
+                  <div className="flex gap-2">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-32 flex-1 min-w-[180px]" />
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {activeRun.output_payload ? (
+                      <ResearchDesignPicker
+                        output={activeRun.output_payload}
+                        selectedSolutions={selectedResearchSolutions ?? []}
+                        onToggle={(solution) => {
+                          if (!onSelectedSolutionsChange) return
+                          const current = selectedResearchSolutions ?? []
+                          const isSelected = current.some((s) => s.id === solution.id)
+                          if (isSelected) {
+                            if (current.length > 1) {
+                              onSelectedSolutionsChange(current.filter((s) => s.id !== solution.id))
+                            }
+                          } else {
+                            onSelectedSolutionsChange([...current, solution])
+                          }
+                        }}
+                      />
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">
+                        {t('noDesignsInOutput')}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Run history */}
           <div>
