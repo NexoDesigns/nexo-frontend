@@ -9,6 +9,7 @@ import { RunsList } from './RunsList'
 import { PhaseInputForm } from './PhaseInputForm'
 import { ResearchDesignPicker } from './ResearchDesignPicker'
 import { IcSelectionOutputViewer } from './IcSelectionOutputViewer'
+import { IcNamingOutputViewer } from './IcNamingOutputViewer'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -335,6 +336,14 @@ export function PhaseCard({
           {phase.id === 'ic_selection' && activeRun?.output_payload && (
             <>
               <IcSelectionOutputViewer output={activeRun.output_payload} />
+              <Separator />
+            </>
+          )}
+
+          {/* IC Naming Agent output */}
+          {phase.id === 'ic_naming_agent' && activeRun?.output_payload && (
+            <>
+              <IcNamingOutputViewer output={activeRun.output_payload} />
               <Separator />
             </>
           )}
