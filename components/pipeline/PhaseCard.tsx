@@ -8,6 +8,7 @@ import { RunStatusBadge } from './RunStatusBadge'
 import { RunsList } from './RunsList'
 import { PhaseInputForm } from './PhaseInputForm'
 import { ResearchDesignPicker } from './ResearchDesignPicker'
+import { IcSelectionOutputViewer } from './IcSelectionOutputViewer'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -227,7 +228,7 @@ export function PhaseCard({
               <div className="mb-3 text-xs">
                 {selectedResearchSolutions && selectedResearchSolutions.length > 0 ? (
                   <p className="text-muted-foreground">
-                    {t('icSelectionDesigns', { designs: '' }).replace(' ', '\u00A0')}
+                    {t('icSelectionDesigns')}{' '}
                     <span className="text-foreground font-medium">
                       {selectedResearchSolutions.map((s) => `${s.id}: ${s.title}`).join(', ')}
                     </span>
@@ -324,6 +325,14 @@ export function PhaseCard({
                   </div>
                 )}
               </div>
+              <Separator />
+            </>
+          )}
+
+          {/* IC Selection output */}
+          {phase.id === 'ic_selection' && activeRun?.output_payload && (
+            <>
+              <IcSelectionOutputViewer output={activeRun.output_payload} />
               <Separator />
             </>
           )}

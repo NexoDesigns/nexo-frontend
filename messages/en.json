@@ -23,7 +23,9 @@
     "no": "No",
     "errorMessage": "Error message",
     "references": "References",
-    "selected": "selected"
+    "selected": "selected",
+    "description": "Description",
+    "rationale": "Rationale"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -123,8 +125,10 @@
     "selectedDesigns": "Selected designs",
     "selectRunFirst": "Select an active run to view designs",
     "noDesignsInOutput": "No designs found in this run's output",
-    "icSelectionDesigns": "Selected research designs: {designs}",
-    "noDesignsSelected": "No designs selected. Choose minimum one to run the phase."
+    "icSelectionDesigns": "Selected research designs:",
+    "noDesignsSelected": "No designs selected. Choose minimum one to run the phase.",
+    "icOutputTitle": "IC Selection output",
+    "components": "components"
   },
   "runs": {
     "pending": "Pending",

@@ -23,7 +23,9 @@
     "no": "No",
     "errorMessage": "Mensaje de error",
     "references": "Referencias",
-    "selected": "seleccionados"
+    "selected": "seleccionados",
+    "description": "Descripción",
+    "rationale": "Justificación"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -123,8 +125,10 @@
     "selectedDesigns": "Diseños seleccionados",
     "selectRunFirst": "Selecciona un run activo para ver los diseños",
     "noDesignsInOutput": "No se encontraron diseños en el output de este run",
-    "icSelectionDesigns": "Diseños seleccionados de research: {designs}",
-    "noDesignsSelected": "No hay diseños seleccionados. Elige mínimo uno para ejecutar la fase."
+    "icSelectionDesigns": "Diseños seleccionados de research:",
+    "noDesignsSelected": "No hay diseños seleccionados. Elige mínimo uno para ejecutar la fase.",
+    "icOutputTitle": "Resultado IC Selection",
+    "components": "componentes"
   },
   "runs": {
     "pending": "Pendiente",
