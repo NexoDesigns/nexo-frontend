@@ -10,7 +10,7 @@ interface RunStatusBadgeProps {
 }
 
 export function RunStatusBadge({ status, className }: RunStatusBadgeProps) {
-  const t = useTranslations('runs')
+  const t = useTranslations('status')
 
   const config: Record<RunStatus, {
     variant: 'default' | 'success' | 'destructive' | 'warning' | 'muted'

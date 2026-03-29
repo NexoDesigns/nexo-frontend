@@ -33,6 +33,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const { id } = use(params)
   const t = useTranslations('projects')
   const tPipeline = useTranslations('pipeline')
+  const tStatus = useTranslations('status')
   const tCommon = useTranslations('common')
   const tDocuments = useTranslations('documents')
   const locale = useLocale()
@@ -82,7 +83,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         actions={
           <div className="flex items-center gap-2">
             <Badge variant={STATUS_VARIANT[project.status]}>
-              {t(project.status)}
+              {tStatus(project.status)}
             </Badge>
             <Link href="/projects">
               <Button variant="ghost" size="sm" className="gap-1.5">
@@ -151,7 +152,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <div className="max-w-2xl space-y-6">
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                  Subir documento
+                  {tDocuments('upload')}
                 </p>
                 <DocumentUpload
                   projectId={id}
@@ -160,9 +161,6 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               </div>
               <Separator />
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                  {tDocuments('projectDocs')}
-                </p>
                 <DocumentList
                   documents={documents ?? []}
                   isLoading={docsLoading}

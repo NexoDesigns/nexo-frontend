@@ -1,5 +1,7 @@
 {
   "common": {
+    "appName": "Nexo Design",
+    "appNameSubtitle": "AI Platform",
     "loading": "Loading...",
     "error": "An error occurred",
     "save": "Save",
@@ -15,12 +17,12 @@
     "optional": "optional",
     "required": "required",
     "actions": "Actions",
-    "status": "Status",
     "createdAt": "Created",
     "updatedAt": "Updated",
     "by": "by",
     "yes": "Yes",
     "no": "No",
+    "changeLanguage": "Change Language",
     "errorMessage": "Error message",
     "references": "References",
     "selected": "selected",
@@ -36,11 +38,11 @@
   },
   "auth": {
     "login": "Log in",
-    "loginTitle": "Welcome to Nexo Designs",
+    "loginTitle": "Welcome to Nexo Design",
     "loginSubtitle": "Internal AI-powered electronics design platform",
     "email": "Email",
     "password": "Password",
-    "emailPlaceholder": "you@nexodesigns.com",
+    "emailPlaceholder": "you@nexodesign.com",
     "passwordPlaceholder": "••••••••",
     "loginButton": "Log in",
     "loginLoading": "Logging in...",
@@ -55,7 +57,22 @@
     "totalProjects": "Total projects",
     "activeProjects": "Active projects",
     "runsToday": "Runs today",
-    "documentsIndexed": "Documents indexed"
+    "documentsIndexed": "Documents indexed",
+    "viewAll": "View all",
+    "all": "All"
+  },
+  "status": {
+    "status": "Status",
+    "active": "Active",
+    "archived": "Archived",
+    "completed": "Completed",
+    "pending": "Pending",
+    "running": "Running",
+    "failed": "Failed",
+    "processing": "Processing",
+    "done": "Indexed",
+    "error": "Error",
+    "executing": "Executing..."
   },
   "projects": {
     "title": "Projects",
@@ -63,10 +80,6 @@
     "projectName": "Project name",
     "clientName": "Client",
     "description": "Description",
-    "status": "Status",
-    "active": "Active",
-    "archived": "Archived",
-    "completed": "Completed",
     "noProjects": "No projects",
     "create": "Create new project",
     "createNew": "Create new project",
@@ -80,6 +93,7 @@
   },
   "requirements": {
     "title": "Client requirements",
+    "electricalTitle": "Electrical",
     "inputVoltageMin": "Min input voltage (V)",
     "inputVoltageMax": "Max input voltage (V)",
     "outputVoltage": "Output voltage (V)",
@@ -100,7 +114,6 @@
     "netlist": "Netlist",
     "executePhase": "Execute phase",
     "reExecute": "Re-execute",
-    "executing": "Executing...",
     "viewOutput": "View raw output",
     "activateRun": "Use this run",
     "viewInN8n": "View in n8n",
@@ -137,10 +150,6 @@
     "saveNotes": "Save notes"
   },
   "runs": {
-    "pending": "Pending",
-    "running": "Running",
-    "completed": "Completed",
-    "failed": "Failed",
     "seconds": "seconds",
     "ago": "ago",
     "justNow": "just now"
@@ -158,10 +167,6 @@
     "design_note": "Design note",
     "reference_schematic": "Reference schematic",
     "other": "Other",
-    "pending": "Pending",
-    "processing": "Processing",
-    "done": "Indexed",
-    "error": "Error",
     "deleteConfirm": "Delete this document?",
     "deleteDescription": "The file and all its embeddings will be permanently deleted.",
     "noDocuments": "No documents",
@@ -170,7 +175,10 @@
     "projectDocs": "Project documents",
     "fileSize": "Size",
     "uploadSuccess": "Document uploaded. Indexing in background.",
-    "uploadError": "Failed to upload document"
+    "uploadError": "Failed to upload document",
+    "dropzone": "Drag a file or",
+    "browse": "browse",
+    "fileTooLarge": "File too large. Maximum {size}MB."
   },
   "knowledgeBase": {
     "title": "Knowledge Base",

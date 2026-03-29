@@ -23,6 +23,7 @@ const navItems = [
 
 export function Sidebar() {
   const t = useTranslations('nav')
+  const tCommon = useTranslations('common')
   const pathname = usePathname()
   const { user, signOut } = useAuth()
 
@@ -35,10 +36,10 @@ export function Sidebar() {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground leading-none">
-            Nexo Designs
+            {tCommon('appName')}
           </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            AI Platform
+            {tCommon('appNameSubtitle')}
           </p>
         </div>
       </div>

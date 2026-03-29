@@ -11,7 +11,7 @@ import { Link } from '@/i18n/routing'
 import { Plus, FolderKanban, BookOpen, Activity } from 'lucide-react'
 
 export default function DashboardPage() {
-  const t = useTranslations('dashboard')
+  const tDashboard = useTranslations('dashboard')
   const tNav = useTranslations('nav')
 
   const { data: projects, isLoading: projectsLoading } = useQuery({
@@ -31,17 +31,17 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: t('totalProjects'),
+      label: tDashboard('totalProjects'),
       value: projects?.length ?? 0,
       icon: FolderKanban,
     },
     {
-      label: t('activeProjects'),
+      label: tDashboard('activeProjects'),
       value: activeProjects.length,
       icon: Activity,
     },
     {
-      label: t('documentsIndexed'),
+      label: tDashboard('documentsIndexed'),
       value: documents?.filter((d) => d.embedding_status === 'done').length ?? 0,
       icon: BookOpen,
     },
@@ -50,7 +50,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full animate-fade-in">
       <Header
-        title={t('title')}
+        title={tDashboard('title')}
         actions={
           <Link href="/projects/new">
             <Button size="sm" className="gap-1.5">
@@ -86,11 +86,11 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-medium text-foreground">
-              {t('recentProjects')}
+              {tDashboard('recentProjects')}
             </h2>
             <Link href="/projects">
               <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                Ver todos
+                {tDashboard('viewAll')}
               </Button>
             </Link>
           </div>
@@ -104,10 +104,10 @@ export default function DashboardPage() {
           ) : recentProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
               <FolderKanban className="h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">{t('noProjects')}</p>
+              <p className="text-sm text-muted-foreground">{tDashboard('noProjects')}</p>
               <Link href="/projects/new">
                 <Button size="sm" variant="outline">
-                  {t('createFirst')}
+                  {tDashboard('createFirst')}
                 </Button>
               </Link>
             </div>

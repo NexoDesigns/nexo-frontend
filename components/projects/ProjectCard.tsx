@@ -22,7 +22,7 @@ const STATUS_VARIANT: Record<
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const t = useTranslations('projects')
+  const t = useTranslations('status')
   const locale = useLocale()
 
   return (

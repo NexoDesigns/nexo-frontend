@@ -23,7 +23,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  RefreshCw,
+  ChevronRight,
 } from 'lucide-react'
 import type { Document, EmbeddingStatus } from '@/types'
 import { cn } from '@/lib/utils'
@@ -44,8 +44,99 @@ const EMBEDDING_BADGE: Record<
   error: { variant: 'destructive', icon: <AlertCircle className="h-3 w-3" /> },
 }
 
+function CollapsibleGroup({
+  title,
+  count,
+  children,
+  defaultOpen = true,
+}: {
+  title: string
+  count: number
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex w-full items-center gap-1.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ChevronRight
+          className={cn('h-3.5 w-3.5 shrink-0 transition-transform', open && 'rotate-90')}
+        />
+        <span className="uppercase tracking-wide">{title}</span>
+        <span className="tabular-nums text-muted-foreground/60">{count}</span>
+      </button>
+      {open && <div className="mt-1.5">{children}</div>}
+    </div>
+  )
+}
+
+function DocRow({
+  doc,
+  onDelete,
+  deletingId,
+  t,
+  tStatus,
+  locale,
+}: {
+  doc: Document
+  onDelete: (id: string) => void
+  deletingId: string | null
+  t: ReturnType<typeof useTranslations<'documents'>>
+  tStatus: ReturnType<typeof useTranslations<'status'>>
+  locale: string
+}) {
+  const embedding = EMBEDDING_BADGE[doc.embedding_status]
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 group">
+      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-foreground truncate">{doc.name}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <Badge variant="muted" className="text-[10px] px-1.5 py-0">
+            {t(doc.type)}
+          </Badge>
+          <span className="text-[11px] text-muted-foreground">
+            {formatFileSize(doc.file_size_bytes)}
+          </span>
+          <span className="text-[11px] text-muted-foreground">
+            {formatRelativeDate(doc.created_at, locale)}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <Badge variant={embedding.variant} className="gap-1 text-[10px]">
+          {embedding.icon}
+          {tStatus(doc.embedding_status)} 
+        </Badge>
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+          onClick={() => onDelete(doc.id)}
+          disabled={deletingId === doc.id}
+        >
+          {deletingId === doc.id ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="h-3.5 w-3.5" />
+          )}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function DocumentList({ documents, isLoading, queryKey }: DocumentListProps) {
   const t = useTranslations('documents')
+  const tStatus = useTranslations('status')
+  const tCommon = useTranslations('common')
   const locale = useLocale()
   const queryClient = useQueryClient()
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -65,6 +156,8 @@ export function DocumentList({ documents, isLoading, queryKey }: DocumentListPro
     deleteMutation.mutate(id)
   }
 
+  const requestDelete = (id: string) => setConfirmId(id)
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -75,73 +168,61 @@ export function DocumentList({ documents, isLoading, queryKey }: DocumentListPro
     )
   }
 
-  if (documents.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
-        <FileText className="h-8 w-8 text-muted-foreground/30" />
-        <p className="text-sm text-muted-foreground">{t('noDocuments')}</p>
-        <p className="text-xs text-muted-foreground/60">{t('uploadFirst')}</p>
-      </div>
-    )
-  }
+  const generalDocs = documents.filter((d) => d.type !== 'project_output')
+  const projectDocs = documents.filter((d) => d.type === 'project_output')
 
   return (
     <>
-      <div className="space-y-1.5">
-        {documents.map((doc) => {
-          const embedding = EMBEDDING_BADGE[doc.embedding_status]
-          return (
-            <div
-              key={doc.id}
-              className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 group"
-            >
-              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground truncate">{doc.name}</p>
-                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <Badge variant="muted" className="text-[10px] px-1.5 py-0">
-                    {t(doc.type)}
-                  </Badge>
-                  <span className="text-[11px] text-muted-foreground">
-                    {formatFileSize(doc.file_size_bytes)}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {formatRelativeDate(doc.created_at, locale)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge variant={embedding.variant} className="gap-1 text-[10px]">
-                  {embedding.icon}
-                  {t(doc.embedding_status)}
-                </Badge>
-
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                  onClick={() => setConfirmId(doc.id)}
-                  disabled={deletingId === doc.id}
-                >
-                  {deletingId === doc.id ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
-                  )}
-                </Button>
-              </div>
+      <div className="space-y-3">
+        <CollapsibleGroup title={t('globalDocs')} count={generalDocs.length}>
+          {generalDocs.length === 0 ? (
+            <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground/50">
+              <FileText className="h-5 w-5" />
+              <span className="text-xs">{t('noDocuments')}</span>
             </div>
-          )
-        })}
+          ) : (
+            <div className="space-y-1.5">
+              {generalDocs.map((doc) => (
+                <DocRow
+                  key={doc.id}
+                  doc={doc}
+                  onDelete={requestDelete}
+                  deletingId={deletingId}
+                  t={t}
+                  tStatus={tStatus}
+                  locale={locale}
+                />
+              ))}
+            </div>
+          )}
+        </CollapsibleGroup>
+
+        <CollapsibleGroup title={t('projectDocs')} count={projectDocs.length}>
+          {projectDocs.length === 0 ? (
+            <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground/50">
+              <FileText className="h-5 w-5" />
+              <span className="text-xs">{t('noDocuments')}</span>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {projectDocs.map((doc) => (
+                <DocRow
+                  key={doc.id}
+                  doc={doc}
+                  onDelete={requestDelete}
+                  deletingId={deletingId}
+                  t={t}
+                  tStatus={tStatus}
+                  locale={locale}
+                />
+              ))}
+            </div>
+          )}
+        </CollapsibleGroup>
       </div>
 
       {/* Delete confirmation dialog */}
-      <Dialog
-        open={!!confirmId}
-        onOpenChange={(open) => !open && setConfirmId(null)}
-      >
+      <Dialog open={!!confirmId} onOpenChange={(open) => !open && setConfirmId(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>{t('deleteConfirm')}</DialogTitle>
@@ -149,7 +230,7 @@ export function DocumentList({ documents, isLoading, queryKey }: DocumentListPro
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="outline" size="sm" onClick={() => setConfirmId(null)}>
-              Cancelar
+              {tCommon('cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -162,7 +243,7 @@ export function DocumentList({ documents, isLoading, queryKey }: DocumentListPro
               ) : (
                 <Trash2 className="h-3.5 w-3.5" />
               )}
-              Eliminar
+              {tCommon('delete')}
             </Button>
           </div>
         </DialogContent>

@@ -108,7 +108,7 @@ export function DocumentUpload({ projectId, queryKey, onSuccess }: DocumentUploa
             <Upload className="h-5 w-5 text-muted-foreground" />
             <div>
               <p className="text-sm text-foreground">
-                Arrastra un archivo o <span className="text-primary">selecciona</span>
+                {t('dropzone')} <span className="text-primary">{t('browse')}</span>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">{t('uploadDescription')}</p>
             </div>
@@ -119,7 +119,7 @@ export function DocumentUpload({ projectId, queryKey, onSuccess }: DocumentUploa
       {sizeError && (
         <div className="flex items-center gap-2 text-xs text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />
-          Archivo demasiado grande. Máximo {MAX_SIZE_MB}MB.
+          {t('fileTooLarge', { size: MAX_SIZE_MB })}
         </div>
       )}
 

@@ -40,6 +40,7 @@ export function PhaseInputForm({
   className,
 }: PhaseInputFormProps) {
   const t = useTranslations('pipeline')
+  const tStatus = useTranslations('status')
   const isResearch = phaseId === 'research'
   const [notes, setNotes] = useState('')
 
@@ -197,7 +198,7 @@ export function PhaseInputForm({
           {isLoading ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              {t('executing')}
+              {tStatus('executing')}
             </>
           ) : (
             <>
