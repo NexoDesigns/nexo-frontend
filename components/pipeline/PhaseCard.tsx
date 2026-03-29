@@ -117,7 +117,6 @@ export function PhaseCard({
 
   const triggerMutation = useMutation({
     mutationFn: ({ inputs }: PhaseFormPayload) => {
-      console.log('[PhaseCard] trigger — phase:', phase.id, '| usePerplexity state:', usePerplexity)
       const custom_inputs =
         phase.id === 'ic_selection' && selectedResearchSolutions?.length
           ? { ...inputs, selected_solutions: selectedResearchSolutions }
@@ -126,7 +125,6 @@ export function PhaseCard({
         phase.id === 'research'
           ? { use_perplexity: usePerplexity, custom_inputs }
           : { custom_inputs }
-      console.log('[PhaseCard] payload:', JSON.stringify(payload))
       return runsApi.trigger(projectId, phase.id, payload)
     },
     onSuccess: ({ run_id }) => {

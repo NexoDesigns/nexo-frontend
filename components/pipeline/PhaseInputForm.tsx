@@ -80,7 +80,6 @@ export function PhaseInputForm({
         }
       }
     })
-    console.log('[PhaseInputForm] handleSubmit — usePerplexity prop:', usePerplexity)
     onSubmit({ inputs })
   }
 
