@@ -6,6 +6,7 @@ import type { PhaseId } from '@/types'
 export const PHASE_IDS = {
   research: 'research',
   ic_selection: 'ic_selection',
+  ic_naming_agent: 'ic_naming_agent',
   component_selection: 'component_selection',
   netlist: 'netlist',
 } as const satisfies Record<PhaseId, PhaseId>
@@ -18,6 +19,7 @@ export const N8N_BASE_URL = 'https://nexo-n8n.onrender.com'
 export const N8N_WORKFLOW_IDS: Record<PhaseId, string | null> = {
   research: '1DUWTbxD2PNthXV4',
   ic_selection: 'Ctzas8sxKGpgE0nh',
+  ic_naming_agent: 'DbF6DMysPQgevaOJ',
   component_selection: null, // TODO: create workflow
   netlist: null,             // TODO: create workflow
 }

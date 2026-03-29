@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils'
 import {
   Search,
   Cpu,
+  Tag,
   Package,
   FileCode2,
 } from 'lucide-react'
@@ -44,6 +45,7 @@ function isResearchOutputItem(value: unknown): value is ResearchOutputItem {
 const PHASE_ICONS: Record<PhaseId, React.ReactNode> = {
   research: <Search className="h-3.5 w-3.5" />,
   ic_selection: <Cpu className="h-3.5 w-3.5" />,
+  ic_naming_agent: <Tag className="h-3.5 w-3.5" />,
   component_selection: <Package className="h-3.5 w-3.5" />,
   netlist: <FileCode2 className="h-3.5 w-3.5" />,
 }

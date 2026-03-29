@@ -44,6 +44,7 @@ export interface ProjectRequirements {
 export type PhaseId =
   | 'research'
   | 'ic_selection'
+  | 'ic_naming_agent'
   | 'component_selection'
   | 'netlist'
 

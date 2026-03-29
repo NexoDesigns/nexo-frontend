@@ -64,6 +64,7 @@ export function formatTokens(tokens: number | null): string {
 export const PHASE_ORDER = [
   'research',
   'ic_selection',
+  'ic_naming_agent',
   'component_selection',
   'netlist',
 ] as const
