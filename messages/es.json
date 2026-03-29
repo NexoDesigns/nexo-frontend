@@ -98,7 +98,7 @@
     "executePhase": "Ejecutar fase",
     "reExecute": "Re-ejecutar",
     "executing": "Ejecutando...",
-    "viewOutput": "Ver output",
+    "viewOutput": "Ver output sin procesar",
     "activateRun": "Usar este run",
     "viewInN8n": "Ver en n8n",
     "activeRun": "Run activa",
