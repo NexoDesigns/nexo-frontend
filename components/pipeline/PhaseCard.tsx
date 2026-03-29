@@ -223,6 +223,19 @@ export function PhaseCard({
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
               {t('inputs')}
             </p>
+            {phase.id === 'ic_selection' && (
+              <div className="mb-3 text-xs">
+                {selectedResearchSolutions && selectedResearchSolutions.length > 0 ? (
+                  <p className="text-muted-foreground">
+                    {t('icSelectionDesigns', {
+                      designs: selectedResearchSolutions.map((s) => `${s.id}: ${s.title}`).join(', '),
+                    })}
+                  </p>
+                ) : (
+                  <p className="text-destructive/80 italic">{t('noDesignsSelected')}</p>
+                )}
+              </div>
+            )}
             <PhaseInputForm
               phaseId={phase.id}
               defaultInputs={
@@ -231,6 +244,7 @@ export function PhaseCard({
               usePerplexity={usePerplexity}
               onUsePerplexityChange={setUsePerplexity}
               isLoading={isRunning || triggerMutation.isPending}
+              submitDisabled={phase.id === 'ic_selection' && !selectedResearchSolutions?.length}
               onSubmit={(payload) => triggerMutation.mutate(payload)}
             />
           </div>

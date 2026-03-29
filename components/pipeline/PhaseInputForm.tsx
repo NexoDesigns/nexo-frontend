@@ -23,6 +23,7 @@ interface PhaseInputFormProps {
   usePerplexity?: boolean
   onUsePerplexityChange?: (v: boolean) => void
   isLoading?: boolean
+  submitDisabled?: boolean
   onSubmit: (payload: PhaseFormPayload) => void
   className?: string
 }
@@ -33,6 +34,7 @@ export function PhaseInputForm({
   usePerplexity = true,
   onUsePerplexityChange,
   isLoading = false,
+  submitDisabled = false,
   onSubmit,
   className,
 }: PhaseInputFormProps) {
@@ -82,8 +84,6 @@ export function PhaseInputForm({
     })
     onSubmit({ inputs })
   }
-
-  const hasValidPair = pairs.some((p) => p.key.trim())
 
   return (
     <form onSubmit={handleSubmit} className={cn('space-y-3', className)}>
@@ -178,7 +178,7 @@ export function PhaseInputForm({
         <Button
           type="submit"
           size="sm"
-          disabled={isLoading || !hasValidPair}
+          disabled={isLoading || submitDisabled}
           className="gap-1.5"
         >
           {isLoading ? (

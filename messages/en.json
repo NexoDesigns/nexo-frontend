@@ -122,7 +122,9 @@
     "structuredView": "Structured",
     "selectedDesigns": "Selected designs",
     "selectRunFirst": "Select an active run to view designs",
-    "noDesignsInOutput": "No designs found in this run's output"
+    "noDesignsInOutput": "No designs found in this run's output",
+    "icSelectionDesigns": "Research designs: {designs}",
+    "noDesignsSelected": "No designs selected. Choose minimum one to run the phase."
   },
   "runs": {
     "pending": "Pending",
