@@ -129,7 +129,12 @@
     "icSelectionDesigns": "Diseños seleccionados de research:",
     "noDesignsSelected": "No hay diseños seleccionados. Elige mínimo uno para ejecutar la fase.",
     "icOutputTitle": "Resultado IC Selection",
-    "components": "componentes"
+    "components": "componentes",
+    "viewInput": "Ver input",
+    "notes": "Notas",
+    "notesPlaceholder": "Notas opcionales para este run...",
+    "editNotes": "Editar notas",
+    "saveNotes": "Guardar notas"
   },
   "runs": {
     "pending": "Pendiente",

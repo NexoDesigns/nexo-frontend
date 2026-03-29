@@ -3,18 +3,19 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { runsApi } from '@/lib/api'
 import { RunStatusBadge } from './RunStatusBadge'
 import { RunOutputViewer } from './RunOutputViewer'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/primitives'
-import { Separator } from '@/components/ui/primitives'
 import {
   ChevronDown,
   ChevronRight,
@@ -24,6 +25,7 @@ import {
   AlertCircle,
   ExternalLink,
   Loader2,
+  Pencil,
 } from 'lucide-react'
 import { n8nExecutionUrl } from '@/lib/constants'
 import {
@@ -41,13 +43,119 @@ interface RunsListProps {
   activeRunId?: string
 }
 
+function RunNotesDisplay({
+  run,
+  projectId,
+  phaseId,
+}: {
+  run: PhaseRun
+  projectId: string
+  phaseId: string
+}) {
+  const t = useTranslations('pipeline')
+  const tCommon = useTranslations('common')
+  const queryClient = useQueryClient()
+  const [editOpen, setEditOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  const notesMutation = useMutation({
+    mutationFn: (notes: string) =>
+      runsApi.updateNotes(projectId, phaseId, run.id, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['runs', projectId, phaseId] })
+      setEditOpen(false)
+    },
+  })
+
+  if (!run.notes) return null
+
+  const truncated =
+    run.notes.length > 20 ? `${run.notes.slice(0, 20)}…` : run.notes
+
+  return (
+    <>
+      <TooltipPrimitive.Provider delayDuration={200}>
+        <TooltipPrimitive.Root>
+          <TooltipPrimitive.Trigger asChild>
+            <span
+              className="text-[10px] text-muted-foreground cursor-default shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {t('notes')}: {truncated}
+            </span>
+          </TooltipPrimitive.Trigger>
+          <TooltipPrimitive.Portal>
+            <TooltipPrimitive.Content
+              side="top"
+              sideOffset={6}
+              className="z-50 max-w-[260px] rounded-md border border-border bg-popover px-3 py-2 text-[11px] text-popover-foreground shadow-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <span className="font-medium text-foreground">{t('notes')}</span>
+                <button
+                  className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                  title={t('editNotes')}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDraft(run.notes ?? '')
+                    setEditOpen(true)
+                  }}
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              </div>
+              <p className="text-muted-foreground break-words">{run.notes}</p>
+              <TooltipPrimitive.Arrow className="fill-border" />
+            </TooltipPrimitive.Content>
+          </TooltipPrimitive.Portal>
+        </TooltipPrimitive.Root>
+      </TooltipPrimitive.Provider>
+
+      <Dialog open={editOpen} onOpenChange={(open) => !open && setEditOpen(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('editNotes')}</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="text-xs min-h-[80px] resize-none"
+            rows={4}
+          />
+          <div className="flex justify-end gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditOpen(false)}
+              disabled={notesMutation.isPending}
+            >
+              {tCommon('cancel')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => notesMutation.mutate(draft)}
+              disabled={notesMutation.isPending}
+            >
+              {notesMutation.isPending && (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              )}
+              {t('saveNotes')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
   const t = useTranslations('pipeline')
-  const tRuns = useTranslations('runs')
   const locale = useLocale()
   const queryClient = useQueryClient()
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
-  const [viewingRun, setViewingRun] = useState<PhaseRun | null>(null)
+  const [viewingInputRun, setViewingInputRun] = useState<PhaseRun | null>(null)
+  const [viewingOutputRun, setViewingOutputRun] = useState<PhaseRun | null>(null)
 
   const { data: runs, isLoading } = useQuery({
     queryKey: ['runs', projectId, phaseId],
@@ -93,6 +201,8 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
           const isActive = run.id === activeRunId
           const isExpanded = expandedRunId === run.id
           const isLoadingThisDetail = isExpanded && isDetailLoading
+          const detail = isExpanded ? (expandedRunDetail ?? run) : run
+          const hasOutput = !!(expandedRunDetail?.output_payload ?? run.output_payload)
 
           return (
             <div
@@ -122,6 +232,14 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                     <Star className="h-2.5 w-2.5 fill-primary" />
                     {t('activeRun')}
                   </span>
+                )}
+
+                {run.notes && (
+                  <RunNotesDisplay
+                    run={run}
+                    projectId={projectId}
+                    phaseId={phaseId}
+                  />
                 )}
 
                 <div className="ml-auto flex items-center gap-3 text-[11px] text-muted-foreground">
@@ -157,20 +275,36 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                     </div>
                   )}
 
-                  {/* Output viewer + Actions */}
+                  {/* Actions */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    {run.status === 'completed' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs gap-1.5"
-                        disabled={isLoadingThisDetail || !expandedRunDetail?.output_payload}
-                        onClick={() => expandedRunDetail && setViewingRun(expandedRunDetail)}
-                      >
-                        {isLoadingThisDetail && <Loader2 className="h-3 w-3 animate-spin" />}
-                        {t('viewOutput')}
-                      </Button>
-                    )}
+                    {/* View input */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs gap-1.5"
+                      disabled={isLoadingThisDetail && !expandedRunDetail}
+                      onClick={() => setViewingInputRun(detail)}
+                    >
+                      {isLoadingThisDetail && !expandedRunDetail && (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      )}
+                      {t('viewInput')}
+                    </Button>
+
+                    {/* View output */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs gap-1.5"
+                      disabled={isLoadingThisDetail ? !hasOutput : !hasOutput}
+                      onClick={() => setViewingOutputRun(detail)}
+                    >
+                      {isLoadingThisDetail && !hasOutput && (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      )}
+                      {t('viewOutput')}
+                    </Button>
+
                     {run.status === 'completed' && !isActive && (
                       <Button
                         size="sm"
@@ -209,19 +343,36 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
         })}
       </div>
 
-      {/* Output modal */}
+      {/* Input modal */}
       <Dialog
-        open={!!viewingRun}
-        onOpenChange={(open) => !open && setViewingRun(null)}
+        open={!!viewingInputRun}
+        onOpenChange={(open) => !open && setViewingInputRun(null)}
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {t('output')} — {t('runNumber')}{viewingRun?.run_number}
+              {t('viewInput')} — {t('runNumber')}{viewingInputRun?.run_number}
             </DialogTitle>
           </DialogHeader>
-          {viewingRun?.output_payload && (
-            <RunOutputViewer output={viewingRun.output_payload} />
+          {viewingInputRun?.input_payload && (
+            <RunOutputViewer output={viewingInputRun.input_payload} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Output modal */}
+      <Dialog
+        open={!!viewingOutputRun}
+        onOpenChange={(open) => !open && setViewingOutputRun(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {t('output')} — {t('runNumber')}{viewingOutputRun?.run_number}
+            </DialogTitle>
+          </DialogHeader>
+          {viewingOutputRun?.output_payload && (
+            <RunOutputViewer output={viewingOutputRun.output_payload} />
           )}
         </DialogContent>
       </Dialog>

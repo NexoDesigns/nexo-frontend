@@ -15,6 +15,7 @@ interface KeyValuePair {
 
 export interface PhaseFormPayload {
   inputs: Record<string, unknown>
+  notes?: string
 }
 
 interface PhaseInputFormProps {
@@ -40,6 +41,7 @@ export function PhaseInputForm({
 }: PhaseInputFormProps) {
   const t = useTranslations('pipeline')
   const isResearch = phaseId === 'research'
+  const [notes, setNotes] = useState('')
 
   // Hydrate from defaultInputs (previous run's inputs)
   const [pairs, setPairs] = useState<KeyValuePair[]>(() => {
@@ -82,7 +84,7 @@ export function PhaseInputForm({
         }
       }
     })
-    onSubmit({ inputs })
+    onSubmit({ inputs, notes: notes.trim() || undefined })
   }
 
   return (
@@ -174,7 +176,18 @@ export function PhaseInputForm({
           <Plus className="h-3 w-3" />
           {t('addInput')}
         </Button>
+      </div>
 
+      <Textarea
+        placeholder={t('notesPlaceholder')}
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        disabled={isLoading}
+        className="text-xs min-h-[32px] resize-none leading-relaxed py-1.5"
+        rows={2}
+      />
+
+      <div className="flex items-center justify-end gap-2">
         <Button
           type="submit"
           size="sm"

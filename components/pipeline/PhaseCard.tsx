@@ -96,6 +96,8 @@ export function PhaseCard({
       setActivePollingRunId(null)
       queryClient.invalidateQueries({ queryKey: ['runs', projectId, phase.id] })
       queryClient.invalidateQueries({ queryKey: ['active-runs', projectId] })
+      // Refresh any open run detail (fixes stale output_payload after run completes)
+      queryClient.invalidateQueries({ queryKey: ['run', projectId, phase.id] })
     },
     onError: () => {
       setActivePollingRunId(null)
@@ -139,9 +141,14 @@ export function PhaseCard({
           : { custom_inputs }
       return runsApi.trigger(projectId, phase.id, payload)
     },
-    onSuccess: ({ run_id }) => {
+    onSuccess: ({ run_id }, { notes }) => {
       setActivePollingRunId(run_id)
       queryClient.invalidateQueries({ queryKey: ['runs', projectId, phase.id] })
+      if (notes) {
+        runsApi.updateNotes(projectId, phase.id, run_id, notes).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['runs', projectId, phase.id] })
+        })
+      }
     },
   })
 

@@ -12,6 +12,7 @@ import type {
   TriggerRunPayload,
   TriggerRunResponse,
   ActivateRunResponse,
+  UpdateRunNotesPayload,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -129,6 +130,12 @@ export const runsApi = {
 
   getActiveRuns: (projectId: string) =>
     apiFetch<ProjectActiveRun[]>(`/projects/${projectId}/active-runs`),
+
+  updateNotes: (projectId: string, phaseId: string, runId: string, notes: string) =>
+    apiFetch<{ run_id: string; notes: string }>(
+      `/projects/${projectId}/phases/${phaseId}/runs/${runId}/notes`,
+      { method: 'PATCH', body: JSON.stringify({ notes } satisfies UpdateRunNotesPayload) }
+    ),
 }
 
 // ─── Documents ────────────────────────────────────────────────────────────────

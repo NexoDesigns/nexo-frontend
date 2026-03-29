@@ -88,9 +88,14 @@ export interface PhaseRun {
   error_message: string | null
   duration_seconds: number | null
   llm_tokens_used: number | null
+  notes: string | null
   created_by: string
   created_at: string
   completed_at: string | null
+}
+
+export interface UpdateRunNotesPayload {
+  notes: string
 }
 
 export interface RagContext {

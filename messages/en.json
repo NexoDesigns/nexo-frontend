@@ -129,7 +129,12 @@
     "icSelectionDesigns": "Selected research designs:",
     "noDesignsSelected": "No designs selected. Choose minimum one to run the phase.",
     "icOutputTitle": "IC Selection output",
-    "components": "components"
+    "components": "components",
+    "viewInput": "View input",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes for this run...",
+    "editNotes": "Edit notes",
+    "saveNotes": "Save notes"
   },
   "runs": {
     "pending": "Pending",
