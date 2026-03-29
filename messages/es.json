@@ -95,7 +95,7 @@
     "title": "Pipeline de diseño",
     "research": "Research",
     "ic_selection": "Selección de ICs",
-    "ic_naming_agent": "Nombre de ICs",
+    "ic_naming_agent": "IC Naming Agent",
     "component_selection": "Selección de componentes",
     "netlist": "Netlist",
     "executePhase": "Ejecutar fase",
