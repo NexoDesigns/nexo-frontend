@@ -227,9 +227,10 @@ export function PhaseCard({
               <div className="mb-3 text-xs">
                 {selectedResearchSolutions && selectedResearchSolutions.length > 0 ? (
                   <p className="text-muted-foreground">
-                    {t('icSelectionDesigns', {
-                      designs: selectedResearchSolutions.map((s) => `${s.id}: ${s.title}`).join(', '),
-                    })}
+                    {t('icSelectionDesigns', { designs: '' }).replace(' ', '\u00A0')}
+                    <span className="text-foreground font-medium">
+                      {selectedResearchSolutions.map((s) => `${s.id}: ${s.title}`).join(', ')}
+                    </span>
                   </p>
                 ) : (
                   <p className="text-destructive/80 italic">{t('noDesignsSelected')}</p>
