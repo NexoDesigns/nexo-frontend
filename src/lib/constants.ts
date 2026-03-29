@@ -1,5 +1,9 @@
 import type { PhaseId } from '@/types'
 
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+export const APP_VERSION = '0.1.0'
+
 // ─── Pipeline phases ──────────────────────────────────────────────────────────
 
 // deben ser exactamente iguales a los de supabase. IMPORTANTE!!!

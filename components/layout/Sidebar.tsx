@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { APP_VERSION } from '@/lib/constants'
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, labelKey: 'dashboard' },
@@ -82,9 +83,12 @@ export function Sidebar() {
       <div className="border-t border-sidebar-border p-2 space-y-1">
         <div className="flex items-center justify-between px-2 py-1">
           <span className="text-xs text-muted-foreground truncate max-w-[110px]">
-            {user?.email ?? '—'}
+            {user?.user_metadata?.full_name ?? user?.email ?? '—'}
           </span>
           <LocaleSwitcher />
+        </div>
+        <div className="flex items-center justify-between px-2 py-0.5">
+          <span className="text-[10px] text-muted-foreground/50">v{APP_VERSION}</span>
         </div>
         <Button
           variant="ghost"
