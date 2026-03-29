@@ -67,7 +67,60 @@ function RunNotesDisplay({
     },
   })
 
-  if (!run.notes) return null
+  const editDialog = (
+    <Dialog open={editOpen} onOpenChange={(open) => !open && setEditOpen(false)}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('editNotes')}</DialogTitle>
+        </DialogHeader>
+        <Textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          className="text-xs min-h-[80px] resize-none"
+          rows={4}
+        />
+        <div className="flex justify-end gap-2 mt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditOpen(false)}
+            disabled={notesMutation.isPending}
+          >
+            {tCommon('cancel')}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => notesMutation.mutate(draft)}
+            disabled={notesMutation.isPending}
+          >
+            {notesMutation.isPending && (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            )}
+            {t('saveNotes')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+
+  if (!run.notes) {
+    return (
+      <>
+        <button
+          className="text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
+          title={t('editNotes')}
+          onClick={(e) => {
+            e.stopPropagation()
+            setDraft('')
+            setEditOpen(true)
+          }}
+        >
+          <Pencil className="h-3 w-3" />
+        </button>
+        {editDialog}
+      </>
+    )
+  }
 
   const truncated =
     run.notes.length > 20 ? `${run.notes.slice(0, 20)}…` : run.notes
@@ -111,40 +164,7 @@ function RunNotesDisplay({
           </TooltipPrimitive.Portal>
         </TooltipPrimitive.Root>
       </TooltipPrimitive.Provider>
-
-      <Dialog open={editOpen} onOpenChange={(open) => !open && setEditOpen(false)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t('editNotes')}</DialogTitle>
-          </DialogHeader>
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            className="text-xs min-h-[80px] resize-none"
-            rows={4}
-          />
-          <div className="flex justify-end gap-2 mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditOpen(false)}
-              disabled={notesMutation.isPending}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => notesMutation.mutate(draft)}
-              disabled={notesMutation.isPending}
-            >
-              {notesMutation.isPending && (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              )}
-              {t('saveNotes')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {editDialog}
     </>
   )
 }
@@ -348,7 +368,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
         open={!!viewingInputRun}
         onOpenChange={(open) => !open && setViewingInputRun(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               {t('viewInput')} — {t('runNumber')}{viewingInputRun?.run_number}
@@ -365,7 +385,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
         open={!!viewingOutputRun}
         onOpenChange={(open) => !open && setViewingOutputRun(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               {t('output')} — {t('runNumber')}{viewingOutputRun?.run_number}
