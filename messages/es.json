@@ -123,7 +123,7 @@
     "selectedDesigns": "Diseños seleccionados",
     "selectRunFirst": "Selecciona un run activo para ver los diseños",
     "noDesignsInOutput": "No se encontraron diseños en el output de este run",
-    "icSelectionDesigns": "Diseños research: {designs}",
+    "icSelectionDesigns": "Diseños seleccionados de research: {designs}",
     "noDesignsSelected": "No hay diseños seleccionados. Elige mínimo uno para ejecutar la fase."
   },
   "runs": {
