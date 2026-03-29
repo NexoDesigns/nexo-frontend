@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
   )
 
   
-  console.log('MW user:', user?.email, '| path:', pathname)
+  // console.log('MW user:', user?.email, '| path:', pathname)
 
   if (!user && !isPublicPath) {
     const loginUrl = new URL(`/${currentLocale}/login`, request.url)
