@@ -3,6 +3,7 @@
 export interface Profile {
   id: string
   full_name: string
+  email: string
   role: 'engineer' | 'admin'
   created_at: string
 }

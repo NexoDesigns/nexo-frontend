@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import { runsApi } from '@/lib/api'
+import { runsApi, profilesApi } from '@/lib/api'
 import { RunStatusBadge } from './RunStatusBadge'
 import { RunOutputViewer } from './RunOutputViewer'
 import { Button } from '@/components/ui/button'
@@ -182,6 +182,14 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
     queryFn: () => runsApi.list(projectId, phaseId),
   })
 
+  const { data: profiles } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: () => profilesApi.list(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const profileMap = new Map(profiles?.map((p) => [p.id, p.full_name]) ?? [])
+
   const { data: expandedRunDetail, isLoading: isDetailLoading } = useQuery({
     queryKey: ['run', projectId, phaseId, expandedRunId],
     queryFn: () => runsApi.get(projectId, phaseId, expandedRunId!),
@@ -235,11 +243,17 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
               )}
             >
               {/* Run header row */}
-              <button
-                onClick={() =>
-                  setExpandedRunId(isExpanded ? null : run.id)
-                }
-                className="flex w-full items-center gap-3 px-3 py-2.5 text-left"
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setExpandedRunId(isExpanded ? null : run.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setExpandedRunId(isExpanded ? null : run.id)
+                  }
+                }}
+                className="flex w-full items-center gap-3 px-3 py-2.5 text-left cursor-pointer"
               >
                 <span className="text-xs font-mono text-muted-foreground w-12 shrink-0">
                   {t('runNumber')}{run.run_number}
@@ -273,6 +287,11 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                       {formatTokens(run.llm_tokens_used)}
                     </span>
                   )}
+                  {profileMap.get(run.created_by) && (
+                    <span className="hidden sm:inline">
+                      {profileMap.get(run.created_by)}
+                    </span>
+                  )}
                   <span>{formatRelativeDate(run.created_at, locale)}</span>
                   {isExpanded ? (
                     <ChevronDown className="h-3.5 w-3.5" />
@@ -280,7 +299,7 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                     <ChevronRight className="h-3.5 w-3.5" />
                   )}
                 </div>
-              </button>
+              </div>
 
               {/* Expanded detail */}
               {isExpanded && (

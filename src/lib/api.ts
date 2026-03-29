@@ -6,6 +6,7 @@ import type {
   PhaseRun,
   ProjectActiveRun,
   Document,
+  Profile,
   CreateProjectPayload,
   UpdateProjectPayload,
   UpsertRequirementsPayload,
@@ -184,6 +185,12 @@ export const documentsApi = {
 
   delete: (id: string) =>
     apiFetch<void>(`/documents/${id}`, { method: 'DELETE' }),
+}
+
+// ─── Profiles ─────────────────────────────────────────────────────────────────
+
+export const profilesApi = {
+  list: () => apiFetch<Pick<Profile, 'id' | 'full_name' | 'email'>[]>('/profiles'),
 }
 
 // ─── RAG search ───────────────────────────────────────────────────────────────
