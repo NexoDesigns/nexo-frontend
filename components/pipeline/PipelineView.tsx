@@ -15,6 +15,7 @@ interface PipelineViewProps {
 
 export function PipelineView({ projectId }: PipelineViewProps) {
   const [selectedResearchSolutions, setSelectedResearchSolutions] = useState<ResearchSolution[]>([])
+  const [researchQuerySummary, setResearchQuerySummary] = useState<string | undefined>(undefined)
 
   const { data: phases, isLoading: phasesLoading } = useQuery({
     queryKey: ['phases'],
@@ -61,6 +62,8 @@ export function PipelineView({ projectId }: PipelineViewProps) {
             activeRunId={activeRunMap[phase.id]?.run_id ?? null}
             selectedResearchSolutions={selectedResearchSolutions}
             onSelectedSolutionsChange={setSelectedResearchSolutions}
+            researchQuerySummary={researchQuerySummary}
+            onQuerySummaryChange={setResearchQuerySummary}
           />
           {/* Connector arrow between phases */}
           {idx < sortedPhases.length - 1 && (

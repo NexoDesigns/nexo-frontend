@@ -53,6 +53,8 @@ interface PhaseCardProps {
   activeRunId: string | null
   selectedResearchSolutions?: ResearchSolution[]
   onSelectedSolutionsChange?: (solutions: ResearchSolution[]) => void
+  researchQuerySummary?: string
+  onQuerySummaryChange?: (summary: string) => void
 }
 
 export function PhaseCard({
@@ -61,6 +63,8 @@ export function PhaseCard({
   activeRunId,
   selectedResearchSolutions,
   onSelectedSolutionsChange,
+  researchQuerySummary,
+  onQuerySummaryChange,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
@@ -112,6 +116,10 @@ export function PhaseCard({
     if (allSolutions.length > 0 && onSelectedSolutionsChange) {
       onSelectedSolutionsChange(allSolutions)
     }
+    const summary = items[0]?.query_summary
+    if (summary && onQuerySummaryChange) {
+      onQuerySummaryChange(summary)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRun?.id, phase.id])
 
@@ -119,7 +127,7 @@ export function PhaseCard({
     mutationFn: ({ inputs }: PhaseFormPayload) => {
       const custom_inputs =
         phase.id === 'ic_selection' && selectedResearchSolutions?.length
-          ? { ...inputs, selected_solutions: selectedResearchSolutions }
+          ? { ...inputs, selected_solutions: selectedResearchSolutions, query_summary: researchQuerySummary }
           : inputs
       const payload =
         phase.id === 'research'
