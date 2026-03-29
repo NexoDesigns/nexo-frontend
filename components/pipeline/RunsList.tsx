@@ -254,13 +254,11 @@ export function RunsList({ projectId, phaseId, activeRunId }: RunsListProps) {
                   </span>
                 )}
 
-                {run.notes && (
-                  <RunNotesDisplay
-                    run={run}
-                    projectId={projectId}
-                    phaseId={phaseId}
-                  />
-                )}
+                <RunNotesDisplay
+                  run={run}
+                  projectId={projectId}
+                  phaseId={phaseId}
+                />
 
                 <div className="ml-auto flex items-center gap-3 text-[11px] text-muted-foreground">
                   {run.duration_seconds !== null && (
