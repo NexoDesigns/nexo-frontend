@@ -112,7 +112,7 @@
     "output": "Output",
     "ragContext": "RAG context",
     "usePerplexity": "Use Perplexity",
-    "perplexityTooltip": "When enabled, the AI agent will use Perplexity to search for papers online. Otherwise, it will only use documents uploaded to the internal database.",
+    "perplexityTooltip": "When enabled, the AI agent will use Perplexity to search for papers online. Otherwise, it will only use documents uploaded to the internal database and own AI model knowledge.",
     "addInput": "Add input",
     "inputKey": "Key",
     "inputValue": "Value",
@@ -123,7 +123,7 @@
     "selectedDesigns": "Selected designs",
     "selectRunFirst": "Select an active run to view designs",
     "noDesignsInOutput": "No designs found in this run's output",
-    "icSelectionDesigns": "Research designs: {designs}",
+    "icSelectionDesigns": "Selected research designs: {designs}",
     "noDesignsSelected": "No designs selected. Choose minimum one to run the phase."
   },
   "runs": {

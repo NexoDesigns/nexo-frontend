@@ -112,7 +112,7 @@
     "output": "Output",
     "ragContext": "Contexto RAG",
     "usePerplexity": "Usar Perplexity",
-    "perplexityTooltip": "Si está activado, el agente de IA usará Perplexity para buscar papers online. Si no, solo usará los documentos subidos en la base de datos interna.",
+    "perplexityTooltip": "Si está activado, el agente de IA usará Perplexity para buscar papers online. Si no, solo usará los documentos subidos en la base de datos interna y conocimiento propio del modelo de IA.",
     "addInput": "Añadir input",
     "inputKey": "Clave",
     "inputValue": "Valor",
