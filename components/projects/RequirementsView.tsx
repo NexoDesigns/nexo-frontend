@@ -268,7 +268,7 @@ export function RequirementsView({ projectId, project }: RequirementsViewProps) 
             ) : (
               <>
                 <Play className="h-4 w-4" />
-                {runs && runs.length > 0 ? t('reExecuteWorkflow') : t('executeWorkflow')}
+                {t('executeWorkflow')}
               </>
             )}
           </Button>
