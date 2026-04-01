@@ -92,18 +92,23 @@
     "deleteDescription": "El proyecto pasará a estado archivado. Puedes restaurarlo más tarde."
   },
   "requirements": {
-    "title": "Requisitos del cliente",
-    "electricalTitle": "Eléctricos",
-    "inputVoltageMin": "Voltaje entrada mínimo (V)",
-    "inputVoltageMax": "Voltaje entrada máximo (V)",
-    "outputVoltage": "Voltaje salida (V)",
-    "maxCurrent": "Corriente máxima (A)",
-    "maxRipple": "Rizado máximo (%)",
-    "temperatureRange": "Rango de temperatura",
-    "mainFunction": "Función principal",
-    "constraints": "Restricciones",
-    "kpis": "KPIs a optimizar",
-    "notes": "Notas adicionales"
+    "title": "Requisitos",
+    "inputExcel": "Excel de entrada",
+    "outputExcel": "Excel de salida",
+    "driveUrlLabel": "URL de Google Drive",
+    "driveUrlPlaceholder": "Pega el enlace de Google Drive...",
+    "openInDrive": "Abrir en Drive",
+    "executeWorkflow": "Ejecutar workflow",
+    "reExecuteWorkflow": "Re-ejecutar workflow",
+    "promptLabel": "Prompt adicional",
+    "promptPlaceholder": "Contexto o instrucciones opcionales para el agente de IA...",
+    "noDriveUrl": "No hay archivo vinculado",
+    "noDriveUrlHint": "Edita la URL de arriba para vincular un archivo de Google Drive",
+    "noOutputYet": "Aún no hay archivo de salida",
+    "noOutputHint": "Ejecuta el workflow para generar el Excel de requisitos técnicos",
+    "invalidDriveUrl": "URL de Google Drive inválida",
+    "runBy": "por {name}",
+    "workflowRunning": "Workflow ejecutándose..."
   },
   "pipeline": {
     "title": "Pipeline de diseño",
@@ -187,5 +192,8 @@
   "knowledgeBase": {
     "title": "Base de conocimiento",
     "description": "Documentos globales accesibles por todos los agentes en cualquier proyecto."
+  },
+  "errors": {
+    "invalidDriveUrl": "URL de Google Drive inválida"
   }
 }

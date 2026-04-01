@@ -18,6 +18,7 @@ export interface Project {
   client_name: string | null
   description: string | null
   status: ProjectStatus
+  requirements_input_drive_url: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -160,6 +161,34 @@ export interface UpdateProjectPayload {
   client_name?: string
   description?: string
   status?: ProjectStatus
+  requirements_input_drive_url?: string | null
+}
+
+// ─── Requirements Runs ────────────────────────────────────────────────────────
+
+export interface RequirementsRun {
+  id: string
+  project_id: string
+  run_number: number
+  status: RunStatus
+  custom_prompt: string | null
+  input_drive_url: string | null
+  output_drive_url: string | null
+  output_drive_file_id: string | null
+  error_message: string | null
+  created_by: string
+  created_at: string
+  completed_at: string | null
+  duration_seconds: number | null
+}
+
+export interface TriggerRequirementsRunPayload {
+  custom_prompt?: string
+}
+
+export interface TriggerRequirementsRunResponse {
+  run_id: string
+  status: 'running'
 }
 
 export interface UpsertRequirementsPayload {

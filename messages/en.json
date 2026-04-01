@@ -92,18 +92,23 @@
     "deleteDescription": "The project will be archived. You can restore it later."
   },
   "requirements": {
-    "title": "Client requirements",
-    "electricalTitle": "Electrical",
-    "inputVoltageMin": "Min input voltage (V)",
-    "inputVoltageMax": "Max input voltage (V)",
-    "outputVoltage": "Output voltage (V)",
-    "maxCurrent": "Max current (A)",
-    "maxRipple": "Max ripple (%)",
-    "temperatureRange": "Temperature range",
-    "mainFunction": "Main function",
-    "constraints": "Constraints",
-    "kpis": "KPIs to optimize",
-    "notes": "Additional notes"
+    "title": "Requirements",
+    "inputExcel": "Input Excel",
+    "outputExcel": "Output Excel",
+    "driveUrlLabel": "Google Drive URL",
+    "driveUrlPlaceholder": "Paste Google Drive link...",
+    "openInDrive": "Open in Drive",
+    "executeWorkflow": "Run workflow",
+    "reExecuteWorkflow": "Re-run workflow",
+    "promptLabel": "Additional prompt",
+    "promptPlaceholder": "Optional context or instructions for the AI agent...",
+    "noDriveUrl": "No file linked yet",
+    "noDriveUrlHint": "Edit the URL above to link a Google Drive file",
+    "noOutputYet": "No output file yet",
+    "noOutputHint": "Run the workflow to generate the technical requirements Excel",
+    "invalidDriveUrl": "Invalid Google Drive URL",
+    "runBy": "by {name}",
+    "workflowRunning": "Workflow running..."
   },
   "pipeline": {
     "title": "Design pipeline",
@@ -183,5 +188,8 @@
   "knowledgeBase": {
     "title": "Knowledge Base",
     "description": "Global documents accessible by all agents across any project."
+  },
+  "errors": {
+    "invalidDriveUrl": "Invalid Google Drive URL"
   }
 }

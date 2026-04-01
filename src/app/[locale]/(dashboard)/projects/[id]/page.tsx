@@ -1,12 +1,12 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use } from 'react'
 import { useTranslations } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
 import { projectsApi } from '@/lib/api'
 import { Header } from '@/components/layout/Header'
 import { PipelineView } from '@/components/pipeline/PipelineView'
-import { RequirementsForm } from '@/components/projects/RequirementsForm'
+import { RequirementsView } from '@/components/projects/RequirementsView'
 import { DocumentList } from '@/components/documents/DocumentList'
 import { DocumentUpload } from '@/components/documents/DocumentUpload'
 import { documentsApi } from '@/lib/api'
@@ -17,7 +17,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/primit
 import { Separator } from '@/components/ui/primitives'
 import { Link } from '@/i18n/routing'
 import { ArrowLeft, GitBranch, Settings2, FileText } from 'lucide-react'
-import { useLocale } from 'next-intl'
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>
@@ -36,16 +35,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const tStatus = useTranslations('status')
   const tCommon = useTranslations('common')
   const tDocuments = useTranslations('documents')
-  const locale = useLocale()
-
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: () => projectsApi.get(id),
-  })
-
-  const { data: requirements, isLoading: reqLoading } = useQuery({
-    queryKey: ['requirements', id],
-    queryFn: () => projectsApi.getRequirements(id),
   })
 
   const { data: documents, isLoading: docsLoading } = useQuery({
@@ -130,21 +122,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           </TabsContent>
 
           {/* Requirements tab */}
-          <TabsContent value="requirements" className="flex-1 overflow-y-auto p-6 mt-0">
-            <div className="max-w-2xl">
-              {reqLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-10 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <RequirementsForm
-                  projectId={id}
-                  initialData={requirements ?? null}
-                />
-              )}
-            </div>
+          <TabsContent value="requirements" className="flex-1 overflow-hidden mt-0">
+            <RequirementsView projectId={id} project={project} />
           </TabsContent>
 
           {/* Documents tab */}

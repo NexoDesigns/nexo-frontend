@@ -14,6 +14,9 @@ import type {
   TriggerRunResponse,
   ActivateRunResponse,
   UpdateRunNotesPayload,
+  RequirementsRun,
+  TriggerRequirementsRunPayload,
+  TriggerRequirementsRunResponse,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -191,6 +194,24 @@ export const documentsApi = {
 
 export const profilesApi = {
   list: () => apiFetch<Pick<Profile, 'id' | 'full_name' | 'email'>[]>('/profiles'),
+}
+
+// ─── Requirements runs ────────────────────────────────────────────────────────
+
+export const requirementsRunsApi = {
+  trigger: (projectId: string, payload: TriggerRequirementsRunPayload) =>
+    apiFetch<TriggerRequirementsRunResponse>(
+      `/projects/${projectId}/requirements/run`,
+      { method: 'POST', body: JSON.stringify(payload) }
+    ),
+
+  list: (projectId: string) =>
+    apiFetch<RequirementsRun[]>(`/projects/${projectId}/requirements/runs`),
+
+  get: (projectId: string, runId: string) =>
+    apiFetch<RequirementsRun>(
+      `/projects/${projectId}/requirements/runs/${runId}`
+    ),
 }
 
 // ─── RAG search ───────────────────────────────────────────────────────────────

@@ -1,7 +1,14 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(xargs cat:*)",
+      "Read(//c/Users/Usuario/Documents/**)",
+      "Bash(node -e \"const p = require\\(''./node_modules/react-resizable-panels/package.json''\\); console.log\\(p.version, p.exports ? Object.keys\\(p.exports\\) : p.main\\)\")",
+      "Bash(node -e \"const m = require\\(''react-resizable-panels''\\); console.log\\(Object.keys\\(m\\)\\)\")"
+    ],
     "additionalDirectories": [
-      "C:\\Users\\Usuario\\.claude"
+      "C:\\Users\\Usuario\\.claude",
+      "c:\\Users\\Usuario\\Documents\\Nexo Design\\nexo-frontend\\components\\projects"
     ]
   }
 }
