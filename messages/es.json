@@ -97,6 +97,7 @@
     "outputExcel": "Excel de salida",
     "driveUrlLabel": "URL de Google Drive",
     "driveUrlPlaceholder": "Pega el enlace de Google Drive...",
+    "driveNamePlaceholder": "Nombre del archivo (ej. requisitos_v2.xlsx)",
     "openInDrive": "Abrir en Drive",
     "executeWorkflow": "Ejecutar workflow",
     "reExecuteWorkflow": "Re-ejecutar workflow",

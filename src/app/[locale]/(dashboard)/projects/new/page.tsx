@@ -6,7 +6,6 @@ import { useMutation } from '@tanstack/react-query'
 import { projectsApi } from '@/lib/api'
 import { useRouter } from '@/i18n/routing'
 import { Header } from '@/components/layout/Header'
-import { RequirementsForm } from '@/components/projects/RequirementsForm'
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/input'
 import { Separator } from '@/components/ui/primitives'
@@ -20,8 +19,6 @@ export default function NewProjectPage() {
   const [name, setName] = useState('')
   const [clientName, setClientName] = useState('')
   const [description, setDescription] = useState('')
-  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
-
   const createMutation = useMutation({
     mutationFn: () =>
       projectsApi.create({
@@ -30,7 +27,7 @@ export default function NewProjectPage() {
         description: description.trim() || undefined,
       }),
     onSuccess: (project) => {
-      setCreatedProjectId(project.id)
+      router.push(`/projects/${project.id}`)
     },
   })
 
@@ -38,33 +35,6 @@ export default function NewProjectPage() {
     e.preventDefault()
     if (!name.trim()) return
     createMutation.mutate()
-  }
-
-  // After project is created, show requirements form
-  if (createdProjectId) {
-    return (
-      <div className="flex flex-col h-full animate-fade-in">
-        <Header
-          title="Requisitos del proyecto"
-          description="Define los requisitos eléctricos. Puedes editarlos más adelante."
-          actions={
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/projects/${createdProjectId}`)}
-            >
-              Omitir por ahora
-            </Button>
-          }
-        />
-        <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto w-full">
-          <RequirementsForm
-            projectId={createdProjectId}
-            onSaved={() => router.push(`/projects/${createdProjectId}`)}
-          />
-        </div>
-      </div>
-    )
   }
 
   return (
