@@ -37,3 +37,16 @@ export function n8nExecutionUrl(
   if (!workflowId || !executionId) return null
   return `${N8N_BASE_URL}/workflow/${workflowId}/executions/${executionId}`
 }
+
+/** Workflow ID in n8n for the requirements workflow. */
+export const N8N_REQUIREMENTS_WORKFLOW_ID: string | null = "uADgFhixX28peR3k"
+
+/** Returns the n8n URL for a requirements run.
+ *  Links to the specific execution if available, otherwise to the workflow page. */
+export function n8nRequirementsUrl(executionId: string | null): string | null {
+  if (!N8N_REQUIREMENTS_WORKFLOW_ID) return null
+  if (executionId) {
+    return `${N8N_BASE_URL}/workflow/${N8N_REQUIREMENTS_WORKFLOW_ID}/executions/${executionId}`
+  }
+  return `${N8N_BASE_URL}/workflow/${N8N_REQUIREMENTS_WORKFLOW_ID}`
+}

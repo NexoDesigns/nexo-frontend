@@ -19,6 +19,7 @@ export interface Project {
   description: string | null
   status: ProjectStatus
   requirements_input_drive_url: string | null
+  requirements_input_drive_name: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -162,6 +163,7 @@ export interface UpdateProjectPayload {
   description?: string
   status?: ProjectStatus
   requirements_input_drive_url?: string | null
+  requirements_input_drive_name?: string | null
 }
 
 // ─── Requirements Runs ────────────────────────────────────────────────────────
@@ -175,6 +177,7 @@ export interface RequirementsRun {
   input_drive_url: string | null
   output_drive_url: string | null
   output_drive_file_id: string | null
+  n8n_execution_id: string | null
   error_message: string | null
   created_by: string
   created_at: string
