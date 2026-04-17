@@ -249,10 +249,13 @@ export const normativesApi = {
     apiFetch<{ url: string }>(`/normatives/${documentId}/download-url`),
 
   /** Trigger the suggest workflow for a project (creates a normatives run). */
-  triggerSuggest: (projectId: string) =>
+  triggerSuggest: (projectId: string, extraContext?: string) =>
     apiFetch<{ run_id: string; status: 'running' }>(
       `/projects/${projectId}/normatives/suggest`,
-      { method: 'POST' }
+      {
+        method: 'POST',
+        body: JSON.stringify({ extra_context: extraContext ?? null }),
+      }
     ),
 
   /** Get the active normatives (confirmed + not_applicable) for a project. */

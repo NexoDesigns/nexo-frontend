@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
+import { Textarea } from '@/components/ui/input'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Group, Panel, Separator as PanelSeparator } from 'react-resizable-panels'
 import { normativesApi, normativesRunsApi } from '@/lib/api'
@@ -46,6 +47,8 @@ function ContextBadge({ label, value }: { label: string; value: string | null })
 
 export function NormativasView({ projectId, project }: NormativasViewProps) {
   const t = useTranslations('normativas')
+  const tReq = useTranslations('requirements')
+  const tCommon = useTranslations('common')
   const tPipeline = useTranslations('pipeline')
   const queryClient = useQueryClient()
 
@@ -53,6 +56,7 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
   const [currentRun, setCurrentRun] = useState<NormativesRun | null>(null)
+  const [extraContext, setExtraContext] = useState('')
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ── Project normatives (confirmed + discarded) ─────────────────────────────
@@ -98,7 +102,7 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
 
   // ── Trigger mutation ───────────────────────────────────────────────────────
   const triggerMutation = useMutation({
-    mutationFn: () => normativesApi.triggerSuggest(projectId),
+    mutationFn: () => normativesApi.triggerSuggest(projectId, extraContext.trim() || undefined),
     onSuccess: ({ run_id }) => {
       setActivePollingRunId(run_id)
       setSelectedRunId(run_id)
@@ -146,41 +150,40 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
           <ContextBadge label={t('clientType')} value={project.normative_client_type} />
           <ContextBadge label={t('userAge')} value={project.normative_user_age_range} />
           <ContextBadge label={t('countries')} value={countriesDisplay} />
-          {project.normative_extra_context && (
-            <ContextBadge label={t('extra')} value={project.normative_extra_context} />
-          )}
         </div>
 
-        {/* Extra context display + execute button */}
-        <div className="flex items-center gap-3">
-          {project.normative_extra_context ? (
-            <p className="text-xs text-muted-foreground flex-1 line-clamp-1">
-              <span className="font-medium text-foreground">{t('extraContextLabel')}: </span>
-              {project.normative_extra_context}
-            </p>
-          ) : (
-            <span className="text-xs text-muted-foreground italic flex-1">
-              {t('noExtraContext')}
-            </span>
-          )}
-
-          <Button
-            className="gap-2 shrink-0"
-            onClick={() => triggerMutation.mutate()}
-            disabled={isRunning || triggerMutation.isPending}
-          >
-            {isRunning || triggerMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t('analyzing')}
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4" />
-                {t('executeWorkflow')}
-              </>
-            )}
-          </Button>
+        {/* Extra context prompt + execute button */}
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            {tReq('promptLabel')}
+            <span className="normal-case font-normal ml-1">({tCommon('optional')})</span>
+          </p>
+          <div className="flex items-start gap-3">
+            <Textarea
+              value={extraContext}
+              onChange={(e) => setExtraContext(e.target.value)}
+              placeholder={tReq('promptPlaceholder')}
+              className="text-xs min-h-[60px] resize-none flex-1"
+              disabled={isRunning}
+            />
+            <Button
+              className="gap-2 shrink-0"
+              onClick={() => triggerMutation.mutate()}
+              disabled={isRunning || triggerMutation.isPending}
+            >
+              {isRunning || triggerMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('analyzing')}
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  {t('executeWorkflow')}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Collapsed-column run strip */}
