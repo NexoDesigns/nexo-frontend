@@ -7,6 +7,8 @@ import { projectsApi } from '@/lib/api'
 import { Header } from '@/components/layout/Header'
 import { PipelineView } from '@/components/pipeline/PipelineView'
 import { RequirementsView } from '@/components/projects/RequirementsView'
+import { DescripcionView } from '@/components/projects/DescripcionView'
+import { NormativasView } from '@/components/projects/NormativasView'
 import { DocumentList } from '@/components/documents/DocumentList'
 import { DocumentUpload } from '@/components/documents/DocumentUpload'
 import { documentsApi } from '@/lib/api'
@@ -16,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/primitives'
 import { Separator } from '@/components/ui/primitives'
 import { Link } from '@/i18n/routing'
-import { ArrowLeft, GitBranch, Settings2, FileText } from 'lucide-react'
+import { ArrowLeft, GitBranch, Settings2, FileText, Info, Shield } from 'lucide-react'
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>
@@ -35,6 +37,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const tStatus = useTranslations('status')
   const tCommon = useTranslations('common')
   const tDocuments = useTranslations('documents')
+  const tDescripcion = useTranslations('descripcion')
+  const tNormativas = useTranslations('normativas')
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['project', id],
     queryFn: () => projectsApi.get(id),
@@ -93,6 +97,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <div className="border-b border-border px-6 pt-3">
             <TabsList className="bg-transparent gap-0 h-auto p-0 rounded-none">
               <TabsTrigger
+                value="descripcion"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
+              >
+                <Info className="h-3.5 w-3.5" />
+                {tDescripcion('title')}
+              </TabsTrigger>
+              <TabsTrigger
                 value="pipeline"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
               >
@@ -107,6 +118,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 {t('requirements')}
               </TabsTrigger>
               <TabsTrigger
+                value="normativas"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
+              >
+                <Shield className="h-3.5 w-3.5" />
+                {tNormativas('title')}
+              </TabsTrigger>
+              <TabsTrigger
                 value="documents"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
               >
@@ -116,6 +134,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             </TabsList>
           </div>
 
+          {/* Descripcion tab */}
+          <TabsContent value="descripcion" className="flex-1 overflow-y-auto mt-0">
+            <DescripcionView projectId={id} project={project} />
+          </TabsContent>
+
           {/* Pipeline tab */}
           <TabsContent value="pipeline" className="flex-1 overflow-y-auto p-6 mt-0">
             <PipelineView projectId={id} />
@@ -124,6 +147,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           {/* Requirements tab */}
           <TabsContent value="requirements" className="flex-1 overflow-hidden mt-0">
             <RequirementsView projectId={id} project={project} />
+          </TabsContent>
+
+          {/* Normativas tab */}
+          <TabsContent value="normativas" className="flex-1 overflow-hidden mt-0">
+            <NormativasView projectId={id} project={project} />
           </TabsContent>
 
           {/* Documents tab */}

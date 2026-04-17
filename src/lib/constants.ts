@@ -50,3 +50,52 @@ export function n8nRequirementsUrl(executionId: string | null): string | null {
   }
   return `${N8N_BASE_URL}/workflow/${N8N_REQUIREMENTS_WORKFLOW_ID}`
 }
+
+// ─── Normativas ───────────────────────────────────────────────────────────────
+
+/** Workflow ID in n8n for the normativas suggest workflow. */
+export const N8N_NORMATIVES_WORKFLOW_ID: string | null = null // TODO: set when created
+
+/** Returns the n8n URL for a normativas run. */
+export function n8nNormativesUrl(executionId: string | null): string | null {
+  if (!N8N_NORMATIVES_WORKFLOW_ID) return null
+  if (executionId) {
+    return `${N8N_BASE_URL}/workflow/${N8N_NORMATIVES_WORKFLOW_ID}/executions/${executionId}`
+  }
+  return `${N8N_BASE_URL}/workflow/${N8N_NORMATIVES_WORKFLOW_ID}`
+}
+
+export const NORMATIVE_INDUSTRIES = [
+  'consumer_electronics',
+  'industrial',
+  'medical',
+  'automotive',
+] as const
+export type NormativeIndustry = (typeof NORMATIVE_INDUSTRIES)[number]
+
+export const NORMATIVE_CLIENT_TYPES = [
+  'consumer',
+  'professional',
+  'child',
+] as const
+export type NormativeClientType = (typeof NORMATIVE_CLIENT_TYPES)[number]
+
+export const NORMATIVE_AGE_RANGES = [
+  'all_ages',
+  'adult_only',
+  'children',
+] as const
+export type NormativeAgeRange = (typeof NORMATIVE_AGE_RANGES)[number]
+
+/** ISO 3166-1 alpha-2 codes offered in the country picker. Extend as needed. */
+export const NORMATIVE_COUNTRIES = [
+  { code: 'EU', label: 'EU (all)' },
+  { code: 'ES', label: 'Spain' },
+  { code: 'DE', label: 'Germany' },
+  { code: 'FR', label: 'France' },
+  { code: 'GB', label: 'UK' },
+  { code: 'IT', label: 'Italy' },
+  { code: 'US', label: 'USA' },
+  { code: 'CA', label: 'Canada' },
+] as const
+export type NormativeCountryCode = (typeof NORMATIVE_COUNTRIES)[number]['code']

@@ -17,6 +17,10 @@ import type {
   RequirementsRun,
   TriggerRequirementsRunPayload,
   TriggerRequirementsRunResponse,
+  NormativeDocument,
+  ProjectNormative,
+  UpdateProjectNormativesPayload,
+  NormativesRun,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -227,4 +231,46 @@ export const ragApi = {
       '/rag/search',
       { method: 'POST', body: JSON.stringify(payload) }
     ),
+}
+
+// ─── Normatives ───────────────────────────────────────────────────────────────
+
+export const normativesApi = {
+  /** List all normative documents in the repository (for search/browse). */
+  list: (params?: { industry?: string; country?: string }) => {
+    const qs = new URLSearchParams(
+      Object.entries(params ?? {}).filter(([, v]) => v != null) as [string, string][]
+    ).toString()
+    return apiFetch<NormativeDocument[]>(`/normatives${qs ? `?${qs}` : ''}`)
+  },
+
+  /** Get a signed/public download URL for a normative PDF. */
+  getDownloadUrl: (documentId: string) =>
+    apiFetch<{ url: string }>(`/normatives/${documentId}/download-url`),
+
+  /** Trigger the suggest workflow for a project (creates a normatives run). */
+  triggerSuggest: (projectId: string) =>
+    apiFetch<{ run_id: string; status: 'running' }>(
+      `/projects/${projectId}/normatives/suggest`,
+      { method: 'POST' }
+    ),
+
+  /** Get the active normatives (confirmed + not_applicable) for a project. */
+  getProjectNormatives: (projectId: string) =>
+    apiFetch<ProjectNormative[]>(`/projects/${projectId}/normatives`),
+
+  /** Overwrite the full project normatives selection. */
+  updateProjectNormatives: (projectId: string, payload: UpdateProjectNormativesPayload) =>
+    apiFetch<ProjectNormative[]>(`/projects/${projectId}/normatives`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+}
+
+export const normativesRunsApi = {
+  list: (projectId: string) =>
+    apiFetch<NormativesRun[]>(`/projects/${projectId}/normatives/runs`),
+
+  get: (projectId: string, runId: string) =>
+    apiFetch<NormativesRun>(`/projects/${projectId}/normatives/runs/${runId}`),
 }

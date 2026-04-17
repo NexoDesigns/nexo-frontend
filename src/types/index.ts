@@ -20,6 +20,12 @@ export interface Project {
   status: ProjectStatus
   requirements_input_drive_url: string | null
   requirements_input_drive_name: string | null
+  // Normative context fields
+  normative_industry: string | null
+  normative_client_type: string | null
+  normative_user_age_range: string | null
+  normative_target_countries: string[] | null
+  normative_extra_context: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -159,11 +165,16 @@ export interface CreateProjectPayload {
 
 export interface UpdateProjectPayload {
   name?: string
-  client_name?: string
-  description?: string
+  client_name?: string | null
+  description?: string | null
   status?: ProjectStatus
   requirements_input_drive_url?: string | null
   requirements_input_drive_name?: string | null
+  normative_industry?: string | null
+  normative_client_type?: string | null
+  normative_user_age_range?: string | null
+  normative_target_countries?: string[] | null
+  normative_extra_context?: string | null
 }
 
 // ─── Requirements Runs ────────────────────────────────────────────────────────
@@ -239,4 +250,69 @@ export interface PaginatedResponse<T> {
 export interface ProjectWithStatus extends Project {
   active_runs: Partial<Record<PhaseId, PhaseRun>>
   requirements: ProjectRequirements | null
+}
+
+// ─── Normatives ───────────────────────────────────────────────────────────────
+
+export interface NormativeMetadata {
+  standard_code: string
+  standard_version: string | null
+  issuing_body: string
+  applicable_industries: string[]
+  applicable_countries: string[]
+  applicable_user_types: string[]
+  scope_summary: string | null
+  source_url: string | null
+  scraped_at: string | null
+}
+
+export interface NormativeDocument {
+  id: string
+  name: string
+  storage_path: string
+  embedding_status: EmbeddingStatus
+  metadata: NormativeMetadata
+  created_at: string
+}
+
+export type NormativeRelevance = 'mandatory' | 'recommended'
+
+export interface NormativeSuggestion {
+  document_id: string
+  standard_code: string
+  scope_summary: string | null
+  relevance: NormativeRelevance
+  relevance_reason: string
+  score?: number
+  document?: NormativeDocument
+}
+
+export type ProjectNormativeStatus = 'confirmed' | 'not_applicable'
+
+export interface ProjectNormative {
+  project_id: string
+  document_id: string
+  status: ProjectNormativeStatus
+  selection_source: 'suggested_auto' | 'added_manual' | 'suggested_confirmed'
+  selected_by: string
+  selected_at: string
+  document?: NormativeDocument
+}
+
+export interface NormativesRun {
+  id: string
+  project_id: string
+  run_number: number
+  status: RunStatus
+  n8n_execution_id: string | null
+  error_message: string | null
+  created_by: string
+  created_at: string
+  completed_at: string | null
+  duration_seconds: number | null
+  suggestions?: NormativeSuggestion[]
+}
+
+export interface UpdateProjectNormativesPayload {
+  normatives: Array<{ document_id: string; status: ProjectNormativeStatus }>
 }
