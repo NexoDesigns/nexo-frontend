@@ -129,7 +129,6 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
   const [countries, setCountries] = useState<string[]>(
     project.normative_target_countries ?? []
   )
-  const [extraContext, setExtraContext] = useState(project.normative_extra_context ?? '')
 
   const [saved, setSaved] = useState(false)
 
@@ -157,7 +156,6 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
         normative_client_type: clientType || null,
         normative_user_age_range: ageRange || null,
         normative_target_countries: countries.length > 0 ? countries : null,
-        normative_extra_context: extraContext.trim() || null,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] })
@@ -243,16 +241,6 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
           <div className="space-y-1.5">
             <FieldLabel>{t('targetCountries')}</FieldLabel>
             <CountryPicker selected={countries} onChange={setCountries} />
-          </div>
-
-          <div className="space-y-1">
-            <FieldLabel hint={tCommon('optional')}>{t('extraContext')}</FieldLabel>
-            <Textarea
-              value={extraContext}
-              onChange={(e) => setExtraContext(e.target.value)}
-              placeholder={t('extraContextPlaceholder')}
-              className="text-xs min-h-[80px] resize-none"
-            />
           </div>
         </div>
       </div>
