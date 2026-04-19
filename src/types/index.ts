@@ -132,6 +132,7 @@ export interface ProjectActiveRun {
 
 export type DocumentType =
   | 'datasheet'
+  | 'normative'
   | 'manufacturer_list'
   | 'project_output'
   | 'design_note'

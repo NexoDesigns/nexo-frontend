@@ -16,6 +16,7 @@ const MAX_SIZE_MB = 50
 
 const DOCUMENT_TYPES: Document['type'][] = [
   'datasheet',
+  'normative',
   'manufacturer_list',
   'design_note',
   'reference_schematic',
