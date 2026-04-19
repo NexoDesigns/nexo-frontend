@@ -172,6 +172,7 @@
     "documentType": "Tipo",
     "embeddingStatus": "Estado de indexación",
     "datasheet": "Datasheet",
+    "normative": "Normativa",
     "manufacturer_list": "Lista de fabricantes",
     "project_output": "Output de proyecto",
     "design_note": "Nota de diseño",
