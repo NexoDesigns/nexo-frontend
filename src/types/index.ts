@@ -267,6 +267,16 @@ export interface NormativeMetadata {
   scraped_at: string | null
 }
 
+export interface NormativeUploadMetadata {
+  standard_code: string
+  standard_version?: string
+  issuing_body?: string
+  applicable_industries?: string[]
+  applicable_countries?: string[]
+  applicable_user_types?: string[]
+  scope_summary?: string
+}
+
 export interface NormativeDocument {
   id: string
   name: string

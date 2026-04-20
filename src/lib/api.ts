@@ -21,6 +21,7 @@ import type {
   NormativeSuggestion,
   UpdateProjectNormativesPayload,
   NormativesRun,
+  NormativeUploadMetadata,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -163,15 +164,7 @@ export const documentsApi = {
   upload: async (file: File, meta: {
     type: Document['type']
     project_id?: string
-    normative_metadata?: {
-      standard_code: string
-      standard_version?: string
-      issuing_body?: string
-      applicable_industries?: string[]
-      applicable_countries?: string[]
-      applicable_user_types?: string[]
-      scope_summary?: string
-    }
+    normative_metadata?: NormativeUploadMetadata
   }) => {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
