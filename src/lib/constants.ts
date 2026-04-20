@@ -54,7 +54,7 @@ export function n8nRequirementsUrl(executionId: string | null): string | null {
 // ─── Normativas ───────────────────────────────────────────────────────────────
 
 /** Workflow ID in n8n for the normativas suggest workflow. */
-export const N8N_NORMATIVES_WORKFLOW_ID: string | null = null // TODO: set when created
+export const N8N_NORMATIVES_WORKFLOW_ID: string | null = "lGTZD0bYPYURhUCb" // TODO: change to the real one once it's created
 
 /** Returns the n8n URL for a normativas run. */
 export function n8nNormativesUrl(executionId: string | null): string | null {
