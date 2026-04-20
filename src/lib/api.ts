@@ -163,6 +163,15 @@ export const documentsApi = {
   upload: async (file: File, meta: {
     type: Document['type']
     project_id?: string
+    normative_metadata?: {
+      standard_code: string
+      standard_version?: string
+      issuing_body?: string
+      applicable_industries?: string[]
+      applicable_countries?: string[]
+      applicable_user_types?: string[]
+      scope_summary?: string
+    }
   }) => {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
@@ -171,6 +180,9 @@ export const documentsApi = {
     formData.append('file', file)
     formData.append('document_type', meta.type)
     if (meta.project_id) formData.append('project_id', meta.project_id)
+    if (meta.normative_metadata) {
+      formData.append('normative_metadata', JSON.stringify(meta.normative_metadata))
+    }
 
     const res = await fetch(`${BASE_URL}/document/upload`, {
       method: 'POST',
@@ -178,7 +190,6 @@ export const documentsApi = {
         ...(session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : {}),
-        // No Content-Type — let browser set multipart boundary
       },
       body: formData,
     })
@@ -193,6 +204,9 @@ export const documentsApi = {
 
   delete: (id: string) =>
     apiFetch<void>(`/documents/${id}`, { method: 'DELETE' }),
+
+  getDownloadUrl: (id: string) =>
+    apiFetch<{ url: string }>(`/documents/${id}/download-url`),
 }
 
 // ─── Profiles ─────────────────────────────────────────────────────────────────
