@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Textarea } from '@/components/ui/input'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -10,8 +10,6 @@ import { NormativasRunsList } from '@/components/projects/NormativasRunsList'
 import { NormativeSuggestionCard } from '@/components/projects/NormativeSuggestionCard'
 import { NormativesSearchPanel } from '@/components/projects/NormativesSearchPanel'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { RunStatusBadge } from '@/components/pipeline/RunStatusBadge'
 import {
   Play,
   Loader2,
@@ -20,8 +18,7 @@ import {
   PanelLeftOpen,
   MapPin,
 } from 'lucide-react'
-import { isTerminalStatus } from '@/lib/utils'
-import type { Project, NormativesRun, ProjectNormative, ProjectNormativeStatus } from '@/types'
+import type { Project, NormativeSuggestion } from '@/types'
 
 interface NormativasViewProps {
   projectId: string
@@ -49,20 +46,21 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
   const t = useTranslations('normativas')
   const tReq = useTranslations('requirements')
   const tCommon = useTranslations('common')
-  const tPipeline = useTranslations('pipeline')
   const queryClient = useQueryClient()
 
   const [leftCollapsed, setLeftCollapsed] = useState(false)
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
-  const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
-  const [currentRun, setCurrentRun] = useState<NormativesRun | null>(null)
+  const [directSuggestions, setDirectSuggestions] = useState<NormativeSuggestion[]>([])
   const [extraContext, setExtraContext] = useState('')
-  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ── Project normatives (confirmed + discarded) ─────────────────────────────
   const { data: projectNormatives = [] } = useQuery({
     queryKey: ['project-normatives', projectId],
-    queryFn: () => normativesApi.getProjectNormatives(projectId),
+    queryFn: async () => {
+      const data = await normativesApi.getProjectNormatives(projectId)
+      console.log('[NormativasView] getProjectNormatives:', data)
+      return data
+    },
   })
 
   // ── Selected run details (for suggestions) ────────────────────────────────
@@ -72,70 +70,46 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
     enabled: !!selectedRunId,
   })
 
-  // ── Polling ────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!activePollingRunId) return
-
-    const poll = async () => {
-      try {
-        const run = await normativesRunsApi.get(projectId, activePollingRunId)
-        setCurrentRun(run)
-        if (isTerminalStatus(run.status)) {
-          clearInterval(pollingIntervalRef.current!)
-          pollingIntervalRef.current = null
-          setActivePollingRunId(null)
-          queryClient.invalidateQueries({ queryKey: ['normativas-runs', projectId] })
-          setSelectedRunId(run.id)
-        }
-      } catch {
-        clearInterval(pollingIntervalRef.current!)
-        pollingIntervalRef.current = null
-        setActivePollingRunId(null)
-      }
-    }
-
-    pollingIntervalRef.current = setInterval(poll, 5000)
-    return () => {
-      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current)
-    }
-  }, [activePollingRunId, projectId, queryClient])
-
   // ── Trigger mutation ───────────────────────────────────────────────────────
   const triggerMutation = useMutation({
     mutationFn: () => normativesApi.triggerSuggest(projectId, extraContext.trim() || undefined),
-    onSuccess: ({ run_id }) => {
-      setActivePollingRunId(run_id)
-      setSelectedRunId(run_id)
-      queryClient.invalidateQueries({ queryKey: ['normativas-runs', projectId] })
+    onSuccess: (data) => {
+      console.log('[NormativasView] triggerSuggest response:', data)
+      const suggestions = Array.isArray(data)
+        ? data
+        : Array.isArray((data as Record<string, unknown>)?.suggestions)
+          ? (data as { suggestions: NormativeSuggestion[] }).suggestions
+          : []
+      setDirectSuggestions(suggestions)
+      setSelectedRunId(null)
+    },
+    onError: (error) => {
+      console.error('[NormativasView] triggerSuggest error:', error)
     },
   })
 
   // ── Update normatives mutation ─────────────────────────────────────────────
   const updateNormativesMutation = useMutation({
-    mutationFn: (normatives: Array<{ document_id: string; status: ProjectNormativeStatus }>) =>
-      normativesApi.updateProjectNormatives(projectId, { normatives }),
+    mutationFn: (document_ids: string[]) =>
+      normativesApi.updateProjectNormatives(projectId, { document_ids }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-normatives', projectId] })
     },
   })
 
-  const handleConfirm = (documentId: string, status: ProjectNormativeStatus) => {
-    const existing = projectNormatives
-      .filter((n: ProjectNormative) => n.document_id !== documentId)
-      .map((n: ProjectNormative) => ({ document_id: n.document_id, status: n.status }))
-    updateNormativesMutation.mutate([...existing, { document_id: documentId, status }])
+  const handleConfirm = (documentId: string) => {
+    const existingIds = projectNormatives
+      .filter((n) => n.id !== documentId)
+      .map((n) => n.id)
+    updateNormativesMutation.mutate([...existingIds, documentId])
   }
 
   // ── Derived state ──────────────────────────────────────────────────────────
-  const isRunning = !!activePollingRunId
-  const confirmedIds = projectNormatives
-    .filter((n: ProjectNormative) => n.status === 'confirmed')
-    .map((n: ProjectNormative) => n.document_id)
-  const discardedIds = projectNormatives
-    .filter((n: ProjectNormative) => n.status === 'not_applicable')
-    .map((n: ProjectNormative) => n.document_id)
+  const confirmedIds = projectNormatives.map((n) => n.id)
+  const discardedIds: string[] = []
 
-  const suggestions = selectedRun?.suggestions ?? []
+  // Run suggestions take priority; fall back to direct suggestions from last trigger
+  const suggestions: NormativeSuggestion[] = selectedRun?.suggestions ?? directSuggestions
   const countriesDisplay = project.normative_target_countries?.join(', ') ?? null
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -164,14 +138,14 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
               onChange={(e) => setExtraContext(e.target.value)}
               placeholder={tReq('promptPlaceholder')}
               className="text-xs min-h-[60px] resize-none flex-1"
-              disabled={isRunning}
+              disabled={triggerMutation.isPending}
             />
             <Button
               className="gap-2 shrink-0"
               onClick={() => triggerMutation.mutate()}
-              disabled={isRunning || triggerMutation.isPending}
+              disabled={triggerMutation.isPending}
             >
-              {isRunning || triggerMutation.isPending ? (
+              {triggerMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   {t('analyzing')}
@@ -186,7 +160,7 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
           </div>
         </div>
 
-        {/* Collapsed-column run strip */}
+        {/* Collapsed-column toggle */}
         {leftCollapsed && (
           <div className="flex items-center gap-2 pt-0.5">
             <Button
@@ -198,18 +172,6 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
             >
               <PanelLeftOpen className="h-3.5 w-3.5" />
             </Button>
-            {currentRun || isRunning ? (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-mono">
-                  {tPipeline('runNumber')}{currentRun?.run_number ?? '…'}
-                </span>
-                {isRunning
-                  ? <RunStatusBadge status="running" />
-                  : currentRun && <RunStatusBadge status={currentRun.status} />}
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">{t('noActiveRuns')}</span>
-            )}
           </div>
         )}
       </div>
@@ -241,7 +203,10 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
                   <NormativasRunsList
                     projectId={projectId}
                     selectedRunId={selectedRunId}
-                    onSelectRun={(run) => setSelectedRunId(run.id)}
+                    onSelectRun={(run) => {
+                      setSelectedRunId(run.id)
+                      setDirectSuggestions([])
+                    }}
                   />
                 </div>
               </Panel>
@@ -262,15 +227,10 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
               <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide flex-1">
                 {t('suggestions')}
               </p>
-              {selectedRun?.status === 'completed' && suggestions.length > 0 && (
-                <Badge variant="muted" className="text-[10px]">
-                  LLM Rank v2.4
-                </Badge>
-              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {isRunning ? (
+              {triggerMutation.isPending ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
                   <Loader2 className="h-6 w-6 animate-spin" />
                   <p className="text-xs">{t('analyzingNormatives')}</p>

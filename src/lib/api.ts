@@ -18,7 +18,7 @@ import type {
   TriggerRequirementsRunPayload,
   TriggerRequirementsRunResponse,
   NormativeDocument,
-  ProjectNormative,
+  NormativeSuggestion,
   UpdateProjectNormativesPayload,
   NormativesRun,
 } from '@/types'
@@ -60,7 +60,8 @@ async function apiFetch<T>(
     let detail = `HTTP ${res.status}`
     try {
       const err = await res.json()
-      detail = err.detail ?? detail
+      const raw = err.detail ?? detail
+      detail = typeof raw === 'string' ? raw : JSON.stringify(raw)
     } catch {
       // ignore parse errors
     }
@@ -248,9 +249,9 @@ export const normativesApi = {
   getDownloadUrl: (documentId: string) =>
     apiFetch<{ url: string }>(`/normatives/${documentId}/download-url`),
 
-  /** Trigger the suggest workflow for a project (creates a normatives run). */
+  /** Trigger the suggest workflow for a project (returns suggestions synchronously). */
   triggerSuggest: (projectId: string, extraContext?: string) =>
-    apiFetch<{ run_id: string; status: 'running' }>(
+    apiFetch<NormativeSuggestion[]>(
       `/projects/${projectId}/normatives/suggest`,
       {
         method: 'POST',
@@ -258,13 +259,13 @@ export const normativesApi = {
       }
     ),
 
-  /** Get the active normatives (confirmed + not_applicable) for a project. */
+  /** Get the confirmed normative documents for a project. */
   getProjectNormatives: (projectId: string) =>
-    apiFetch<ProjectNormative[]>(`/projects/${projectId}/normatives`),
+    apiFetch<NormativeDocument[]>(`/projects/${projectId}/normatives`),
 
   /** Overwrite the full project normatives selection. */
   updateProjectNormatives: (projectId: string, payload: UpdateProjectNormativesPayload) =>
-    apiFetch<ProjectNormative[]>(`/projects/${projectId}/normatives`, {
+    apiFetch<NormativeDocument[]>(`/projects/${projectId}/normatives`, {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

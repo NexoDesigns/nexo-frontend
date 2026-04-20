@@ -272,7 +272,7 @@ export interface NormativeDocument {
   name: string
   storage_path: string
   embedding_status: EmbeddingStatus
-  metadata: NormativeMetadata
+  metadata: NormativeMetadata | null
   created_at: string
 }
 
@@ -315,5 +315,5 @@ export interface NormativesRun {
 }
 
 export interface UpdateProjectNormativesPayload {
-  normatives: Array<{ document_id: string; status: ProjectNormativeStatus }>
+  document_ids: string[]
 }

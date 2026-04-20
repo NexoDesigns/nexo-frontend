@@ -9,13 +9,13 @@ import { Button } from '@/components/ui/button'
 import { NormativeDetailModal } from '@/components/projects/NormativeDetailModal'
 import { Info, FileText, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { NormativeSuggestion, ProjectNormativeStatus } from '@/types'
+import type { NormativeSuggestion } from '@/types'
 
 interface NormativeSuggestionCardProps {
   suggestion: NormativeSuggestion
   confirmedIds: string[]
   discardedIds: string[]
-  onConfirm: (documentId: string, status: ProjectNormativeStatus) => void
+  onConfirm: (documentId: string) => void
 }
 
 export function NormativeSuggestionCard({
@@ -124,7 +124,7 @@ export function NormativeSuggestionCard({
               size="sm"
               variant="ghost"
               className="ml-auto h-7 text-xs text-primary hover:text-primary gap-1"
-              onClick={() => onConfirm(suggestion.document_id, 'confirmed')}
+              onClick={() => onConfirm(suggestion.document_id)}
             >
               {t('confirmSelection')}
             </Button>
