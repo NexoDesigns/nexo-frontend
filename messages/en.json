@@ -207,7 +207,7 @@
     "emptyDesc": "Upload a PDF, Excel, DOCX or TXT — agents will index it automatically.",
     "openNewTab": "Open in new tab",
     "normativeMetadata": "Normative metadata",
-    "normativeMetadataDesc": "Helps agents match this standard to projects. All optional except Standard code.",
+    "normativeMetadataDesc": "Helps agents match this standard to projects. All optional except standard code.",
     "standardCode": "Standard code",
     "standardCodePlaceholder": "e.g. IEC 62368-1",
     "version": "Version",

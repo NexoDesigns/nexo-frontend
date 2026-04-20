@@ -181,6 +181,7 @@ export const documentsApi = {
     formData.append('document_type', meta.type)
     if (meta.project_id) formData.append('project_id', meta.project_id)
     if (meta.normative_metadata) {
+      // Undefined fields are omitted by JSON.stringify — intentional
       formData.append('normative_metadata', JSON.stringify(meta.normative_metadata))
     }
 
@@ -190,6 +191,7 @@ export const documentsApi = {
         ...(session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : {}),
+        // No Content-Type — let browser set multipart boundary
       },
       body: formData,
     })
