@@ -10,13 +10,11 @@ import { RequirementsView } from '@/components/projects/RequirementsView'
 import { DescripcionView } from '@/components/projects/DescripcionView'
 import { NormativasView } from '@/components/projects/NormativasView'
 import { DocumentList } from '@/components/documents/DocumentList'
-import { DocumentUpload } from '@/components/documents/DocumentUpload'
 import { documentsApi } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/primitives'
-import { Separator } from '@/components/ui/primitives'
 import { Link } from '@/i18n/routing'
 import { ArrowLeft, GitBranch, Settings2, FileText, Info, Shield } from 'lucide-react'
 
@@ -156,25 +154,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
           {/* Documents tab */}
           <TabsContent value="documents" className="flex-1 overflow-y-auto p-6 mt-0">
-            <div className="max-w-2xl space-y-6">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                  {tDocuments('upload')}
-                </p>
-                <DocumentUpload
-                  projectId={id}
-                  queryKey={['documents', id]}
-                />
-              </div>
-              <Separator />
-              <div>
-                <DocumentList
-                  documents={documents ?? []}
-                  isLoading={docsLoading}
-                  queryKey={['documents', id]}
-                />
-              </div>
-            </div>
+            <DocumentList
+              documents={documents ?? []}
+              isLoading={docsLoading}
+              queryKey={['documents', id]}
+              projectId={id}
+              projectName={project?.name}
+            />
           </TabsContent>
         </Tabs>
       </div>
