@@ -48,7 +48,7 @@ import {
   ArrowUpDown,
   FileEdit,
 } from 'lucide-react'
-import type { Document, DocumentType, EmbeddingStatus } from '@/types'
+import type { Document, DocumentType, EmbeddingStatus, NormativeMetadata } from '@/types'
 import { cn } from '@/lib/utils'
 import { DocumentUploadModal } from './DocumentUploadModal'
 
@@ -92,18 +92,16 @@ function DocRow({
   doc,
   onDelete,
   deletingId,
-  t,
-  tStatus,
-  locale,
 }: {
   doc: Document
   onDelete: (id: string) => void
   deletingId: string | null
-  t: ReturnType<typeof useTranslations<'documents'>>
-  tStatus: ReturnType<typeof useTranslations<'status'>>
-  locale: string
 }) {
+  const t = useTranslations('documents')
+  const tStatus = useTranslations('status')
+  const locale = useLocale()
   const [downloading, setDownloading] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   const embedding = EMBEDDING_BADGE[doc.embedding_status]
 
   const ext = /\.([a-z0-9]+)$/i.exec(doc.name ?? '')?.[1]?.toLowerCase()
@@ -111,29 +109,39 @@ function DocRow({
 
   const normCode =
     doc.type === 'normative' && doc.metadata
-      ? (doc.metadata as { standard_code?: string }).standard_code
+      ? (doc.metadata as unknown as NormativeMetadata).standard_code ?? null
       : null
 
   const handleDownload = async () => {
     setDownloading(true)
+    setActionError(null)
     try {
       const { url } = await documentsApi.getDownloadUrl(doc.id)
       const a = document.createElement('a')
       a.href = url
       a.download = doc.name
       a.click()
+    } catch {
+      setActionError(t('uploadError'))
+      setTimeout(() => setActionError(null), 3000)
     } finally {
       setDownloading(false)
     }
   }
 
   const handleOpen = async () => {
-    const { url } = await documentsApi.getDownloadUrl(doc.id)
-    window.open(url, '_blank', 'noopener,noreferrer')
+    setActionError(null)
+    try {
+      const { url } = await documentsApi.getDownloadUrl(doc.id)
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch {
+      setActionError(t('uploadError'))
+      setTimeout(() => setActionError(null), 3000)
+    }
   }
 
   return (
-    <div className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 hover:border-muted-foreground/30 hover:bg-card/80 transition-colors">
+    <div className="group relative flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 hover:border-muted-foreground/30 hover:bg-card/80 transition-colors">
       <div className="h-9 w-9 rounded-md bg-secondary border border-border flex items-center justify-center shrink-0 text-muted-foreground">
         <TypeIcon type={doc.type} />
       </div>
@@ -206,6 +214,11 @@ function DocRow({
           </button>
         </div>
       </div>
+      {actionError && (
+        <p className="absolute -bottom-5 right-0 text-[10px] text-destructive whitespace-nowrap">
+          {actionError}
+        </p>
+      )}
     </div>
   )
 }
@@ -220,9 +233,6 @@ function Group({
   label,
   onDelete,
   deletingId,
-  t,
-  tStatus,
-  locale,
 }: {
   type: DocumentType
   docs: Document[]
@@ -231,9 +241,6 @@ function Group({
   label: string
   onDelete: (id: string) => void
   deletingId: string | null
-  t: ReturnType<typeof useTranslations<'documents'>>
-  tStatus: ReturnType<typeof useTranslations<'status'>>
-  locale: string
 }) {
   return (
     <section className="space-y-2">
@@ -266,9 +273,6 @@ function Group({
               doc={d}
               onDelete={onDelete}
               deletingId={deletingId}
-              t={t}
-              tStatus={tStatus}
-              locale={locale}
             />
           ))}
         </div>
@@ -297,7 +301,6 @@ export function DocumentList({
   const t = useTranslations('documents')
   const tStatus = useTranslations('status')
   const tCommon = useTranslations('common')
-  const locale = useLocale()
   const queryClient = useQueryClient()
 
   const [search, setSearch] = useState('')
@@ -307,7 +310,7 @@ export function DocumentList({
   const [sort, setSort] = useState<SortKey>('recent')
 
   const [openGroups, setOpenGroups] = useState<Record<DocumentType, boolean>>(() =>
-    Object.fromEntries(DOC_TYPES.map((t) => [t, true])) as Record<DocumentType, boolean>
+    Object.fromEntries(DOC_TYPES.map((type) => [type, true])) as Record<DocumentType, boolean>
   )
 
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -363,7 +366,7 @@ export function DocumentList({
     filtered.sort(comparators[sort])
 
     const gmap = Object.fromEntries(
-      DOC_TYPES.map((t) => [t, [] as Document[]])
+      DOC_TYPES.map((type) => [type, [] as Document[]])
     ) as Record<DocumentType, Document[]>
     for (const doc of filtered) {
       gmap[doc.type].push(doc)
@@ -391,7 +394,7 @@ export function DocumentList({
   const toggleAllGroups = () => {
     const next = !anyGroupOpen
     setOpenGroups(
-      Object.fromEntries(DOC_TYPES.map((t) => [t, next])) as Record<DocumentType, boolean>
+      Object.fromEntries(DOC_TYPES.map((type) => [type, next])) as Record<DocumentType, boolean>
     )
   }
 
@@ -566,9 +569,6 @@ export function DocumentList({
                   label={t(type)}
                   onDelete={setConfirmId}
                   deletingId={deletingId}
-                  t={t}
-                  tStatus={tStatus}
-                  locale={locale}
                 />
               ) : null
             )}

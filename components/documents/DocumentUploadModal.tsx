@@ -30,20 +30,11 @@ import {
   Globe,
 } from 'lucide-react'
 import type { Document, DocumentType, NormativeUploadMetadata } from '@/types'
+import { DOC_TYPES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 const ACCEPTED_TYPES = '.pdf,.xlsx,.xls,.docx,.txt'
 const MAX_SIZE_MB = 50
-
-const DOCUMENT_TYPES: DocumentType[] = [
-  'datasheet',
-  'normative',
-  'manufacturer_list',
-  'design_note',
-  'reference_schematic',
-  'project_output',
-  'other',
-]
 
 const ISSUING_BODIES = ['IEC', 'ISO', 'CENELEC', 'FCC', 'UL', 'IEEE', 'ANSI', 'Other']
 
@@ -283,7 +274,7 @@ export function DocumentUploadModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {DOCUMENT_TYPES.map((type) => (
+                  {DOC_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       {t(type)}
                     </SelectItem>
