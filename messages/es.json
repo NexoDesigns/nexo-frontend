@@ -227,7 +227,8 @@
     "scopeSummaryPlaceholder": "Resumen en una frase de lo que cubre esta norma…",
     "metadataEditNote": "Los metadatos se pueden editar más tarde desde la tarjeta de normativa.",
     "indexingNote": "El documento se indexará automáticamente tras la subida.",
-    "uploading": "Subiendo…"
+    "uploading": "Subiendo…",
+    "replaceFile": "Reemplazar archivo"
   },
   "knowledgeBase": {
     "title": "Base de conocimiento",

@@ -223,7 +223,8 @@
     "scopeSummaryPlaceholder": "One-sentence summary of what this standard covers…",
     "metadataEditNote": "Metadata can be edited later from the normative card.",
     "indexingNote": "Document will be indexed automatically after upload.",
-    "uploading": "Uploading…"
+    "uploading": "Uploading…",
+    "replaceFile": "Replace file"
   },
   "knowledgeBase": {
     "title": "Knowledge Base",

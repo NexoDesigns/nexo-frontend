@@ -237,7 +237,7 @@ export function DocumentUploadModal({
                   onClick={(e) => { e.stopPropagation(); setFile(null) }}
                   className="text-[11px] text-muted-foreground hover:text-foreground underline mt-1"
                 >
-                  Replace file
+                  {t('replaceFile')}
                 </button>
               </>
             ) : (
