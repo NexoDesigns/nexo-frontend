@@ -1,4 +1,16 @@
-import type { PhaseId } from '@/types'
+import type { DocumentType, PhaseId } from '@/types'
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+export const DOC_TYPES: DocumentType[] = [
+  'datasheet',
+  'normative',
+  'manufacturer_list',
+  'reference_schematic',
+  'design_note',
+  'project_output',
+  'other',
+]
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
