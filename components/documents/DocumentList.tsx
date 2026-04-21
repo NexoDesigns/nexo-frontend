@@ -373,6 +373,7 @@ export function DocumentList({
   }, [documents, search, typeFilter, scopeFilter, statusFilter, sort])
 
   const activeFilterCount = [
+    !!search,
     typeFilter !== 'all',
     scopeFilter !== 'all',
     statusFilter !== 'all',

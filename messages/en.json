@@ -205,6 +205,7 @@
     "noMatch": "No documents match your filters",
     "noMatchDesc": "Try widening the filters or clearing the search.",
     "emptyDesc": "Upload a PDF, Excel, DOCX or TXT — agents will index it automatically.",
+    "download": "Download",
     "openNewTab": "Open in new tab",
     "normativeMetadata": "Normative metadata",
     "normativeMetadataDesc": "Helps agents match this standard to projects. All optional except standard code.",
