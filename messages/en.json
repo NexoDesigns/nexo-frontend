@@ -217,6 +217,7 @@
     "industries": "Applicable industries",
     "countries": "Countries / regions",
     "userTypes": "User types",
+    "scope": "Scope",
     "scopeSummaryLabel": "Scope summary",
     "scopeSummaryPlaceholder": "One-sentence summary of what this standard covers…",
     "metadataEditNote": "Metadata can be edited later from the normative card.",

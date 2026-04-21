@@ -221,6 +221,7 @@
     "industries": "Industrias aplicables",
     "countries": "Países / regiones",
     "userTypes": "Tipos de usuario",
+    "scope": "Ámbito",
     "scopeSummaryLabel": "Resumen del alcance",
     "scopeSummaryPlaceholder": "Resumen en una frase de lo que cubre esta norma…",
     "metadataEditNote": "Los metadatos se pueden editar más tarde desde la tarjeta de normativa.",

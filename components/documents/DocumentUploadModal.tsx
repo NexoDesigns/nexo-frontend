@@ -103,6 +103,7 @@ export function DocumentUploadModal({
   projectName,
 }: DocumentUploadModalProps) {
   const t = useTranslations('documents')
+  const tCommon = useTranslations('common')
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -113,14 +114,7 @@ export function DocumentUploadModal({
   const [scope, setScope] = useState<'project' | 'global'>(
     projectId ? 'project' : 'global'
   )
-  const [norm, setNorm] = useState<NormativeUploadMetadata & {
-    standard_version: string
-    issuing_body: string
-    applicable_industries: string[]
-    applicable_countries: string[]
-    applicable_user_types: string[]
-    scope_summary: string
-  }>({
+  const [norm, setNorm] = useState<Required<NormativeUploadMetadata>>({
     standard_code: '',
     standard_version: '',
     issuing_body: '',
@@ -146,7 +140,7 @@ export function DocumentUploadModal({
         applicable_countries: [],
         applicable_user_types: [],
         scope_summary: '',
-      })
+      } as Required<NormativeUploadMetadata>)
     }
   }, [open, projectId])
 
@@ -211,7 +205,9 @@ export function DocumentUploadModal({
           {/* Drop zone */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-            onDragLeave={() => setDragging(false)}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false)
+            }}
             onDrop={(e) => {
               e.preventDefault()
               setDragging(false)
@@ -297,7 +293,7 @@ export function DocumentUploadModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="doc-scope">{t('scopeProject').replace('This ', 'Scope: ')}</Label>
+              <Label htmlFor="doc-scope">{t('scope')}</Label>
               <Select
                 value={scope}
                 onValueChange={(v) => setScope(v as 'project' | 'global')}
@@ -452,7 +448,7 @@ export function DocumentUploadModal({
           </p>
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="ghost" size="sm" onClick={onClose}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               size="sm"
