@@ -549,7 +549,7 @@
       "exclusion_keys": ["C.2.pressure_none", "C.2.pressure_below_0_5"] },
     { "id": 9, "code": "EMC", "ref": "2014/30/EU", "name": "Electromagnetic Compatibility Directive",
       "trigger_keys": ["B.3.has_active_electronics"],
-      "exclusion_keys": ["B.4.has_radio", "H.1a.medical_device", "A.3.military_exclusive"] },
+      "exclusion_keys": ["A.3.military_exclusive"] },
     { "id": 10, "code": "NAWID", "ref": "2014/31/EU", "name": "Non-Automatic Weighing Instruments Directive",
       "trigger_keys": ["I.1a.non_auto_weighing_commercial", "I.1a.non_auto_weighing_medical", "I.1a.non_auto_weighing_pharma", "I.1a.non_auto_weighing_legal"],
       "exclusion_keys": ["I.1a.weighing_domestic_only"] },
