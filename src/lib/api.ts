@@ -22,6 +22,7 @@ import type {
   UpdateProjectNormativesPayload,
   NormativesRun,
   NormativeUploadMetadata,
+  DecisionTreeAnswers
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -286,4 +287,14 @@ export const normativesRunsApi = {
 
   get: (projectId: string, runId: string) =>
     apiFetch<NormativesRun>(`/projects/${projectId}/normatives/runs/${runId}`),
+}
+
+// ─── Normative Decision Tree ─────────────────────────────────────────────────
+export const decisionTreeApi = {
+  get: (projectId: string) =>
+    apiFetch<DecisionTreeAnswers>(`/projects/${projectId}/normatives/decision-tree`),
+  save: (projectId: string, answers: DecisionTreeAnswers) =>
+    apiFetch<DecisionTreeAnswers>(`/projects/${projectId}/normatives/decision-tree`, {
+      method: 'PUT', body: JSON.stringify({ answers })
+    }),
 }

@@ -9,6 +9,8 @@ import { normativesApi, normativesRunsApi } from '@/lib/api'
 import { NormativasRunsList } from '@/components/projects/NormativasRunsList'
 import { NormativeSuggestionCard } from '@/components/projects/NormativeSuggestionCard'
 import { NormativesSearchPanel } from '@/components/projects/NormativesSearchPanel'
+import { DecisionTreeView } from '@/components/projects/normatives/DecisionTreeView'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/primitives'
 import { Button } from '@/components/ui/button'
 import {
   Play,
@@ -17,6 +19,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MapPin,
+  ListChecks,
+  Sparkles,
 } from 'lucide-react'
 import type { Project, NormativeSuggestion } from '@/types'
 
@@ -74,7 +78,6 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
   const triggerMutation = useMutation({
     mutationFn: () => normativesApi.triggerSuggest(projectId, extraContext.trim() || undefined),
     onSuccess: (data) => {
-      console.log('[NormativasView] triggerSuggest response:', data)
       const suggestions = Array.isArray(data)
         ? data
         : Array.isArray((data as Record<string, unknown>)?.suggestions)
@@ -114,7 +117,36 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <Tabs defaultValue="seleccion" className="flex flex-col h-full overflow-hidden">
+
+      {/* ── Sub-tab bar ── */}
+      <div className="border-b border-border px-4 pt-2 shrink-0">
+        <TabsList className="bg-transparent gap-0 h-auto p-0 rounded-none">
+          <TabsTrigger
+            value="seleccion"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
+          >
+            <ListChecks className="h-3.5 w-3.5" />
+            Selección de normativas
+          </TabsTrigger>
+          <TabsTrigger
+            value="sugerencias"
+            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Sugerencias
+          </TabsTrigger>
+        </TabsList>
+      </div>
+
+      {/* ── Selección de normativas tab ── */}
+      <TabsContent value="seleccion" className="flex-1 overflow-hidden mt-0 data-[state=inactive]:hidden">
+        <DecisionTreeView projectId={projectId} />
+      </TabsContent>
+
+      {/* ── Sugerencias tab ── */}
+      <TabsContent value="sugerencias" className="flex-1 overflow-hidden mt-0 flex flex-col data-[state=inactive]:hidden">
+      <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── Top bar ── */}
       <div className="border-b border-border px-4 py-3 shrink-0 space-y-2.5">
@@ -279,6 +311,9 @@ export function NormativasView({ projectId, project }: NormativasViewProps) {
           </Panel>
         </Group>
       </div>
-    </div>
+      </div>
+      </TabsContent>
+
+    </Tabs>
   )
 }

@@ -327,3 +327,6 @@ export interface NormativesRun {
 export interface UpdateProjectNormativesPayload {
   document_ids: string[]
 }
+
+// ─── Normative Decision Tree ───────────────────────────────────────────────────────────────
+export type DecisionTreeAnswers = Record<string, string[]>  // questionId → selected option values
