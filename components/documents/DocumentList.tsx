@@ -117,10 +117,18 @@ function DocRow({
     setActionError(null)
     try {
       const { url } = await documentsApi.getDownloadUrl(doc.id)
+      // Fetch as blob so we get a same-origin object URL — the `download` attribute
+      // is ignored by browsers for cross-origin URLs (e.g. Supabase signed URLs).
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
+      a.href = objectUrl
       a.download = doc.name
+      document.body.appendChild(a)
       a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(objectUrl)
     } catch {
       setActionError(t('uploadError'))
       setTimeout(() => setActionError(null), 3000)
@@ -131,10 +139,16 @@ function DocRow({
 
   const handleOpen = async () => {
     setActionError(null)
+    // Open the tab synchronously to avoid popup blockers. Do NOT pass 'noopener'
+    // because that makes window.open return null, preventing us from navigating it.
+    const newWindow = window.open('', '_blank')
     try {
       const { url } = await documentsApi.getDownloadUrl(doc.id)
-      window.open(url, '_blank', 'noopener,noreferrer')
+      if (newWindow) {
+        newWindow.location.href = url
+      }
     } catch {
+      newWindow?.close()
       setActionError(t('uploadError'))
       setTimeout(() => setActionError(null), 3000)
     }
