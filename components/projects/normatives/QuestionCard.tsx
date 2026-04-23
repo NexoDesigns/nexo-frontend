@@ -54,7 +54,7 @@ export function QuestionCard({ question, answer, onAnswer, onUnknown }: Question
             onClick={handleEdit}
             className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Pencil className="h-3 w-3" />
+            <span className="h-3 w-3" />
             Editar
           </button>
         )}
