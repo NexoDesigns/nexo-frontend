@@ -10,6 +10,8 @@ import { PhaseInputForm } from './PhaseInputForm'
 import { ResearchDesignPicker } from './ResearchDesignPicker'
 import { IcSelectionOutputViewer } from './IcSelectionOutputViewer'
 import { IcNamingOutputViewer } from './IcNamingOutputViewer'
+import { ComponentDesignPicker } from './ComponentDesignPicker'
+import { ComponentSelectionOutputViewer } from './ComponentSelectionOutputViewer'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +61,8 @@ interface PhaseCardProps {
   onSelectedSolutionsChange?: (solutions: ResearchSolution[]) => void
   researchQuerySummary?: string
   onQuerySummaryChange?: (summary: string) => void
+  /** Active run ID for ic_naming_agent — needed by component_selection to show the design picker */
+  icNamingActiveRunId?: string | null
 }
 
 export function PhaseCard({
@@ -69,6 +73,7 @@ export function PhaseCard({
   onSelectedSolutionsChange,
   researchQuerySummary,
   onQuerySummaryChange,
+  icNamingActiveRunId,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
@@ -80,11 +85,23 @@ export function PhaseCard({
   // Independent of any run — persists across card expand/collapse
   const [usePerplexity, setUsePerplexity] = useState(true)
 
+  // component_selection: which design (e.g. "A") the user has chosen
+  const [selectedComponentDesignId, setSelectedComponentDesignId] = useState<string | null>(null)
+
   // Fetch the active (selected output) run details
-  const { data: activeRun } = useQuery({
+  // For component_selection, refetch on focus so bom_result (populated async) is always fresh
+  const { data: activeRun, refetch: refetchActiveRun } = useQuery({
     queryKey: ['run', projectId, phase.id, activeRunId],
     queryFn: () => runsApi.get(projectId, phase.id, activeRunId!),
     enabled: !!activeRunId,
+    refetchOnWindowFocus: phase.id === 'component_selection',
+  })
+
+  // Fetch ic_naming active run output (only needed for component_selection phase)
+  const { data: icNamingRun } = useQuery({
+    queryKey: ['run', projectId, 'ic_naming_agent', icNamingActiveRunId],
+    queryFn: () => runsApi.get(projectId, 'ic_naming_agent', icNamingActiveRunId!),
+    enabled: phase.id === 'component_selection' && !!icNamingActiveRunId,
   })
 
   // Polling for in-flight run
@@ -108,6 +125,14 @@ export function PhaseCard({
   const isRunning =
     pollingRun?.status === 'running' || pollingRun?.status === 'pending'
 
+  // Refetch active run when component_selection card expands — bom_result is async
+  useEffect(() => {
+    if (phase.id === 'component_selection' && expanded && activeRunId) {
+      refetchActiveRun()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded, phase.id, activeRunId])
+
   // Auto-select all solutions when research active run changes
   useEffect(() => {
     if (phase.id !== 'research' || !activeRun?.output_payload) return
@@ -129,11 +154,23 @@ export function PhaseCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRun?.id, phase.id])
 
+  const recheckBomMutation = useMutation({
+    mutationFn: () => runsApi.recheckBom(projectId, phase.id, activeRun!.id),
+    onSuccess: () => {
+      // BOM runs in background; re-fetch the run after a short delay to pick up the result
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['run', projectId, phase.id, activeRunId] })
+      }, 8000)
+    },
+  })
+
   const triggerMutation = useMutation({
     mutationFn: ({ inputs }: PhaseFormPayload) => {
       const custom_inputs =
         phase.id === 'ic_selection' && selectedResearchSolutions?.length
           ? { ...inputs, selected_solutions: selectedResearchSolutions, query_summary: researchQuerySummary }
+          : phase.id === 'component_selection' && selectedComponentDesignId
+          ? { ...inputs, selected_design_id: selectedComponentDesignId }
           : inputs
       const payload =
         phase.id === 'research'
@@ -248,6 +285,15 @@ export function PhaseCard({
                 )}
               </div>
             )}
+            {phase.id === 'component_selection' && (
+              <div className="mb-3">
+                <ComponentDesignPicker
+                  icNamingOutput={icNamingRun?.output_payload as Record<string, unknown> | null}
+                  selectedDesignId={selectedComponentDesignId}
+                  onSelect={(id) => { const trimmed = id?.trim(); console.log('selectedComponentDesignId:', trimmed); setSelectedComponentDesignId(trimmed); }}
+                />
+              </div>
+            )}
             <PhaseInputForm
               phaseId={phase.id}
               defaultInputs={
@@ -256,7 +302,10 @@ export function PhaseCard({
               usePerplexity={usePerplexity}
               onUsePerplexityChange={setUsePerplexity}
               isLoading={isRunning || triggerMutation.isPending}
-              submitDisabled={phase.id === 'ic_selection' && !selectedResearchSolutions?.length}
+              submitDisabled={
+                (phase.id === 'ic_selection' && !selectedResearchSolutions?.length) ||
+                (phase.id === 'component_selection' && !selectedComponentDesignId)
+              }
               onSubmit={(payload) => triggerMutation.mutate(payload)}
             />
           </div>
@@ -351,6 +400,19 @@ export function PhaseCard({
           {phase.id === 'ic_naming_agent' && activeRun?.output_payload && (
             <>
               <IcNamingOutputViewer output={activeRun.output_payload} />
+              <Separator />
+            </>
+          )}
+
+          {/* Component Selection output */}
+          {phase.id === 'component_selection' && activeRun?.output_payload && (
+            <>
+              <ComponentSelectionOutputViewer
+                output={activeRun.output_payload}
+                bomResult={activeRun.bom_result}
+                isRecheckPending={recheckBomMutation.isPending}
+                onRecheck={() => recheckBomMutation.mutate()}
+              />
               <Separator />
             </>
           )}

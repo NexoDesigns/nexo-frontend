@@ -148,6 +148,12 @@ export const runsApi = {
       `/projects/${projectId}/phases/${phaseId}/runs/${runId}/notes`,
       { method: 'PATCH', body: JSON.stringify({ notes } satisfies UpdateRunNotesPayload) }
     ),
+
+  recheckBom: (projectId: string, phaseId: string, runId: string) =>
+    apiFetch<{ run_id: string; message: string }>(
+      `/projects/${projectId}/phases/${phaseId}/runs/${runId}/bom`,
+      { method: 'POST' }
+    ),
 }
 
 // ─── Documents ────────────────────────────────────────────────────────────────

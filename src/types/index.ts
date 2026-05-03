@@ -98,6 +98,7 @@ export interface PhaseRun {
   duration_seconds: number | null
   llm_tokens_used: number | null
   notes: string | null
+  bom_result: BomResult | null
   created_by: string
   created_at: string
   completed_at: string | null
@@ -345,4 +346,29 @@ export interface PartAvailabilityInfo {
 
 export interface IcAvailabilityResult {
   parts: Record<string, PartAvailabilityInfo>  // keyed by cleaned MPN
+}
+
+// ─── BOM Result ───────────────────────────────────────────────────────────────
+
+export interface BomPart {
+  ManufacturerPartNumber?: string | null
+  PartNumber?: string | null
+  UnitPrice?: number | null
+  Supplier?: string | null
+  InStock?: number | null
+  FactoryStock?: number | null
+  DatasheetUrl?: string | null
+  ref?: string | null
+  [key: string]: unknown
+}
+
+export interface BomResult {
+  available: BomPart[]
+  unavailable: BomPart[]
+  summary: {
+    total_parts: number
+    available_count: number
+    unavailable_count: number
+    passive_groups: Record<string, number>
+  }
 }
