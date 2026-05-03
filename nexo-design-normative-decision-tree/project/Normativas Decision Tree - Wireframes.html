@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normativas Decision Tree — Wireframes</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { overflow:hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/*
+  Design context — Nexo dark-first theme:
+  - bg: hsl(222 22% 7%), card: hsl(222 20% 10%), border: hsl(222 18% 16%)
+  - primary green: hsl(153 60% 53%), text: hsl(210 17% 93%)
+  - muted: hsl(217 10% 50%), Geist Sans font
+  - 11px uppercase tracking-wide labels, xs body text
+  - shadcn/ui pattern: Cards with border, rounded-lg
+
+  3 wireframe approaches for the NLF Decision Tree:
+  A) Wizard stepper — one block at a time, vertical progress rail
+  B) Accordion blocks — all blocks visible, expand/collapse, live results sidebar
+  C) Conversational flow — chat-like progressive disclosure with inline cards
+*/
+
+const N = {
+  bg: '#0f1117',
+  card: '#151820',
+  cardHover: '#1a1f2a',
+  border: '#232938',
+  borderActive: '#2d3548',
+  primary: '#3ecf8e',
+  primaryDim: 'rgba(62,207,142,.15)',
+  primaryBorder: 'rgba(62,207,142,.3)',
+  text: '#e2e5ea',
+  textMuted: '#6b7280',
+  textDim: '#4b5563',
+  warning: '#f59e0b',
+  warningDim: 'rgba(245,158,11,.12)',
+  destructive: '#ef4444',
+  destructiveDim: 'rgba(239,68,68,.12)',
+  font: '"Geist Sans", -apple-system, system-ui, sans-serif',
+  mono: '"Geist Mono", "SF Mono", monospace',
+  radius: '8px',
+};
+
+const S = {
+  label: { fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: N.textMuted },
+  cardBase: { background: N.card, border: `1px solid ${N.border}`, borderRadius: N.radius, fontFamily: N.font },
+};
+
+// ── Shared tiny components ──
+
+function WireBox({ children, style, active, muted }) {
+  return <div style={{
+    ...S.cardBase,
+    padding: '10px 12px',
+    ...(active ? { borderColor: N.primaryBorder, background: N.primaryDim } : {}),
+    ...(muted ? { opacity: .4 } : {}),
+    ...style,
+  }}>{children}</div>;
+}
+
+function Pill({ children, color = N.textMuted, bg = 'rgba(255,255,255,.06)', style }) {
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 600, color, background: bg, padding: '2px 8px', borderRadius: 99, ...style }}>{children}</span>;
+}
+
+function Radio({ checked, label }) {
+  return <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: checked ? N.text : N.textMuted, cursor: 'pointer' }}>
+    <div style={{ width: 14, height: 14, borderRadius: 99, border: `2px solid ${checked ? N.primary : N.textDim}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {checked && <div style={{ width: 6, height: 6, borderRadius: 99, background: N.primary }} />}
+    </div>
+    {label}
+  </div>;
+}
+
+function Checkbox({ checked, label }) {
+  return <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: checked ? N.text : N.textMuted }}>
+    <div style={{ width: 14, height: 14, borderRadius: 3, border: `2px solid ${checked ? N.primary : N.textDim}`, background: checked ? N.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {checked && <span style={{ color: N.bg, fontSize: 9, fontWeight: 700 }}>✓</span>}
+    </div>
+    {label}
+  </div>;
+}
+
+function Btn({ children, primary, small, style }) {
+  return <div style={{
+    display: 'inline-flex', alignItems: 'center', gap: 5, padding: small ? '4px 10px' : '6px 14px',
+    borderRadius: 6, fontSize: small ? 10 : 11, fontWeight: 600, cursor: 'pointer', fontFamily: N.font,
+    background: primary ? N.primary : 'transparent',
+    color: primary ? N.bg : N.textMuted,
+    border: primary ? 'none' : `1px solid ${N.border}`,
+    ...style,
+  }}>{children}</div>;
+}
+
+function UnknownBtn() {
+  return <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: N.warning, background: N.warningDim, padding: '3px 8px', borderRadius: 4, cursor: 'pointer' }}>
+    <span>?</span> No lo sé aún
+  </div>;
+}
+
+function LegBadge({ code, status }) {
+  const c = status === 'confirmed' ? N.primary : status === 'possible' ? N.warning : N.destructive;
+  const bg = status === 'confirmed' ? N.primaryDim : status === 'possible' ? N.warningDim : N.destructiveDim;
+  const icon = status === 'confirmed' ? '✓' : status === 'possible' ? '?' : '✕';
+  return <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 8px', borderRadius: 6, background: bg, border: `1px solid ${c}33` }}>
+    <span style={{ fontSize: 10, fontWeight: 700, color: c }}>{icon}</span>
+    <span style={{ fontSize: 10, fontWeight: 600, color: N.text, fontFamily: N.mono }}>{code}</span>
+  </div>;
+}
+
+// ═══════════════════════════════════════════════════
+// APPROACH A — Wizard Stepper
+// ═══════════════════════════════════════════════════
+
+function WizardStepper() {
+  const blocks = [
+    { id: 'A', label: 'Identidad del Producto', done: true },
+    { id: 'B', label: 'Electrónica y Conectividad', active: true },
+    { id: 'C', label: 'Mecánica y Presión', done: false },
+    { id: 'D', label: 'Elevación y Transporte', done: false },
+    { id: 'E', label: 'Equipos de Protección', done: false },
+    { id: 'F', label: 'Explosivos y ATEX', done: false },
+    { id: 'G', label: 'Vehículos y Embarcaciones', done: false },
+    { id: 'H', label: 'Dispositivos Médicos', done: false },
+    { id: 'I', label: 'Instrumentos de Medida', done: false },
+    { id: 'J', label: 'Sostenibilidad', done: false },
+  ];
+
+  return <div style={{ width: '100%', height: '100%', background: N.bg, fontFamily: N.font, color: N.text, display: 'flex', overflow: 'hidden' }}>
+    {/* Left rail */}
+    <div style={{ width: 220, borderRight: `1px solid ${N.border}`, padding: '16px 0', overflow: 'auto', flexShrink: 0 }}>
+      <div style={{ ...S.label, padding: '0 16px 12px' }}>Bloques del formulario</div>
+      {blocks.map((b, i) => (
+        <div key={b.id} style={{
+          display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', cursor: 'pointer',
+          background: b.active ? N.primaryDim : 'transparent',
+          borderRight: b.active ? `2px solid ${N.primary}` : '2px solid transparent',
+        }}>
+          <div style={{
+            width: 22, height: 22, borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 10, fontWeight: 700, fontFamily: N.mono,
+            background: b.done ? N.primary : b.active ? N.primaryDim : N.card,
+            color: b.done ? N.bg : b.active ? N.primary : N.textDim,
+            border: `1px solid ${b.done ? N.primary : b.active ? N.primaryBorder : N.border}`,
+          }}>
+            {b.done ? '✓' : b.id}
+          </div>
+          <span style={{ fontSize: 11, fontWeight: b.active ? 600 : 400, color: b.active ? N.text : b.done ? N.textMuted : N.textDim }}>{b.label}</span>
+        </div>
+      ))}
+      {/* Progress */}
+      <div style={{ margin: '16px 16px 0', padding: '10px 12px', background: N.card, borderRadius: 6, border: `1px solid ${N.border}` }}>
+        <div style={{ ...S.label, marginBottom: 6 }}>Progreso</div>
+        <div style={{ height: 4, borderRadius: 2, background: N.border, overflow: 'hidden' }}>
+          <div style={{ width: '15%', height: '100%', background: N.primary, borderRadius: 2 }} />
+        </div>
+        <div style={{ fontSize: 10, color: N.textMuted, marginTop: 4 }}>1 de 10 bloques</div>
+      </div>
+    </div>
+
+    {/* Center — active block */}
+    <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>
+      <div style={{ maxWidth: 560 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <Pill color={N.primary} bg={N.primaryDim}>Bloque B</Pill>
+          <span style={{ fontSize: 10, color: N.textDim }}>4 preguntas</span>
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: N.text, marginBottom: 20 }}>Electrónica y Conectividad</div>
+
+        {/* B.1 */}
+        <WireBox style={{ marginBottom: 12 }} active>
+          <div style={{ ...S.label, marginBottom: 8 }}>B.1 — ¿El producto contiene componentes electrónicos?</div>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+            <Radio checked label="Sí" />
+            <Radio checked={false} label="No" />
+          </div>
+          <UnknownBtn />
+        </WireBox>
+
+        {/* B.2 — revealed */}
+        <WireBox style={{ marginBottom: 12, marginLeft: 16, borderLeft: `2px solid ${N.primaryBorder}` }}>
+          <div style={{ ...S.label, marginBottom: 8 }}>B.2 — Rango de tensión de operación</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Radio checked={false} label="< 50V AC / 75V DC" />
+            <Radio checked label="50–1000V AC" />
+            <Radio checked={false} label="75–1500V DC" />
+            <Radio checked={false} label="Alimentación de red 230V" />
+          </div>
+        </WireBox>
+
+        {/* B.3 */}
+        <WireBox style={{ marginBottom: 12, marginLeft: 16, borderLeft: `2px solid ${N.primaryBorder}` }}>
+          <div style={{ ...S.label, marginBottom: 8 }}>B.3 — ¿Tiene electrónica activa (procesador, FPGA...)?</div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Radio checked label="Sí" />
+            <Radio checked={false} label="No" />
+          </div>
+        </WireBox>
+
+        {/* B.4 */}
+        <WireBox style={{ marginBottom: 12, marginLeft: 16, borderLeft: `2px solid ${N.primaryBorder}` }}>
+          <div style={{ ...S.label, marginBottom: 8 }}>B.4 — ¿Utiliza tecnología de radio?</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Checkbox checked label="WiFi" />
+            <Checkbox checked={false} label="Bluetooth / BLE" />
+            <Checkbox checked={false} label="Celular (4G/5G)" />
+            <Checkbox checked={false} label="RFID / NFC" />
+            <Checkbox checked={false} label="Otro" />
+          </div>
+        </WireBox>
+
+        {/* Nav */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
+          <Btn>← Bloque A</Btn>
+          <Btn primary>Bloque C →</Btn>
+        </div>
+      </div>
+    </div>
+
+    {/* Right — live legislation panel */}
+    <div style={{ width: 240, borderLeft: `1px solid ${N.border}`, padding: 16, overflow: 'auto', flexShrink: 0 }}>
+      <div style={{ ...S.label, marginBottom: 10 }}>Legislación detectada</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <LegBadge code="RoHS 2011/65" status="confirmed" />
+        <LegBadge code="RED 2014/53" status="confirmed" />
+        <LegBadge code="LVD 2014/35" status="confirmed" />
+        <LegBadge code="EMC 2014/30" status="possible" />
+        <LegBadge code="CRA 2024/2847" status="possible" />
+      </div>
+      <div style={{ ...S.label, marginTop: 16, marginBottom: 8 }}>Preguntas abiertas</div>
+      <div style={{ fontSize: 10, color: N.warning, background: N.warningDim, padding: '6px 8px', borderRadius: 6, lineHeight: 1.5 }}>
+        B.6b — ¿Conectividad de red?<br/>
+        <span style={{ color: N.textMuted }}>Afecta: CRA, AI Act</span>
+      </div>
+      <div style={{ ...S.label, marginTop: 16, marginBottom: 4 }}>Resumen</div>
+      <div style={{ fontSize: 10, color: N.textMuted, lineHeight: 1.5 }}>
+        3 confirmadas · 2 posibles · 25 excluidas
+      </div>
+    </div>
+  </div>;
+}
+
+// ═══════════════════════════════════════════════════
+// APPROACH B — Accordion Blocks + Sidebar
+// ═══════════════════════════════════════════════════
+
+function AccordionBlocks() {
+  const blocks = [
+    { id: 'A', label: 'Identidad del Producto', count: '3/3', done: true },
+    { id: 'B', label: 'Electrónica y Conectividad', count: '2/6', active: true },
+    { id: 'C', label: 'Mecánica y Presión', count: '0/4' },
+    { id: 'D', label: 'Elevación y Transporte', count: '0/3' },
+    { id: 'E', label: 'Equipos de Protección', count: '0/2' },
+    { id: 'F', label: 'Explosivos y ATEX', count: '0/3' },
+    { id: 'G', label: 'Vehículos y Embarcaciones', count: '0/4' },
+    { id: 'H', label: 'Dispositivos Médicos', count: '0/3', skipped: true },
+    { id: 'I', label: 'Instrumentos de Medida', count: '0/2' },
+    { id: 'J', label: 'Sostenibilidad y Packaging', count: '0/3' },
+  ];
+
+  return <div style={{ width: '100%', height: '100%', background: N.bg, fontFamily: N.font, color: N.text, display: 'flex', overflow: 'hidden' }}>
+    {/* Main content */}
+    <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
+      <div style={{ maxWidth: 640 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>Formulario de Alcance Normativo</div>
+
+        {blocks.map((b) => {
+          const isOpen = b.active;
+          return <div key={b.id} style={{ ...S.cardBase, marginBottom: 8, overflow: 'hidden', ...(b.skipped ? { opacity: .35 } : {}) }}>
+            {/* Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer',
+              background: isOpen ? N.primaryDim : 'transparent',
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, fontWeight: 700, fontFamily: N.mono,
+                background: b.done ? N.primary : 'transparent',
+                color: b.done ? N.bg : N.textMuted,
+                border: b.done ? 'none' : `1px solid ${N.border}`,
+              }}>{b.done ? '✓' : b.id}</div>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: isOpen ? 600 : 400 }}>{b.label}</span>
+              {b.skipped && <Pill color={N.textDim}>Omitido</Pill>}
+              <span style={{ fontSize: 10, color: N.textMuted, fontFamily: N.mono }}>{b.count}</span>
+              <span style={{ fontSize: 10, color: N.textDim }}>{isOpen ? '▲' : '▼'}</span>
+            </div>
+
+            {/* Expanded content for B */}
+            {isOpen && <div style={{ padding: '12px 14px', borderTop: `1px solid ${N.border}` }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Answered question */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(62,207,142,.05)', borderRadius: 6, border: `1px solid ${N.primaryBorder}` }}>
+                  <span style={{ color: N.primary, fontSize: 10 }}>✓</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, color: N.textMuted }}>B.1 — ¿Contiene electrónica?</div>
+                    <div style={{ fontSize: 11, fontWeight: 500 }}>Sí</div>
+                  </div>
+                  <span style={{ fontSize: 10, color: N.textDim, cursor: 'pointer' }}>Editar</span>
+                </div>
+
+                {/* Current question */}
+                <WireBox active>
+                  <div style={{ ...S.label, marginBottom: 6 }}>B.2 — Rango de tensión</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <Radio checked={false} label="< 50V AC / 75V DC" />
+                    <Radio checked={false} label="50–1000V AC" />
+                    <Radio checked={false} label="75–1500V DC" />
+                    <Radio checked={false} label="Red 230V / 400V" />
+                  </div>
+                  <div style={{ marginTop: 8 }}><UnknownBtn /></div>
+                </WireBox>
+
+                {/* Locked questions */}
+                <WireBox muted>
+                  <div style={{ fontSize: 10, color: N.textDim }}>B.3 — Electrónica activa</div>
+                </WireBox>
+                <WireBox muted>
+                  <div style={{ fontSize: 10, color: N.textDim }}>B.4 — Tecnología de radio</div>
+                </WireBox>
+                <WireBox muted>
+                  <div style={{ fontSize: 10, color: N.textDim }}>B.5 — Baterías</div>
+                </WireBox>
+                <WireBox muted>
+                  <div style={{ fontSize: 10, color: N.textDim }}>B.6 — Software / IA / Conectividad</div>
+                </WireBox>
+              </div>
+            </div>}
+          </div>;
+        })}
+      </div>
+    </div>
+
+    {/* Right sidebar — results */}
+    <div style={{ width: 280, borderLeft: `1px solid ${N.border}`, overflow: 'auto', flexShrink: 0 }}>
+      {/* Confirmed */}
+      <div style={{ padding: 16, borderBottom: `1px solid ${N.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 99, background: N.primary }} />
+          <span style={{ ...S.label, marginBottom: 0 }}>Confirmadas</span>
+          <span style={{ fontSize: 10, color: N.primary, fontWeight: 700, marginLeft: 'auto' }}>3</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {[{ code: 'RoHS', ref: '2011/65/EU' }, { code: 'Toy Safety', ref: '2025/2509' }, { code: 'ESPR', ref: '2024/1781' }].map(l => (
+            <div key={l.code} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', background: N.primaryDim, borderRadius: 4 }}>
+              <span style={{ fontSize: 10, color: N.primary }}>✓</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: N.text }}>{l.code}</span>
+              <span style={{ fontSize: 9, color: N.textMuted, fontFamily: N.mono, marginLeft: 'auto' }}>{l.ref}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Possible */}
+      <div style={{ padding: 16, borderBottom: `1px solid ${N.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 99, background: N.warning }} />
+          <span style={{ ...S.label, marginBottom: 0 }}>Posibles</span>
+          <span style={{ fontSize: 10, color: N.warning, fontWeight: 700, marginLeft: 'auto' }}>2</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {[{ code: 'EMC', q: 'B.4' }, { code: 'CRA', q: 'B.6b' }].map(l => (
+            <div key={l.code} style={{ padding: '6px 8px', background: N.warningDim, borderRadius: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 10, color: N.warning }}>?</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: N.text }}>{l.code}</span>
+              </div>
+              <div style={{ fontSize: 9, color: N.textMuted, marginTop: 2 }}>Pendiente: pregunta {l.q}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ padding: 16 }}>
+        <div style={{ ...S.label, marginBottom: 8 }}>Cobertura</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {[{ n: '3', l: 'Confirmadas', c: N.primary }, { n: '2', l: 'Posibles', c: N.warning }, { n: '25', l: 'Excluidas', c: N.textDim }, { n: '2', l: 'Pendientes', c: N.textMuted }].map(s => (
+            <div key={s.l} style={{ padding: '8px', background: N.card, borderRadius: 6, border: `1px solid ${N.border}`, textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: s.c, fontFamily: N.mono }}>{s.n}</div>
+              <div style={{ fontSize: 9, color: N.textMuted }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ═══════════════════════════════════════════════════
+// APPROACH C — Conversational / Progressive
+// ═══════════════════════════════════════════════════
+
+function ConversationalFlow() {
+  return <div style={{ width: '100%', height: '100%', background: N.bg, fontFamily: N.font, color: N.text, display: 'flex', overflow: 'hidden' }}>
+    {/* Chat area */}
+    <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      {/* Messages */}
+      <div style={{ flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
+
+        {/* System message */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 99, background: N.primaryDim, border: `1px solid ${N.primaryBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 12 }}>⚡</span>
+          </div>
+          <div style={{ ...S.cardBase, padding: '10px 14px', maxWidth: 420 }}>
+            <div style={{ fontSize: 11, lineHeight: 1.6, color: N.text }}>
+              Vamos a determinar qué normativas EU aplican a tu producto. Empecemos con la identidad del producto.
+            </div>
+          </div>
+        </div>
+
+        {/* Block A header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+          <div style={{ height: 1, flex: 1, background: N.border }} />
+          <Pill color={N.primary} bg={N.primaryDim}>Bloque A — Identidad</Pill>
+          <div style={{ height: 1, flex: 1, background: N.border }} />
+        </div>
+
+        {/* Question A.1 — answered */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 99, background: N.primaryDim, border: `1px solid ${N.primaryBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: N.primary }}>A.1</span>
+          </div>
+          <div>
+            <div style={{ ...S.cardBase, padding: '10px 14px', marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: N.text, marginBottom: 8 }}>¿Qué tipo de producto es?</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['Consumo general', 'Juguete infantil', 'Industrial', 'Médico', 'Construcción'].map((o, i) => (
+                  <div key={o} style={{
+                    padding: '5px 10px', borderRadius: 99, fontSize: 10, fontWeight: 500, cursor: 'pointer',
+                    background: i === 0 ? N.primary : 'transparent',
+                    color: i === 0 ? N.bg : N.textMuted,
+                    border: `1px solid ${i === 0 ? N.primary : N.border}`,
+                  }}>{o}</div>
+                ))}
+              </div>
+            </div>
+            <div style={{ fontSize: 9, color: N.textDim }}>
+              ✓ Respondido · Activó: RoHS, ESPR
+            </div>
+          </div>
+        </div>
+
+        {/* Block B header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+          <div style={{ height: 1, flex: 1, background: N.border }} />
+          <Pill color={N.primary} bg={N.primaryDim}>Bloque B — Electrónica</Pill>
+          <div style={{ height: 1, flex: 1, background: N.border }} />
+        </div>
+
+        {/* B.1 answered */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 99, background: N.primaryDim, border: `1px solid ${N.primaryBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: N.primary }}>B.1</span>
+          </div>
+          <div style={{ ...S.cardBase, padding: '10px 14px' }}>
+            <div style={{ fontSize: 11, color: N.text, marginBottom: 4 }}>¿Contiene componentes electrónicos?</div>
+            <Pill color={N.primary} bg={N.primaryDim} style={{ marginTop: 4 }}>✓ Sí</Pill>
+          </div>
+        </div>
+
+        {/* B.2 — current question */}
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 99, background: N.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 0 12px ${N.primary}44` }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: N.bg }}>B.2</span>
+          </div>
+          <div style={{ ...S.cardBase, padding: '12px 14px', borderColor: N.primaryBorder, background: N.primaryDim }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: N.text, marginBottom: 10 }}>¿Cuál es el rango de tensión de operación?</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <Radio checked={false} label="< 50V AC / 75V DC" />
+              <Radio checked={false} label="50–1000V AC → activa LVD" />
+              <Radio checked={false} label="75–1500V DC → activa LVD" />
+              <Radio checked={false} label="Red 230V / 400V → activa LVD" />
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <UnknownBtn />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom context bar */}
+      <div style={{ borderTop: `1px solid ${N.border}`, padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
+          <Pill color={N.primary} bg={N.primaryDim}>✓ RoHS</Pill>
+          <Pill color={N.primary} bg={N.primaryDim}>✓ ESPR</Pill>
+          <Pill color={N.warning} bg={N.warningDim}>? EMC</Pill>
+        </div>
+        <span style={{ fontSize: 10, color: N.textMuted }}>3 de 30 evaluadas</span>
+      </div>
+    </div>
+
+    {/* Right — compact results */}
+    <div style={{ width: 220, borderLeft: `1px solid ${N.border}`, padding: 16, overflow: 'auto', flexShrink: 0 }}>
+      <div style={{ ...S.label, marginBottom: 10 }}>Resultados en vivo</div>
+
+      <div style={{ padding: '10px', background: N.card, borderRadius: 6, border: `1px solid ${N.border}`, marginBottom: 8 }}>
+        <div style={{ fontSize: 24, fontWeight: 700, color: N.primary, fontFamily: N.mono }}>2</div>
+        <div style={{ fontSize: 9, color: N.textMuted }}>Normativas confirmadas</div>
+      </div>
+      <div style={{ padding: '10px', background: N.card, borderRadius: 6, border: `1px solid ${N.border}`, marginBottom: 8 }}>
+        <div style={{ fontSize: 24, fontWeight: 700, color: N.warning, fontFamily: N.mono }}>1</div>
+        <div style={{ fontSize: 9, color: N.textMuted }}>Posible (pendiente)</div>
+      </div>
+
+      <div style={{ ...S.label, marginTop: 16, marginBottom: 8 }}>Flags activos</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {['A.1.consumer', 'B.1.yes', 'B.3.active'].map(f => (
+          <div key={f} style={{ fontSize: 9, fontFamily: N.mono, color: N.textDim, padding: '2px 6px', background: N.card, borderRadius: 3 }}>{f}</div>
+        ))}
+      </div>
+    </div>
+  </div>;
+}
+
+
+// ═══════════════════════════════════════════════════
+// Canvas layout
+// ═══════════════════════════════════════════════════
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="wizard" title="A — Wizard Stepper" subtitle="Un bloque a la vez, rail de progreso lateral, resultados en vivo a la derecha">
+        <DCArtboard id="wizard-main" label="Wizard — Bloque B activo" width={780} height={520}>
+          <WizardStepper />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="accordion" title="B — Accordion Blocks" subtitle="Todos los bloques visibles con expand/collapse, sidebar de resultados fija">
+        <DCArtboard id="accordion-main" label="Accordion — Bloque B expandido" width={780} height={520}>
+          <AccordionBlocks />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="conversational" title="C — Flujo Conversacional" subtitle="Progresión tipo chat, preguntas como mensajes, chips de respuesta rápida">
+        <DCArtboard id="conv-main" label="Conversacional — pregunta activa B.2" width={780} height={520}>
+          <ConversationalFlow />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

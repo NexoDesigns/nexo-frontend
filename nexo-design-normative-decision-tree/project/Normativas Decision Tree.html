@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexo — Árbol de Decisión Normativo</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="engine.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background: hsl(222 22% 7%); color: hsl(210 17% 93%); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; overflow:hidden; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:hsl(222 18% 20%); border-radius:99px; }
+  ::selection { background:hsla(153,60%,53%,.2); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn .2s ease-out; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+  .slide-in { animation: slideIn .2s ease-out; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+// ─── Question Renderer ─────────────────────────────────────────
+function QuestionCard({ question, answer, unknowns, onAnswer, onUnknown, isSubQuestion }) {
+  const isAnswered = answer != null;
+  const isUnknown = unknowns.has(question.id);
+
+  const handleSingle = (value) => {
+    onAnswer(question.id, value);
+  };
+
+  const handleMulti = (value) => {
+    const current = answer || [];
+    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+    onAnswer(question.id, next.length > 0 ? next : null);
+  };
+
+  const handleUnknown = () => {
+    onUnknown(question.id);
+  };
+
+  return (
+    <div className="fade-in" style={{
+      marginLeft: isSubQuestion ? 20 : 0,
+      borderLeft: isSubQuestion ? `2px solid ${NX.primaryBorder}` : 'none',
+      paddingLeft: isSubQuestion ? 14 : 0,
+      marginBottom: 10,
+    }}>
+      <NxCard active={!isAnswered && !isUnknown} style={{ opacity: isUnknown ? .6 : 1 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div>
+            <span style={{ fontSize: 10, fontFamily: NX.mono, color: NX.primary, fontWeight: 600 }}>{question.id}</span>
+            <div style={{ fontSize: 12, fontWeight: 500, color: NX.text, marginTop: 2, lineHeight: 1.5 }}>{question.label}</div>
+          </div>
+          {isAnswered && !isUnknown && (
+            <NxButton ghost small onClick={() => onAnswer(question.id, null)} style={{ flexShrink: 0 }}>
+              Editar
+            </NxButton>
+          )}
+        </div>
+
+        {question.type === 'single' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {question.options.map(opt => (
+              <NxRadio key={opt.value} checked={answer === opt.value}
+                label={opt.label} onClick={() => handleSingle(opt.value)} />
+            ))}
+          </div>
+        )}
+
+        {question.type === 'multi' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {question.options.map(opt => (
+              <NxCheckbox key={opt.value} checked={(answer || []).includes(opt.value)}
+                label={opt.label} onClick={() => handleMulti(opt.value)} />
+            ))}
+          </div>
+        )}
+
+        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <NxUnknownButton onClick={handleUnknown} active={isUnknown} />
+          {isUnknown && <span style={{ fontSize: 10, color: NX.warning }}>Se evaluará como «posible»</span>}
+        </div>
+      </NxCard>
+    </div>
+  );
+}
+
+// ─── Results Panel ─────────────────────────────────────────────
+function ResultsPanel({ results }) {
+  const confirmed = results.filter(r => r.status === 'confirmed');
+  const possible = results.filter(r => r.status === 'possible');
+  const excluded = results.filter(r => r.status === 'excluded');
+  const notEval = results.filter(r => r.status === 'not_evaluated');
+
+  const [showExcluded, setShowExcluded] = useState(false);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Stats grid */}
+      <div style={{ padding: '14px 14px 10px', borderBottom: `1px solid ${NX.sidebarBorder}` }}>
+        <NxLabel style={{ marginBottom: 8 }}>Resumen</NxLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {[
+            { n: confirmed.length, l: 'Confirmadas', c: NX.success },
+            { n: possible.length, l: 'Posibles', c: NX.warning },
+            { n: excluded.length, l: 'Excluidas', c: NX.textDim },
+            { n: notEval.length, l: 'Sin evaluar', c: NX.textMuted },
+          ].map(s => (
+            <div key={s.l} style={{ padding: 8, background: NX.card, borderRadius: NX.radiusSm, border: `1px solid ${NX.border}`, textAlign: 'center' }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: s.c, fontFamily: NX.mono }}>{s.n}</div>
+              <div style={{ fontSize: 9, color: NX.textMuted }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lists */}
+      <div style={{ flex: 1, overflow: 'auto', padding: 14 }}>
+        {confirmed.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 99, background: NX.success }} />
+              <NxLabel>Confirmadas ({confirmed.length})</NxLabel>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {confirmed.map(l => <NxLegBadge key={l.id} leg={l} />)}
+            </div>
+          </div>
+        )}
+
+        {possible.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 99, background: NX.warning }} />
+              <NxLabel>Posibles ({possible.length})</NxLabel>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {possible.map(l => <NxLegBadge key={l.id} leg={l} />)}
+            </div>
+          </div>
+        )}
+
+        {excluded.length > 0 && (
+          <div>
+            <button onClick={() => setShowExcluded(!showExcluded)} style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            }}>
+              <div style={{ width: 8, height: 8, borderRadius: 99, background: NX.textDim }} />
+              <NxLabel>Excluidas ({excluded.length})</NxLabel>
+              <span style={{ fontSize: 10, color: NX.textDim }}>{showExcluded ? '▲' : '▼'}</span>
+            </button>
+            {showExcluded && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }} className="fade-in">
+                {excluded.map(l => <NxLegBadge key={l.id} leg={l} compact />)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ──────────────────────────────────────────────────
+function App() {
+  // State
+  const [answers, setAnswers] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('nexo-dt-answers') || '{}'); } catch { return {}; }
+  });
+  const [unknowns, setUnknowns] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('nexo-dt-unknowns') || '[]')); } catch { return new Set(); }
+  });
+  const [activeBlock, setActiveBlock] = useState(() => {
+    try { return localStorage.getItem('nexo-dt-block') || 'A'; } catch { return 'A'; }
+  });
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+
+  // Persist
+  useEffect(() => {
+    localStorage.setItem('nexo-dt-answers', JSON.stringify(answers));
+  }, [answers]);
+  useEffect(() => {
+    localStorage.setItem('nexo-dt-unknowns', JSON.stringify([...unknowns]));
+  }, [unknowns]);
+  useEffect(() => {
+    localStorage.setItem('nexo-dt-block', activeBlock);
+  }, [activeBlock]);
+
+  // Compute flags from answers
+  const flags = useMemo(() => {
+    const f = new Set();
+    for (const [qId, val] of Object.entries(answers)) {
+      if (val == null) continue;
+      const q = QUESTIONS.find(q => q.id === qId);
+      if (!q) continue;
+      if (q.type === 'single') {
+        const opt = q.options.find(o => o.value === val);
+        if (opt) opt.flags.forEach(flag => f.add(flag));
+      } else if (q.type === 'multi') {
+        for (const v of val) {
+          const opt = q.options.find(o => o.value === v);
+          if (opt) opt.flags.forEach(flag => f.add(flag));
+        }
+      }
+    }
+    // Add .unknown flags for unknowns
+    for (const qId of unknowns) {
+      const q = QUESTIONS.find(q => q.id === qId);
+      if (!q) continue;
+      for (const opt of q.options) {
+        for (const flag of opt.flags) {
+          f.add(flag + '.unknown');
+        }
+      }
+    }
+    return f;
+  }, [answers, unknowns]);
+
+  // Evaluate legislations
+  const results = useMemo(() => evaluateLegislations(flags), [flags]);
+
+  // Visible blocks
+  const visibleBlocks = useMemo(() => getVisibleBlocks(flags), [flags]);
+
+  // Block questions
+  const blockQuestions = useMemo(() => getBlockQuestions(activeBlock, flags), [activeBlock, flags]);
+
+  // Block progress for all blocks
+  const blockProgress = useMemo(() => {
+    const p = {};
+    for (const b of BLOCKS) {
+      p[b.id] = getBlockProgress(b.id, flags, answers);
+    }
+    return p;
+  }, [flags, answers]);
+
+  // Total progress
+  const totalVisible = useMemo(() => getVisibleQuestions(flags).length, [flags]);
+  const totalAnswered = useMemo(() => {
+    return getVisibleQuestions(flags).filter(q => answers[q.id] != null || unknowns.has(q.id)).length;
+  }, [flags, answers, unknowns]);
+
+  // Handlers
+  const handleAnswer = useCallback((qId, value) => {
+    setAnswers(prev => {
+      const next = { ...prev };
+      if (value == null) delete next[qId]; else next[qId] = value;
+      return next;
+    });
+    // Remove from unknowns if answering
+    if (value != null) setUnknowns(prev => { const n = new Set(prev); n.delete(qId); return n; });
+  }, []);
+
+  const handleUnknown = useCallback((qId) => {
+    setUnknowns(prev => {
+      const n = new Set(prev);
+      if (n.has(qId)) n.delete(qId); else n.add(qId);
+      return n;
+    });
+    // Clear answer if marking unknown
+    setAnswers(prev => { const n = { ...prev }; delete n[qId]; return n; });
+  }, []);
+
+  const handleReset = () => {
+    if (confirm('¿Resetear todas las respuestas?')) {
+      setAnswers({});
+      setUnknowns(new Set());
+      setActiveBlock('A');
+      localStorage.removeItem('nexo-dt-answers');
+      localStorage.removeItem('nexo-dt-unknowns');
+      localStorage.removeItem('nexo-dt-block');
+    }
+  };
+
+  // Navigate blocks
+  const blockIdx = visibleBlocks.findIndex(b => b.id === activeBlock);
+  const canPrev = blockIdx > 0;
+  const canNext = blockIdx < visibleBlocks.length - 1;
+
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [activeBlock]);
+
+  // Determine sub-questions
+  const isSubQuestion = (q) => q.id.includes('.') && q.id.split('.').length > 2;
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: NX.font }}>
+
+      {/* ─── Left Sidebar: Block Navigator ─── */}
+      <div style={{ width: 230, borderRight: `1px solid ${NX.sidebarBorder}`, background: NX.sidebar, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        {/* Logo area */}
+        <div style={{ padding: '14px 16px', borderBottom: `1px solid ${NX.sidebarBorder}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 6, background: NX.primaryDim, border: `1px solid ${NX.primaryBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke={NX.primary} strokeWidth="2" strokeLinecap="round"/></svg>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: NX.text }}>Alcance Normativo</div>
+            <div style={{ fontSize: 9, color: NX.textMuted }}>NLF Decision Tree</div>
+          </div>
+        </div>
+
+        {/* Block list */}
+        <div style={{ flex: 1, overflow: 'auto', paddingTop: 8 }}>
+          <NxLabel style={{ padding: '0 16px 8px' }}>Bloques</NxLabel>
+          {visibleBlocks.map(b => {
+            const prog = blockProgress[b.id];
+            const done = prog.total > 0 && prog.done === prog.total;
+            return <NxBlockStep key={b.id} block={b} active={activeBlock === b.id} done={done}
+              progress={prog} onClick={() => setActiveBlock(b.id)} />;
+          })}
+        </div>
+
+        {/* Bottom: progress + reset */}
+        <div style={{ borderTop: `1px solid ${NX.sidebarBorder}`, padding: 14 }}>
+          <NxLabel style={{ marginBottom: 6 }}>Progreso total</NxLabel>
+          <NxProgressBar value={totalAnswered} max={totalVisible} />
+          <div style={{ fontSize: 10, color: NX.textMuted, marginTop: 4 }}>{totalAnswered} de {totalVisible} preguntas</div>
+          <NxButton ghost small onClick={handleReset} style={{ marginTop: 8, color: NX.destructive, fontSize: 10 }}>
+            Resetear formulario
+          </NxButton>
+        </div>
+      </div>
+
+      {/* ─── Center: Question Area ─── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Block header */}
+        <div style={{ padding: '16px 24px', borderBottom: `1px solid ${NX.border}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <span style={{ fontSize: 18 }}>{visibleBlocks.find(b=>b.id===activeBlock)?.icon}</span>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, fontFamily: NX.mono, color: NX.primary, fontWeight: 700, background: NX.primaryDim, padding: '2px 8px', borderRadius: 4 }}>Bloque {activeBlock}</span>
+                <span style={{ fontSize: 10, color: NX.textDim }}>{blockQuestions.length} pregunta{blockQuestions.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginTop: 4 }}>{visibleBlocks.find(b=>b.id===activeBlock)?.label}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Questions */}
+        <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
+          <div style={{ maxWidth: 620 }}>
+            {blockQuestions.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: NX.textDim }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📋</div>
+                <div style={{ fontSize: 12 }}>No hay preguntas visibles en este bloque.</div>
+                <div style={{ fontSize: 11, color: NX.textDim, marginTop: 4 }}>Las preguntas aparecen según las respuestas de bloques anteriores.</div>
+              </div>
+            )}
+            {blockQuestions.map(q => (
+              <QuestionCard key={q.id} question={q} answer={answers[q.id]}
+                unknowns={unknowns} onAnswer={handleAnswer} onUnknown={handleUnknown}
+                isSubQuestion={isSubQuestion(q)} />
+            ))}
+          </div>
+
+          {/* Block navigation */}
+          <div style={{ maxWidth: 620, display: 'flex', justifyContent: 'space-between', paddingTop: 16, paddingBottom: 24 }}>
+            <NxButton disabled={!canPrev} onClick={() => canPrev && setActiveBlock(visibleBlocks[blockIdx - 1].id)}>
+              ← {canPrev ? `Bloque ${visibleBlocks[blockIdx - 1].id}` : ''}
+            </NxButton>
+            {canNext ? (
+              <NxButton primary onClick={() => setActiveBlock(visibleBlocks[blockIdx + 1].id)}>
+                Bloque {visibleBlocks[blockIdx + 1].id} →
+              </NxButton>
+            ) : (
+              <NxButton primary disabled={totalAnswered < totalVisible} onClick={() => alert('Formulario completado. Resultados listos para el agente IA.')}>
+                Finalizar evaluación
+              </NxButton>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Right Panel: Live Results ─── */}
+      {rightCollapsed ? (
+        <div style={{ width: 40, borderLeft: `1px solid ${NX.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, flexShrink: 0, background: NX.sidebar }}>
+          <button onClick={() => setRightCollapsed(false)} style={{
+            background: 'none', border: 'none', cursor: 'pointer', color: NX.textMuted, padding: 8, borderRadius: 4,
+            transform: 'rotate(180deg)',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+          {/* Mini status dots */}
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            {results.filter(r => r.status === 'confirmed').length > 0 && <div style={{ width: 8, height: 8, borderRadius: 99, background: NX.success }} title={`${results.filter(r=>r.status==='confirmed').length} confirmadas`} />}
+            {results.filter(r => r.status === 'possible').length > 0 && <div style={{ width: 8, height: 8, borderRadius: 99, background: NX.warning }} title={`${results.filter(r=>r.status==='possible').length} posibles`} />}
+          </div>
+        </div>
+      ) : (
+        <div style={{ width: 280, borderLeft: `1px solid ${NX.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, overflow: 'hidden', background: NX.sidebar }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${NX.sidebarBorder}` }}>
+            <NxLabel>Legislación detectada</NxLabel>
+            <button onClick={() => setRightCollapsed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NX.textMuted, padding: 4 }}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3l-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          </div>
+          <ResultsPanel results={results} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
