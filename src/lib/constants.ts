@@ -111,3 +111,8 @@ export const NORMATIVE_COUNTRIES = [
   { code: 'CA', label: 'Canada' },
 ] as const
 export type NormativeCountryCode = (typeof NORMATIVE_COUNTRIES)[number]['code']
+
+
+// ─── Component Design Picker ───────────────────────────────────────────────────────────────
+// Numero maximo de partes q se muestran por defecto en 
+export const COMPONENT_DESIGN_PICKER_MAX_VISIBLE_PARTS = 4

@@ -27,7 +27,9 @@
     "references": "Referencias",
     "selected": "seleccionados",
     "description": "Descripción",
-    "rationale": "Justificación"
+    "rationale": "Justificación",
+    "showLess": "Mostrar menos",
+    "more": "Más"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -148,10 +150,14 @@
     "icSelectionDesigns": "Diseños seleccionados de research:",
     "noDesignsSelected": "No hay diseños seleccionados. Elige mínimo uno para ejecutar la fase.",
     "icOutputTitle": "Resultado IC Selection",
+    "componentDesignTitle": "Diseño a usar",
+    "componentDesignSingle": "Un único diseño disponible — pre-seleccionado",
+    "componentDesignNoData": "No hay diseños disponibles. Ejecuta primero el IC Naming Agent.",
+    "componentSelectionOutputTitle": "Componentes adicionales",
     "components": "componentes",
     "viewInput": "Ver input",
     "notes": "Notas",
-    "notesPlaceholder": "Notas opcionales para este run...",
+    "notesPlaceholder": "Comentario opcional para este run...",
     "editNotes": "Editar notas",
     "saveNotes": "Guardar notas"
   },

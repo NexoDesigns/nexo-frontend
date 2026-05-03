@@ -27,7 +27,9 @@
     "references": "References",
     "selected": "selected",
     "description": "Description",
-    "rationale": "Rationale"
+    "rationale": "Rationale",
+    "showLess": "Show less",
+    "more": "More"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -148,10 +150,14 @@
     "icSelectionDesigns": "Selected research designs:",
     "noDesignsSelected": "No designs selected. Choose minimum one to run the phase.",
     "icOutputTitle": "IC Selection output",
+    "componentDesignTitle": "Design to use",
+    "componentDesignSingle": "Only one design available — pre-selected",
+    "componentDesignNoData": "No designs available. Run IC Naming Agent first.",
+    "componentSelectionOutputTitle": "Additional components",
     "components": "components",
     "viewInput": "View input",
     "notes": "Notes",
-    "notesPlaceholder": "Optional notes for this run...",
+    "notesPlaceholder": "Optional comment for this run...",
     "editNotes": "Edit notes",
     "saveNotes": "Save notes"
   },
