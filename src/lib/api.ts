@@ -22,7 +22,8 @@ import type {
   UpdateProjectNormativesPayload,
   NormativesRun,
   NormativeUploadMetadata,
-  DecisionTreeAnswers
+  DecisionTreeAnswers,
+  IcAvailabilityResult
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -296,5 +297,15 @@ export const decisionTreeApi = {
   save: (projectId: string, answers: DecisionTreeAnswers) =>
     apiFetch<DecisionTreeAnswers>(`/projects/${projectId}/normatives/decision-tree`, {
       method: 'PUT', body: JSON.stringify({ answers })
+    }),
+}
+
+// ─── Components ───────────────────────────────────────────────────────────────
+
+export const componentsApi = {
+  checkIcAvailability: (components: Record<string, string[]>) =>
+    apiFetch<IcAvailabilityResult>('/components/ic-availability', {
+      method: 'POST',
+      body: JSON.stringify({ components }),
     }),
 }

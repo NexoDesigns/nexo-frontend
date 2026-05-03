@@ -330,3 +330,19 @@ export interface UpdateProjectNormativesPayload {
 
 // ─── Normative Decision Tree ───────────────────────────────────────────────────────────────
 export type DecisionTreeAnswers = Record<string, string[]>  // questionId → selected option values
+
+// ─── IC Availability ──────────────────────────────────────────────────────────
+export interface PartAvailabilityInfo {
+  available: boolean
+  supplier: string | null
+  unit_price: string | null
+  currency: string | null
+  in_stock: string | null
+  factory_stock: string | null
+  datasheet_url: string | null
+  manufacturer: string | null
+}
+
+export interface IcAvailabilityResult {
+  parts: Record<string, PartAvailabilityInfo>  // keyed by cleaned MPN
+}
