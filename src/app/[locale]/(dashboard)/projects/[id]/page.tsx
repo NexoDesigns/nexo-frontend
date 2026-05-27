@@ -101,13 +101,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 <Info className="h-3.5 w-3.5" />
                 {tDescripcion('title')}
               </TabsTrigger>
-              <TabsTrigger
-                value="pipeline"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
-              >
-                <GitBranch className="h-3.5 w-3.5" />
-                {tPipeline('title')}
-              </TabsTrigger>
+
               <TabsTrigger
                 value="requirements"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
@@ -115,6 +109,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 <Settings2 className="h-3.5 w-3.5" />
                 {t('requirements')}
               </TabsTrigger>
+
               <TabsTrigger
                 value="normativas"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
@@ -122,6 +117,15 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 <Shield className="h-3.5 w-3.5" />
                 {tNormativas('title')}
               </TabsTrigger>
+
+              <TabsTrigger
+                value="pipeline"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
+              >
+                <GitBranch className="h-3.5 w-3.5" />
+                {tPipeline('title')}
+              </TabsTrigger>
+              
               <TabsTrigger
                 value="documents"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-2 text-xs gap-1.5"
@@ -137,9 +141,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <DescripcionView projectId={id} project={project} />
           </TabsContent>
 
-          {/* Pipeline tab */}
-          <TabsContent value="pipeline" className="flex-1 overflow-y-auto p-6 mt-0">
-            <PipelineView projectId={id} />
+          {/* Normativas tab */}
+          <TabsContent value="normativas" className="flex-1 overflow-hidden mt-0">
+            <NormativasView projectId={id} project={project} />
           </TabsContent>
 
           {/* Requirements tab */}
@@ -147,9 +151,9 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <RequirementsView projectId={id} project={project} />
           </TabsContent>
 
-          {/* Normativas tab */}
-          <TabsContent value="normativas" className="flex-1 overflow-hidden mt-0">
-            <NormativasView projectId={id} project={project} />
+          {/* Pipeline tab */}
+          <TabsContent value="pipeline" className="flex-1 overflow-y-auto p-6 mt-0">
+            <PipelineView projectId={id} project={project} />
           </TabsContent>
 
           {/* Documents tab */}

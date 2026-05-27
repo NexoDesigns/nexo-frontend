@@ -278,6 +278,7 @@ export function RequirementsView({ projectId, project }: RequirementsViewProps) 
             <RequirementsRunsList
               projectId={projectId}
               selectedRunId={selectedRun?.id}
+              activeRunId={project.active_requirements_run_id}
               onSelectRun={handleSelectRun}
             />
           </div>

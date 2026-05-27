@@ -234,6 +234,12 @@ export const requirementsRunsApi = {
     apiFetch<RequirementsRun>(
       `/projects/${projectId}/requirements/runs/${runId}`
     ),
+
+  activate: (projectId: string, runId: string) =>
+    apiFetch<RequirementsRun>(
+      `/projects/${projectId}/requirements/runs/${runId}/activate`,
+      { method: 'POST' }
+    ),
 }
 
 // ─── RAG search ───────────────────────────────────────────────────────────────

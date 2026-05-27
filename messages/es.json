@@ -111,7 +111,12 @@
     "noOutputHint": "Ejecuta el workflow para generar el Excel de requisitos técnicos",
     "invalidDriveUrl": "URL de Google Drive inválida",
     "runBy": "por {name}",
-    "workflowRunning": "Workflow ejecutándose..."
+    "workflowRunning": "Workflow ejecutándose...",
+    "requirementsRun": "Ejecución de requisitos seleccionada",
+    "noRequirementsRun": "No hay una ejecución de requisitos seleccionada",
+    "viewInDrive": "Ver en Drive",
+    "activateRun": "Usar este run",
+    "activeRun": "Run activo"
   },
   "pipeline": {
     "title": "Pipeline de diseño",

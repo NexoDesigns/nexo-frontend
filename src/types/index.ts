@@ -26,6 +26,7 @@ export interface Project {
   normative_user_age_range: string | null
   normative_target_countries: string[] | null
   normative_extra_context: string | null
+  active_requirements_run_id: string | null
   created_by: string
   created_at: string
   updated_at: string

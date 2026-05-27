@@ -2,18 +2,19 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { runsApi, phasesApi } from '@/lib/api'
+import { runsApi, phasesApi, requirementsRunsApi } from '@/lib/api'
 import { PhaseCard } from './PhaseCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PHASE_ORDER } from '@/lib/utils'
-import type { PhaseId, ProjectActiveRun, ResearchSolution } from '@/types'
+import type { PhaseId, Project, ProjectActiveRun, ResearchSolution } from '@/types'
 import { ArrowRight } from 'lucide-react'
 
 interface PipelineViewProps {
   projectId: string
+  project: Project
 }
 
-export function PipelineView({ projectId }: PipelineViewProps) {
+export function PipelineView({ projectId, project }: PipelineViewProps) {
   const [selectedResearchSolutions, setSelectedResearchSolutions] = useState<ResearchSolution[]>([])
   const [researchQuerySummary, setResearchQuerySummary] = useState<string | undefined>(undefined)
 
@@ -27,6 +28,12 @@ export function PipelineView({ projectId }: PipelineViewProps) {
     queryKey: ['active-runs', projectId],
     queryFn: () => runsApi.getActiveRuns(projectId),
     refetchInterval: 10_000, // refresh active run state every 10s
+  })
+
+  const { data: activeRequirementsRun } = useQuery({
+    queryKey: ['requirements-run', project.active_requirements_run_id],
+    queryFn: () => requirementsRunsApi.get(projectId, project.active_requirements_run_id!),
+    enabled: !!project.active_requirements_run_id,
   })
 
   const isLoading = phasesLoading || runsLoading
@@ -65,6 +72,7 @@ export function PipelineView({ projectId }: PipelineViewProps) {
             researchQuerySummary={researchQuerySummary}
             onQuerySummaryChange={setResearchQuerySummary}
             icNamingActiveRunId={activeRunMap['ic_naming_agent']?.run_id ?? null}
+            activeRequirementsRun={activeRequirementsRun ?? null}
           />
           {/* Connector arrow between phases */}
           {idx < sortedPhases.length - 1 && (

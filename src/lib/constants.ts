@@ -51,7 +51,7 @@ export function n8nExecutionUrl(
 }
 
 /** Workflow ID in n8n for the requirements workflow. */
-export const N8N_REQUIREMENTS_WORKFLOW_ID: string | null = "uADgFhixX28peR3k"
+export const N8N_REQUIREMENTS_WORKFLOW_ID: string | null = "QDxShxjw1TDBuwhv" // v1: uADgFhixX28peR3k, v2: QDxShxjw1TDBuwhv
 
 /** Returns the n8n URL for a requirements run.
  *  Links to the specific execution if available, otherwise to the workflow page. */

@@ -22,8 +22,9 @@ import {
   ChevronUp,
   RefreshCw,
   CheckCircle2,
+  ExternalLink,
 } from 'lucide-react'
-import type { PipelinePhase, PhaseId, ResearchSolution, ResearchOutputItem } from '@/types'
+import type { PipelinePhase, PhaseId, RequirementsRun, ResearchSolution, ResearchOutputItem } from '@/types'
 import type { PhaseFormPayload } from './PhaseInputForm'
 import { cn } from '@/lib/utils'
 
@@ -63,6 +64,8 @@ interface PhaseCardProps {
   onQuerySummaryChange?: (summary: string) => void
   /** Active run ID for ic_naming_agent — needed by component_selection to show the design picker */
   icNamingActiveRunId?: string | null
+  /** Active requirements run — shown as read-only context in the research phase */
+  activeRequirementsRun?: RequirementsRun | null
 }
 
 export function PhaseCard({
@@ -74,9 +77,11 @@ export function PhaseCard({
   researchQuerySummary,
   onQuerySummaryChange,
   icNamingActiveRunId,
+  activeRequirementsRun,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
+  const tReq = useTranslations('requirements')
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
   const [historyExpanded, setHistoryExpanded] = useState(false)
@@ -174,7 +179,13 @@ export function PhaseCard({
           : inputs
       const payload =
         phase.id === 'research'
-          ? { use_perplexity: usePerplexity, custom_inputs }
+          ? {
+              use_perplexity: usePerplexity,
+              custom_inputs: {
+                ...custom_inputs,
+                requirements_drive_url: activeRequirementsRun?.output_drive_url ?? null,
+              },
+            }
           : { custom_inputs }
       return runsApi.trigger(projectId, phase.id, payload)
     },
@@ -265,6 +276,49 @@ export function PhaseCard({
       {expanded && (
         <CardContent className="pt-0 space-y-4 animate-fade-in">
           <Separator />
+
+          {/* Requirements run context — research phase only */}
+          {phase.id === 'research' && (
+            <>
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                  {tReq('requirementsRun')}
+                </p>
+                {activeRequirementsRun ? (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+                    <div className="flex items-center gap-2 text-xs min-w-0">
+                      <span className="font-mono text-muted-foreground shrink-0">
+                        {t('runNumber')}{activeRequirementsRun.run_number}
+                      </span>
+                      <RunStatusBadge status={activeRequirementsRun.status} />
+                    </div>
+                    {activeRequirementsRun.output_drive_url && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-xs gap-1 text-muted-foreground shrink-0"
+                        asChild
+                      >
+                        <a
+                          href={activeRequirementsRun.output_drive_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          {tReq('viewInDrive')}
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    {tReq('noRequirementsRun')}
+                  </p>
+                )}
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Input form */}
           <div>

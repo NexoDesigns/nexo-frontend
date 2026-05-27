@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { requirementsRunsApi, profilesApi } from '@/lib/api'
 import { n8nRequirementsUrl } from '@/lib/constants'
 import { RunStatusBadge } from '@/components/pipeline/RunStatusBadge'
@@ -14,6 +14,7 @@ import {
   Clock,
   AlertCircle,
   ExternalLink,
+  Star,
 } from 'lucide-react'
 import { formatRelativeDate, formatDuration } from '@/lib/utils'
 import type { RequirementsRun } from '@/types'
@@ -22,19 +23,30 @@ import { cn } from '@/lib/utils'
 interface RequirementsRunsListProps {
   projectId: string
   selectedRunId?: string
+  activeRunId?: string | null
   onSelectRun: (run: RequirementsRun, viewMode: 'input' | 'output') => void
 }
 
 export function RequirementsRunsList({
   projectId,
   selectedRunId,
+  activeRunId,
   onSelectRun,
 }: RequirementsRunsListProps) {
   const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
   const tReq = useTranslations('requirements')
   const locale = useLocale()
+  const queryClient = useQueryClient()
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null)
+
+  const activateMutation = useMutation({
+    mutationFn: (runId: string) => requirementsRunsApi.activate(projectId, runId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requirements-runs', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+    },
+  })
 
   const { data: runs, isLoading, isError } = useQuery({
     queryKey: ['requirements-runs', projectId],
@@ -80,6 +92,7 @@ export function RequirementsRunsList({
       {runs.map((run) => {
         const isSelected = run.id === selectedRunId
         const isExpanded = expandedRunId === run.id
+        const isActive = run.id === activeRunId
 
         return (
           <div
@@ -104,7 +117,8 @@ export function RequirementsRunsList({
               }}
               className="flex w-full items-center gap-3 px-3 py-2.5 text-left cursor-pointer"
             >
-              <span className="text-xs font-mono text-muted-foreground w-12 shrink-0">
+              <span className="flex items-center gap-1 text-xs font-mono text-muted-foreground w-12 shrink-0">
+                {isActive && <Star className="h-3 w-3 fill-primary text-primary" />}
                 {t('runNumber')}{run.run_number}
               </span>
 
@@ -139,6 +153,26 @@ export function RequirementsRunsList({
                   <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                     <span className="font-mono">{run.error_message}</span>
+                  </div>
+                )}
+
+                {/* Activate run */}
+                {run.status === 'completed' && !isActive && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 w-full"
+                    onClick={() => activateMutation.mutate(run.id)}
+                    disabled={activateMutation.isPending}
+                  >
+                    <Star className="h-3 w-3" />
+                    {tReq('activateRun')}
+                  </Button>
+                )}
+                {isActive && (
+                  <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
+                    <Star className="h-3 w-3 fill-primary" />
+                    {tReq('activeRun')}
                   </div>
                 )}
 
