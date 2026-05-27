@@ -45,9 +45,10 @@ export function formatFileSize(bytes: number | null): string {
 
 export function formatDuration(seconds: number | null): string {
   if (seconds === null) return '—'
-  if (seconds < 60) return `${seconds}s`
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
+  const rounded = Math.round(seconds)
+  if (rounded < 60) return `${rounded}s`
+  const m = Math.floor(rounded / 60)
+  const s = rounded % 60
   return s > 0 ? `${m}m ${s}s` : `${m}m`
 }
 

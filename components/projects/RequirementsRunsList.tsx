@@ -88,7 +88,7 @@ export function RequirementsRunsList({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="w-full space-y-1">
       {runs.map((run) => {
         const isSelected = run.id === selectedRunId
         const isExpanded = expandedRunId === run.id
@@ -98,7 +98,7 @@ export function RequirementsRunsList({
           <div
             key={run.id}
             className={cn(
-              'rounded-md border transition-colors',
+              'w-full rounded-md border transition-colors',
               isSelected
                 ? 'border-primary/30 bg-primary/5'
                 : 'border-border bg-card hover:border-border/80'
@@ -115,34 +115,39 @@ export function RequirementsRunsList({
                   setExpandedRunId(isExpanded ? null : run.id)
                 }
               }}
-              className="flex w-full items-center gap-3 px-3 py-2.5 text-left cursor-pointer"
+              className="flex w-full items-center cursor-pointer text-left"
             >
-              <span className="flex items-center gap-1 text-xs font-mono text-muted-foreground w-12 shrink-0">
+              {/* Fixed left: run number */}
+              <span className="flex shrink-0 items-center gap-1 text-xs font-mono text-muted-foreground w-12 pl-3 py-2.5">
                 {isActive && <Star className="h-3 w-3 fill-primary text-primary" />}
                 {t('runNumber')}{run.run_number}
               </span>
 
-              <RunStatusBadge status={run.status} />
+              {/* Scrollable middle */}
+              <div className="flex-1 overflow-x-auto">
+                <div className="flex items-center gap-3 px-2 py-2.5 whitespace-nowrap text-[11px] text-muted-foreground">
+                  <RunStatusBadge status={run.status} />
+                  {run.duration_seconds !== null && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatDuration(run.duration_seconds)}
+                    </span>
+                  )}
+                  {profileMap.get(run.created_by) && (
+                    <span>{profileMap.get(run.created_by)}</span>
+                  )}
+                  <span>{formatRelativeDate(run.created_at, locale)}</span>
+                </div>
+              </div>
 
-              <div className="ml-auto flex items-center gap-3 text-[11px] text-muted-foreground">
-                {run.duration_seconds !== null && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {formatDuration(run.duration_seconds)}
-                  </span>
-                )}
-                {profileMap.get(run.created_by) && (
-                  <span className="hidden sm:inline">
-                    {profileMap.get(run.created_by)}
-                  </span>
-                )}
-                <span>{formatRelativeDate(run.created_at, locale)}</span>
+              {/* Fixed right: expand chevron */}
+              <span className="shrink-0 pr-3 py-2.5 text-muted-foreground">
                 {isExpanded ? (
                   <ChevronDown className="h-3.5 w-3.5" />
                 ) : (
                   <ChevronRight className="h-3.5 w-3.5" />
                 )}
-              </div>
+              </span>
             </div>
 
             {/* Expanded detail */}
