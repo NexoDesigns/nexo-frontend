@@ -33,7 +33,7 @@ export const N8N_BASE_URL = 'https://nexo-n8n.onrender.com'
 
 /** Workflow ID in n8n for each pipeline phase. */
 export const N8N_WORKFLOW_IDS: Record<PhaseId, string | null> = {
-  research: '1DUWTbxD2PNthXV4',
+  research: 'cfdfxR3INcoqEbo2', // v2: cfdfxR3INcoqEbo2, v1: 1DUWTbxD2PNthXV4
   ic_selection: 'Ctzas8sxKGpgE0nh',
   ic_naming_agent: 'DbF6DMysPQgevaOJ',
   component_selection: null, // TODO: create workflow

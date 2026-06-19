@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { projectsApi } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
@@ -117,6 +117,23 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
   const tCommon = useTranslations('common')
   const queryClient = useQueryClient()
 
+  // Requirements fields (kpis, constraints, notes)
+  const { data: requirements } = useQuery({
+    queryKey: ['requirements', projectId],
+    queryFn: () => projectsApi.getRequirements(projectId),
+  })
+  const [constraints, setConstraints] = useState('')
+  const [kpis, setKpis] = useState('')
+  const [comments, setComments] = useState('')
+
+  useEffect(() => {
+    if (requirements) {
+      setConstraints(requirements.constraints ?? '')
+      setKpis(requirements.kpis ?? '')
+      setComments(requirements.notes ?? '')
+    }
+  }, [requirements])
+
   // Project info fields
   const [name, setName] = useState(project.name)
   const [clientName, setClientName] = useState(project.client_name ?? '')
@@ -147,8 +164,8 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
   }))
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      projectsApi.update(projectId, {
+    mutationFn: async () => {
+      await projectsApi.update(projectId, {
         name: name.trim() || project.name,
         client_name: clientName.trim() || null,
         description: description.trim() || null,
@@ -156,9 +173,16 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
         normative_client_type: clientType || null,
         normative_user_age_range: ageRange || null,
         normative_target_countries: countries.length > 0 ? countries : null,
-      }),
+      })
+      await projectsApi.upsertRequirements(projectId, {
+        constraints: constraints.trim() || null,
+        kpis: kpis.trim() || null,
+        notes: comments.trim() || null,
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['requirements', projectId] })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     },
@@ -197,6 +221,42 @@ export function DescripcionView({ projectId, project }: DescripcionViewProps) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('descriptionPlaceholder')}
               className="text-xs min-h-[80px] resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Goals & constraints ── */}
+      <div>
+        <SectionLabel>{t('requirementsSection')}</SectionLabel>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <FieldLabel hint={tCommon('optional')}>{t('constraintsLabel')}</FieldLabel>
+            <Textarea
+              value={constraints}
+              onChange={(e) => setConstraints(e.target.value)}
+              placeholder={t('constraintsPlaceholder')}
+              className="text-xs min-h-[80px] resize-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <FieldLabel hint={tCommon('optional')}>{t('kpisLabel')}</FieldLabel>
+            <Textarea
+              value={kpis}
+              onChange={(e) => setKpis(e.target.value)}
+              placeholder={t('kpisPlaceholder')}
+              className="text-xs min-h-[80px] resize-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <FieldLabel hint={tCommon('optional')}>{t('commentsLabel')}</FieldLabel>
+            <Textarea
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder={t('commentsPlaceholder')}
+              className="text-xs min-h-[64px] resize-none"
             />
           </div>
         </div>
