@@ -23,7 +23,10 @@ import type {
   NormativesRun,
   NormativeUploadMetadata,
   DecisionTreeAnswers,
-  IcAvailabilityResult
+  IcAvailabilityResult,
+  CustomOutputItem,
+  CreateCustomOutputPayload,
+  UpdateCustomOutputPayload,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -154,6 +157,33 @@ export const runsApi = {
       `/projects/${projectId}/phases/${phaseId}/runs/${runId}/bom`,
       { method: 'POST' }
     ),
+}
+
+// ─── Custom phase output items ────────────────────────────────────────────────
+
+const customBase = (projectId: string, phaseId: string, runId: string) =>
+  `/projects/${projectId}/phases/${phaseId}/runs/${runId}/custom-outputs`
+
+export const customOutputsApi = {
+  list: (projectId: string, phaseId: string, runId: string) =>
+    apiFetch<CustomOutputItem[]>(customBase(projectId, phaseId, runId)),
+
+  create: (projectId: string, phaseId: string, runId: string, payload: CreateCustomOutputPayload) =>
+    apiFetch<CustomOutputItem>(customBase(projectId, phaseId, runId), {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  update: (projectId: string, phaseId: string, runId: string, itemId: string, payload: UpdateCustomOutputPayload) =>
+    apiFetch<CustomOutputItem>(`${customBase(projectId, phaseId, runId)}/${itemId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  delete: (projectId: string, phaseId: string, runId: string, itemId: string) =>
+    apiFetch<void>(`${customBase(projectId, phaseId, runId)}/${itemId}`, {
+      method: 'DELETE',
+    }),
 }
 
 // ─── Documents ────────────────────────────────────────────────────────────────

@@ -109,6 +109,31 @@ export interface UpdateRunNotesPayload {
   notes: string
 }
 
+// ─── Custom phase output items ────────────────────────────────────────────────
+
+export interface CustomOutputItem {
+  id: string
+  project_id: string
+  phase_id: PhaseId
+  source_run_id: string
+  source_item_id: string
+  source_item_label: string
+  data: Record<string, unknown>
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateCustomOutputPayload {
+  source_item_id: string
+  source_item_label: string
+  data: Record<string, unknown>
+}
+
+export interface UpdateCustomOutputPayload {
+  data: Record<string, unknown>
+}
+
 export interface RagContext {
   query: string
   results: RagResult[]

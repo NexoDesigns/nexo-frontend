@@ -2,9 +2,12 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { ChevronDown, ChevronUp, ExternalLink, Loader2, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronUp, Copy, ExternalLink, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { BomPart, BomResult } from '@/types'
+import { SimpleContextMenu } from '@/components/ui/context-menu'
+import { AmberWrapper } from './custom/AmberWrapper'
+import { ComponentEditForm } from './custom/ComponentEditForm'
+import type { BomPart, BomResult, CustomOutputItem } from '@/types'
 
 // ─── Component selection output types ────────────────────────────────────────
 
@@ -54,30 +57,56 @@ function groupByType(components: DesignComponent[]): Record<string, DesignCompon
 
 // ─── ComponentRow ─────────────────────────────────────────────────────────────
 
-function ComponentRow({ component }: { component: DesignComponent }) {
+function ComponentRow({ component, onDuplicate }: { component: DesignComponent; onDuplicate?: () => void }) {
+  const t = useTranslations('pipeline')
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
   const specs = Object.entries(component).filter(([k]) => !STRUCTURAL_FIELDS.has(k))
   return (
-    <div className="py-2 border-b border-border last:border-0">
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-[10px] font-bold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
-          {component.ref}
-        </span>
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5 min-w-0">
-          {specs.map(([key, value]) => (
-            <span key={key} className="text-[10px] text-muted-foreground">
-              <span className="text-muted-foreground/60">{key}:</span>{' '}
-              <span className="text-foreground">{String(value ?? '')}</span>
-            </span>
-          ))}
+    <>
+      <div
+        className="py-2 border-b border-border last:border-0"
+        onContextMenu={(e) => {
+          if (!onDuplicate) return
+          e.preventDefault()
+          setMenu({ x: e.clientX, y: e.clientY })
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] font-bold text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">
+            {component.ref}
+          </span>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 min-w-0">
+            {specs.map(([key, value]) => (
+              <span key={key} className="text-[10px] text-muted-foreground">
+                <span className="text-muted-foreground/60">{key}:</span>{' '}
+                <span className="text-foreground">{String(value ?? '')}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+      <SimpleContextMenu
+        open={!!menu}
+        x={menu?.x ?? 0}
+        y={menu?.y ?? 0}
+        items={onDuplicate ? [{ label: t('duplicateOutput'), icon: Copy, onSelect: onDuplicate }] : []}
+        onClose={() => setMenu(null)}
+      />
+    </>
   )
 }
 
 // ─── TypeGroup ────────────────────────────────────────────────────────────────
 
-function TypeGroup({ type, components }: { type: string; components: DesignComponent[] }) {
+function TypeGroup({
+  type,
+  components,
+  onDuplicateComponent,
+}: {
+  type: string
+  components: DesignComponent[]
+  onDuplicateComponent?: (comp: DesignComponent) => void
+}) {
   const [open, setOpen] = useState(true)
   return (
     <div className="rounded-md border border-border overflow-hidden">
@@ -99,7 +128,11 @@ function TypeGroup({ type, components }: { type: string; components: DesignCompo
       {open && (
         <div className="px-3 animate-fade-in">
           {components.map((comp) => (
-            <ComponentRow key={comp.ref} component={comp} />
+            <ComponentRow
+              key={comp.ref}
+              component={comp}
+              onDuplicate={onDuplicateComponent ? () => onDuplicateComponent(comp) : undefined}
+            />
           ))}
         </div>
       )}
@@ -270,6 +303,10 @@ interface ComponentSelectionOutputViewerProps {
   bomResult?: BomResult | null
   isRecheckPending?: boolean
   onRecheck?: () => void
+  customItems?: CustomOutputItem[]
+  onDuplicate?: (component: DesignComponent) => void
+  onUpdateCustom?: (itemId: string, data: Record<string, unknown>) => Promise<void>
+  onDeleteCustom?: (itemId: string) => void
 }
 
 export function ComponentSelectionOutputViewer({
@@ -277,6 +314,10 @@ export function ComponentSelectionOutputViewer({
   bomResult,
   isRecheckPending = false,
   onRecheck = () => {},
+  customItems = [],
+  onDuplicate,
+  onUpdateCustom,
+  onDeleteCustom,
 }: ComponentSelectionOutputViewerProps) {
   const t = useTranslations('pipeline')
   const [sectionExpanded, setSectionExpanded] = useState(true)
@@ -318,8 +359,36 @@ export function ComponentSelectionOutputViewer({
         {sectionExpanded && (
           <div className="space-y-2 animate-fade-in">
             {typeKeys.map((type) => (
-              <TypeGroup key={type} type={type} components={groups[type]} />
+              <TypeGroup
+                key={type}
+                type={type}
+                components={groups[type]}
+                onDuplicateComponent={onDuplicate}
+              />
             ))}
+
+            {/* Custom (duplicated + edited) components — identical look via AmberWrapper + original ComponentRow */}
+            {customItems.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide pt-1">
+                  {t('customComponentsSection')}
+                </p>
+                {customItems.map((ci) => {
+                  const ciComponent = ci.data as unknown as DesignComponent
+                  return (
+                    <AmberWrapper
+                      key={ci.id}
+                      item={ci}
+                      onSave={(data: Record<string, unknown>) => onUpdateCustom?.(ci.id, data) ?? Promise.resolve()}
+                      onDelete={() => onDeleteCustom?.(ci.id)}
+                      renderEditForm={(props) => <ComponentEditForm {...props} />}
+                    >
+                      <ComponentRow component={ciComponent} />
+                    </AmberWrapper>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

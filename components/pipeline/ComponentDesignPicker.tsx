@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle2, ChevronDown, ChevronUp, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SimpleContextMenu } from '@/components/ui/context-menu'
 import { COMPONENT_DESIGN_PICKER_MAX_VISIBLE_PARTS } from '@/lib/constants'
+import { AmberWrapper } from './custom/AmberWrapper'
+import { IcNamingDesignEditForm } from './custom/IcNamingDesignEditForm'
+import type { CustomOutputItem } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +17,10 @@ interface ComponentDesignPickerProps {
   icNamingOutput: Record<string, unknown> | null | undefined
   selectedDesignId: string | null
   onSelect: (designId: string) => void
+  customItems?: CustomOutputItem[]
+  onDuplicate?: (designKey: string, parts: string[]) => void
+  onUpdateCustom?: (itemId: string, data: Record<string, unknown>) => Promise<void>
+  onDeleteCustom?: (itemId: string) => void
 }
 
 interface DesignOption {
@@ -42,98 +50,116 @@ function parseDesigns(output: Record<string, unknown> | null | undefined): Desig
     }))
 }
 
-// ─── DesignCard ───────────────────────────────────────────────────────────────
+// ─── DesignCard (original, read-only) ────────────────────────────────────────
 
 function DesignCard({
   design,
   isSelected,
   isSingle,
   onClick,
+  onDuplicate,
 }: {
   design: DesignOption
   isSelected: boolean
   isSingle: boolean
   onClick: () => void
+  onDuplicate?: () => void
 }) {
+  const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
   const [expanded, setExpanded] = useState(false)
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
 
   const visible = expanded ? design.parts : design.parts.slice(0, COMPONENT_DESIGN_PICKER_MAX_VISIBLE_PARTS)
   const hiddenCount = design.parts.length - COMPONENT_DESIGN_PICKER_MAX_VISIBLE_PARTS
 
   return (
-    <div
-      role={isSingle ? undefined : 'button'}
-      tabIndex={isSingle ? undefined : 0}
-      onClick={isSingle ? undefined : onClick}
-      onKeyDown={
-        isSingle
-          ? undefined
-          : (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                onClick()
+    <>
+      <div
+        role={isSingle ? undefined : 'button'}
+        tabIndex={isSingle ? undefined : 0}
+        onClick={isSingle ? undefined : onClick}
+        onContextMenu={(e) => {
+          if (!onDuplicate) return
+          e.preventDefault()
+          setMenu({ x: e.clientX, y: e.clientY })
+        }}
+        onKeyDown={
+          isSingle
+            ? undefined
+            : (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onClick()
+                }
               }
-            }
-      }
-      className={cn(
-        'flex-1 min-w-[160px] max-w-[360px] rounded-md border p-3 transition-colors',
-        isSingle
-          ? 'border-primary bg-primary/5 cursor-default'
-          : isSelected
-          ? 'border-primary bg-primary/5 cursor-pointer'
-          : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <span
-          className={cn(
-            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold font-mono',
-            isSelected
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground'
-          )}
-        >
-          {design.label}
-        </span>
-        {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
-      </div>
+        }
+        className={cn(
+          'flex-1 min-w-[160px] max-w-[360px] rounded-md border p-3 transition-colors',
+          isSingle
+            ? 'border-primary bg-primary/5 cursor-default'
+            : isSelected
+            ? 'border-primary bg-primary/5 cursor-pointer'
+            : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <span
+            className={cn(
+              'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold font-mono',
+              isSelected
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground'
+            )}
+          >
+            {design.label}
+          </span>
+          {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
+        </div>
 
-      {/* Part numbers */}
-      <div className="space-y-1">
-        {visible.map((part, i) => (
-          <p key={i} className="text-[11px] font-mono text-foreground truncate">
-            {part}
-          </p>
-        ))}
-      </div>
+        {/* Part numbers */}
+        <div className="space-y-1">
+          {visible.map((part, i) => (
+            <p key={i} className="text-[11px] font-mono text-foreground truncate">
+              {part}
+            </p>
+          ))}
+        </div>
 
-      {/* Show more / less toggle */}
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            setExpanded((v) => !v)
-          }}
-          className="mt-1.5 flex items-center gap-0.5 text-[10px] text-primary/70 hover:text-primary transition-colors"
-        >
-          {expanded ? (
-            <>
-              <ChevronUp className="h-2.5 w-2.5" />
-              {tCommon('showLess')}
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-2.5 w-2.5" />
-              +{hiddenCount} {tCommon('more')}
-            </>
-          )}
-        </button>
-      )}
-    </div>
+        {/* Show more / less toggle */}
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded((v) => !v)
+            }}
+            className="mt-1.5 flex items-center gap-0.5 text-[10px] text-primary/70 hover:text-primary transition-colors"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="h-2.5 w-2.5" />
+                {tCommon('showLess')}
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-2.5 w-2.5" />
+                +{hiddenCount} {tCommon('more')}
+              </>
+            )}
+          </button>
+        )}
+      </div>
+      <SimpleContextMenu
+        open={!!menu}
+        x={menu?.x ?? 0}
+        y={menu?.y ?? 0}
+        items={onDuplicate ? [{ label: t('duplicateOutput'), icon: Copy, onSelect: onDuplicate }] : []}
+        onClose={() => setMenu(null)}
+      />
+    </>
   )
 }
 
@@ -143,12 +169,16 @@ export function ComponentDesignPicker({
   icNamingOutput,
   selectedDesignId,
   onSelect,
+  customItems = [],
+  onDuplicate,
+  onUpdateCustom,
+  onDeleteCustom,
 }: ComponentDesignPickerProps) {
   const t = useTranslations('pipeline')
   const designs = parseDesigns(icNamingOutput as Record<string, unknown> | null | undefined)
-  const isSingle = designs.length === 1
+  const isSingle = designs.length === 1 && customItems.length === 0
 
-  // Auto-select when there is exactly one design
+  // Auto-select when there is exactly one design (and no custom items)
   useEffect(() => {
     if (isSingle && !selectedDesignId) {
       onSelect(designs[0].label)
@@ -156,7 +186,7 @@ export function ComponentDesignPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSingle, designs[0]?.key])
 
-  if (designs.length === 0) {
+  if (designs.length === 0 && customItems.length === 0) {
     return (
       <p className="text-xs text-muted-foreground italic">
         {t('componentDesignNoData')}
@@ -182,8 +212,33 @@ export function ComponentDesignPicker({
             isSelected={selectedDesignId === design.label}
             isSingle={isSingle}
             onClick={() => onSelect(design.label)}
+            onDuplicate={onDuplicate ? () => onDuplicate(design.key, design.parts) : undefined}
           />
         ))}
+
+        {/* Custom (duplicated + edited) designs — identical look via AmberWrapper + original DesignCard */}
+        {customItems.map((ci) => {
+          const ciLabel = (ci.data.label as string) ?? ci.source_item_label
+          const ciParts = Array.isArray(ci.data.parts) ? (ci.data.parts as string[]) : []
+          const ciDesign: DesignOption = { key: ci.id, label: ciLabel, parts: ciParts }
+          return (
+            <AmberWrapper
+              key={ci.id}
+              item={ci}
+              className="flex-1 min-w-[160px] max-w-[360px]"
+              onSave={(data: Record<string, unknown>) => onUpdateCustom?.(ci.id, data) ?? Promise.resolve()}
+              onDelete={() => onDeleteCustom?.(ci.id)}
+              renderEditForm={(props) => <IcNamingDesignEditForm {...props} />}
+            >
+              <DesignCard
+                design={ciDesign}
+                isSelected={selectedDesignId === ciLabel}
+                isSingle={false}
+                onClick={() => onSelect(ciLabel)}
+              />
+            </AmberWrapper>
+          )
+        })}
       </div>
     </div>
   )

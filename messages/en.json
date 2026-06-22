@@ -164,7 +164,20 @@
     "notes": "Notes",
     "notesPlaceholder": "Optional comment for this run...",
     "editNotes": "Edit notes",
-    "saveNotes": "Save notes"
+    "saveNotes": "Save notes",
+    "duplicateOutput": "Duplicate",
+    "customOutputBadge": "Edited",
+    "customOutputSource": "Copy of: {label}",
+    "deleteCustomOutput": "Delete copy",
+    "editCustomOutput": "Edit",
+    "addPart": "Add part",
+    "addReference": "Add reference",
+    "addField": "Add field",
+    "saveCustomOutput": "Save",
+    "cancelEdit": "Cancel",
+    "clickOutsideToSave": "Click outside to save · Esc to cancel",
+    "customComponentsSection": "Custom components",
+    "addItem": "Add item"
   },
   "runs": {
     "seconds": "seconds",

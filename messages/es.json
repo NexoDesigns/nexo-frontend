@@ -164,7 +164,20 @@
     "notes": "Notas",
     "notesPlaceholder": "Comentario opcional para este run...",
     "editNotes": "Editar notas",
-    "saveNotes": "Guardar notas"
+    "saveNotes": "Guardar notas",
+    "duplicateOutput": "Duplicar",
+    "customOutputBadge": "Editado",
+    "customOutputSource": "Copia de: {label}",
+    "deleteCustomOutput": "Eliminar copia",
+    "editCustomOutput": "Editar",
+    "addPart": "Añadir parte",
+    "addReference": "Añadir referencia",
+    "addField": "Añadir campo",
+    "saveCustomOutput": "Guardar",
+    "cancelEdit": "Cancelar",
+    "clickOutsideToSave": "Clic fuera para guardar · Esc para cancelar",
+    "customComponentsSection": "Componentes personalizados",
+    "addItem": "Añadir elemento"
   },
   "runs": {
     "pending": "Pendiente",

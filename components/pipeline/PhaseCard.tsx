@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { runsApi } from '@/lib/api'
+import { useCustomOutputs } from '@/hooks/useCustomOutputs'
 import { RunStatusBadge } from './RunStatusBadge'
 import { RunsList } from './RunsList'
 import { PhaseInputForm } from './PhaseInputForm'
@@ -93,6 +94,16 @@ export function PhaseCard({
   // component_selection: which design (e.g. "A") the user has chosen
   const [selectedComponentDesignId, setSelectedComponentDesignId] = useState<string | null>(null)
 
+  // Custom output items for this phase's active run
+  const customOutputs = useCustomOutputs(projectId, phase.id, activeRunId)
+
+  // Custom output items for ic_naming (needed in component_selection to show custom designs)
+  const icNamingCustomOutputs = useCustomOutputs(
+    projectId,
+    'ic_naming_agent',
+    phase.id === 'component_selection' ? (icNamingActiveRunId ?? null) : null
+  )
+
   // Fetch the active (selected output) run details
   // For component_selection, refetch on focus so bom_result (populated async) is always fresh
   const { data: activeRun, refetch: refetchActiveRun } = useQuery({
@@ -159,6 +170,113 @@ export function PhaseCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeRun?.id, phase.id])
 
+  // ─── Duplicate handlers ───────────────────────────────────────────────────
+
+  const handleDuplicateResearch = (solution: ResearchSolution) => {
+    // Build newId as "{original_id}_1", "_2", etc., skipping any already in use
+    const existingIds = new Set(
+      customOutputs.items
+        .filter((ci) => ci.source_item_id === solution.id)
+        .map((ci) => (ci.data as { id?: string }).id ?? '')
+    )
+    let suffix = 1
+    while (existingIds.has(`${solution.id}_${suffix}`)) suffix++
+    const newId = `${solution.id}_${suffix}`
+
+    const newData = { ...solution, id: newId }
+    customOutputs.addItem.mutate(
+      {
+        source_item_id: solution.id,
+        source_item_label: newId.slice(0, 50),
+        data: newData as unknown as Record<string, unknown>,
+      },
+      {
+        onSuccess: () => {
+          if (onSelectedSolutionsChange) {
+            onSelectedSolutionsChange([...(selectedResearchSolutions ?? []), newData])
+          }
+        },
+      }
+    )
+  }
+
+  const handleDeleteCustomResearch = (itemId: string) => {
+    const item = customOutputs.items.find((ci) => ci.id === itemId)
+    if (item && onSelectedSolutionsChange) {
+      const solutionId = (item.data as { id: string }).id
+      onSelectedSolutionsChange((selectedResearchSolutions ?? []).filter((s) => s.id !== solutionId))
+    }
+    customOutputs.deleteItem.mutate(itemId)
+  }
+
+  const handleDuplicateIcResult = (result: Record<string, unknown>) => {
+    const originalId = String(result.id ?? '')
+    const existingIds = new Set(
+      customOutputs.items
+        .filter((ci) => ci.source_item_id === originalId)
+        .map((ci) => (ci.data as { id?: string }).id ?? '')
+    )
+    let suffix = 1
+    while (existingIds.has(`${originalId}_${suffix}`)) suffix++
+    const newId = `${originalId}_${suffix}`
+    customOutputs.addItem.mutate({
+      source_item_id: originalId,
+      source_item_label: newId.slice(0, 50),
+      data: { ...result, id: newId },
+    })
+  }
+
+  const handleDuplicateIcNamingDesign = (designKey: string, parts: string[]) => {
+    const base = designKey.replace(/^design/i, '') || designKey
+    const existingLabels = new Set(
+      icNamingCustomOutputs.items
+        .filter((ci) => ci.source_item_id === designKey)
+        .map((ci) => (ci.data.label as string) ?? '')
+    )
+    let suffix = 1
+    while (existingLabels.has(`${base}_${suffix}`)) suffix++
+    const customLabel = `${base}_${suffix}`
+    icNamingCustomOutputs.addItem.mutate({
+      source_item_id: designKey,
+      source_item_label: customLabel,
+      data: { label: customLabel, parts },
+    })
+  }
+
+  const handleDeleteCustomIcNaming = (itemId: string) => {
+    const item = icNamingCustomOutputs.items.find((ci) => ci.id === itemId)
+    if (item) {
+      const ciLabel = (item.data.label as string) ?? item.source_item_label
+      if (selectedComponentDesignId === ciLabel) setSelectedComponentDesignId(null)
+    }
+    icNamingCustomOutputs.deleteItem.mutate(itemId)
+  }
+
+  const handleDuplicateComponent = (component: Record<string, unknown>) => {
+    const originalRef = String(component.ref ?? '')
+    const existingRefs = new Set(
+      customOutputs.items
+        .filter((ci) => ci.source_item_id === originalRef)
+        .map((ci) => (ci.data as { ref?: string }).ref ?? '')
+    )
+    let suffix = 1
+    while (existingRefs.has(`${originalRef}_${suffix}`)) suffix++
+    const newRef = `${originalRef}_${suffix}`
+    customOutputs.addItem.mutate({
+      source_item_id: originalRef,
+      source_item_label: newRef.slice(0, 50),
+      data: { ...component, ref: newRef },
+    })
+  }
+
+  const handleUpdateCustom = async (itemId: string, data: Record<string, unknown>) => {
+    await customOutputs.updateItem.mutateAsync({ itemId, data })
+  }
+
+  const handleUpdateIcNamingCustom = async (itemId: string, data: Record<string, unknown>) => {
+    await icNamingCustomOutputs.updateItem.mutateAsync({ itemId, data })
+  }
+
   const recheckBomMutation = useMutation({
     mutationFn: () => runsApi.recheckBom(projectId, phase.id, activeRun!.id),
     onSuccess: () => {
@@ -171,12 +289,28 @@ export function PhaseCard({
 
   const triggerMutation = useMutation({
     mutationFn: ({ inputs }: PhaseFormPayload) => {
-      const custom_inputs =
-        phase.id === 'ic_selection' && selectedResearchSolutions?.length
-          ? { ...inputs, selected_solutions: selectedResearchSolutions, query_summary: researchQuerySummary }
-          : phase.id === 'component_selection' && selectedComponentDesignId
-          ? { ...inputs, selected_design_id: selectedComponentDesignId }
-          : inputs
+      let custom_inputs: Record<string, unknown> = inputs as Record<string, unknown>
+
+      if (phase.id === 'ic_selection' && selectedResearchSolutions?.length) {
+        custom_inputs = {
+          ...inputs,
+          selected_solutions: selectedResearchSolutions,
+          query_summary: researchQuerySummary,
+        }
+      } else if (phase.id === 'component_selection' && selectedComponentDesignId) {
+        // Check if the selected design is a custom item — if so, include its data
+        const customDesign = icNamingCustomOutputs.items.find(
+          (ci) => ((ci.data.label as string) ?? ci.source_item_label) === selectedComponentDesignId
+        )
+        custom_inputs = {
+          ...inputs,
+          selected_design_id: selectedComponentDesignId,
+          ...(customDesign
+            ? { custom_design_data: { [selectedComponentDesignId]: customDesign.data.parts } }
+            : {}),
+        }
+      }
+
       const payload =
         phase.id === 'research'
           ? {
@@ -344,7 +478,11 @@ export function PhaseCard({
                 <ComponentDesignPicker
                   icNamingOutput={icNamingRun?.output_payload as Record<string, unknown> | null}
                   selectedDesignId={selectedComponentDesignId}
-                  onSelect={(id) => { const trimmed = id?.trim(); console.log('selectedComponentDesignId:', trimmed); setSelectedComponentDesignId(trimmed); }}
+                  onSelect={(id) => { const trimmed = id?.trim(); setSelectedComponentDesignId(trimmed); }}
+                  customItems={icNamingCustomOutputs.items}
+                  onDuplicate={handleDuplicateIcNamingDesign}
+                  onUpdateCustom={handleUpdateIcNamingCustom}
+                  onDeleteCustom={handleDeleteCustomIcNaming}
                 />
               </div>
             )}
@@ -427,6 +565,10 @@ export function PhaseCard({
                                 onSelectedSolutionsChange([...current, solution])
                               }
                             }}
+                            customItems={customOutputs.items}
+                            onDuplicate={handleDuplicateResearch}
+                            onUpdateCustom={handleUpdateCustom}
+                            onDeleteCustom={handleDeleteCustomResearch}
                           />
                         ) : (
                           <p className="text-xs text-muted-foreground italic">
@@ -445,7 +587,13 @@ export function PhaseCard({
           {/* IC Selection output */}
           {phase.id === 'ic_selection' && activeRun?.output_payload && (
             <>
-              <IcSelectionOutputViewer output={activeRun.output_payload} />
+              <IcSelectionOutputViewer
+                output={activeRun.output_payload}
+                customItems={customOutputs.items}
+                onDuplicate={(result) => handleDuplicateIcResult(result as unknown as Record<string, unknown>)}
+                onUpdateCustom={handleUpdateCustom}
+                onDeleteCustom={(id) => customOutputs.deleteItem.mutate(id)}
+              />
               <Separator />
             </>
           )}
@@ -466,6 +614,10 @@ export function PhaseCard({
                 bomResult={activeRun.bom_result}
                 isRecheckPending={recheckBomMutation.isPending}
                 onRecheck={() => recheckBomMutation.mutate()}
+                customItems={customOutputs.items}
+                onDuplicate={(comp) => handleDuplicateComponent(comp as unknown as Record<string, unknown>)}
+                onUpdateCustom={handleUpdateCustom}
+                onDeleteCustom={(id) => customOutputs.deleteItem.mutate(id)}
               />
               <Separator />
             </>

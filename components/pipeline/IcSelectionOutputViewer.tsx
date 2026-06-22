@@ -2,8 +2,12 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronRight, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SimpleContextMenu } from '@/components/ui/context-menu'
+import { AmberWrapper } from './custom/AmberWrapper'
+import { IcResultEditForm } from './custom/IcResultEditForm'
+import type { CustomOutputItem } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -77,87 +81,104 @@ function ComponentRow({ component }: { component: IcComponent }) {
 
 // ─── DesignCard ───────────────────────────────────────────────────────────────
 
-function DesignCard({ result }: { result: IcResult }) {
+function DesignCard({ result, onDuplicate }: { result: IcResult; onDuplicate?: () => void }) {
   const t = useTranslations('pipeline')
   const tCommon = useTranslations('common')
   const [cardExpanded, setCardExpanded] = useState(false)
   const [componentsExpanded, setComponentsExpanded] = useState(false)
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
 
   const references = Array.isArray(result.key_references)
     ? result.key_references.join(', ')
     : result.key_references
 
   return (
-    <div className="rounded-md border border-border bg-card">
-      {/* Card header */}
-      <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold bg-primary/10 text-primary">
-            {result.id}
-          </span>
-          <p className="text-xs font-medium text-foreground leading-snug">{result.title}</p>
+    <>
+      <div
+        className="rounded-md border border-border bg-card"
+        onContextMenu={(e) => {
+          if (!onDuplicate) return
+          e.preventDefault()
+          setMenu({ x: e.clientX, y: e.clientY })
+        }}
+      >
+        {/* Card header */}
+        <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold bg-primary/10 text-primary">
+              {result.id}
+            </span>
+            <p className="text-xs font-medium text-foreground leading-snug">{result.title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCardExpanded((v) => !v)}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+          >
+            {cardExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setCardExpanded((v) => !v)}
-          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5"
-        >
-          {cardExpanded ? (
-            <ChevronUp className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )}
-        </button>
-      </div>
 
-      {/* Description */}
-      <div className="px-3 pb-2">
-        <p
-          className={cn(
-            'text-[11px] text-muted-foreground leading-relaxed',
-            !cardExpanded && 'line-clamp-2'
-          )}
-        >
-          {result.description}
-        </p>
-      </div>
-
-      {/* References — only when card expanded */}
-      {cardExpanded && references && (
+        {/* Description */}
         <div className="px-3 pb-2">
-          <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
-            <span className="font-medium not-italic">{tCommon('references')}: </span>
-            {references}
+          <p
+            className={cn(
+              'text-[11px] text-muted-foreground leading-relaxed',
+              !cardExpanded && 'line-clamp-2'
+            )}
+          >
+            {result.description}
           </p>
         </div>
-      )}
 
-      {/* Components section */}
-      <div className="border-t border-border px-3 py-2">
-        <button
-          type="button"
-          onClick={() => setComponentsExpanded((v) => !v)}
-          className="flex items-center gap-1.5 text-left"
-        >
-          {componentsExpanded ? (
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-3 w-3 text-muted-foreground" />
-          )}
-          <span className="text-[11px] font-medium text-muted-foreground">
-            {result.components.length} {t('components')}
-          </span>
-        </button>
-
-        {componentsExpanded && (
-          <div className="mt-2 overflow-y-auto max-h-[260px] animate-fade-in">
-            {result.components.map((c) => (
-              <ComponentRow key={c.ic_type} component={c} />
-            ))}
+        {/* References — only when card expanded */}
+        {cardExpanded && references && (
+          <div className="px-3 pb-2">
+            <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
+              <span className="font-medium not-italic">{tCommon('references')}: </span>
+              {references}
+            </p>
           </div>
         )}
+
+        {/* Components section */}
+        <div className="border-t border-border px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setComponentsExpanded((v) => !v)}
+            className="flex items-center gap-1.5 text-left"
+          >
+            {componentsExpanded ? (
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-3 w-3 text-muted-foreground" />
+            )}
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {result.components.length} {t('components')}
+            </span>
+          </button>
+
+          {componentsExpanded && (
+            <div className="mt-2 overflow-y-auto max-h-[260px] animate-fade-in">
+              {result.components.map((c) => (
+                <ComponentRow key={c.ic_type} component={c} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+      <SimpleContextMenu
+        open={!!menu}
+        x={menu?.x ?? 0}
+        y={menu?.y ?? 0}
+        items={onDuplicate ? [{ label: t('duplicateOutput'), icon: Copy, onSelect: onDuplicate }] : []}
+        onClose={() => setMenu(null)}
+      />
+    </>
   )
 }
 
@@ -165,9 +186,19 @@ function DesignCard({ result }: { result: IcResult }) {
 
 interface IcSelectionOutputViewerProps {
   output: Record<string, unknown> | null
+  customItems?: CustomOutputItem[]
+  onDuplicate?: (result: IcResult) => void
+  onUpdateCustom?: (itemId: string, data: Record<string, unknown>) => Promise<void>
+  onDeleteCustom?: (itemId: string) => void
 }
 
-export function IcSelectionOutputViewer({ output }: IcSelectionOutputViewerProps) {
+export function IcSelectionOutputViewer({
+  output,
+  customItems = [],
+  onDuplicate,
+  onUpdateCustom,
+  onDeleteCustom,
+}: IcSelectionOutputViewerProps) {
   const t = useTranslations('pipeline')
   const [sectionExpanded, setSectionExpanded] = useState(true)
 
@@ -200,8 +231,28 @@ export function IcSelectionOutputViewer({ output }: IcSelectionOutputViewerProps
       {sectionExpanded && (
         <div className="space-y-2 animate-fade-in">
           {results.map((result) => (
-            <DesignCard key={result.id} result={result} />
+            <DesignCard
+              key={result.id}
+              result={result}
+              onDuplicate={onDuplicate ? () => onDuplicate(result) : undefined}
+            />
           ))}
+
+          {/* Custom (duplicated + edited) ic_selection items — identical look via AmberWrapper + original DesignCard */}
+          {customItems.map((ci) => {
+            const ciResult = ci.data as unknown as IcResult
+            return (
+              <AmberWrapper
+                key={ci.id}
+                item={ci}
+                onSave={(data: Record<string, unknown>) => onUpdateCustom?.(ci.id, data) ?? Promise.resolve()}
+                onDelete={() => onDeleteCustom?.(ci.id)}
+                renderEditForm={(props) => <IcResultEditForm {...props} />}
+              >
+                <DesignCard result={ciResult} />
+              </AmberWrapper>
+            )
+          })}
         </div>
       )}
     </div>
