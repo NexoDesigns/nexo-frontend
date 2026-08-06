@@ -49,7 +49,18 @@
     "loginButton": "Iniciar sesión",
     "loginLoading": "Iniciando sesión...",
     "invalidCredentials": "Email o contraseña incorrectos",
-    "genericError": "Error al iniciar sesión. Inténtalo de nuevo."
+    "genericError": "Error al iniciar sesión. Inténtalo de nuevo.",
+    "eyebrow": "Acceso a la plataforma",
+    "signInTitle": "Sign in",
+    "signInDescription": "Entra al entorno de diseño electrónico asistido por IA de Nexo Design.",
+    "emailCorporate": "Email corporativo",
+    "emailPlaceholderCorporate": "nombre@empresa.com",
+    "submit": "Entrar",
+    "submitLoading": "Entrando...",
+    "noAccount": "¿Aún no tienes cuenta?",
+    "seePackages": "Consulta los paquetes",
+    "orWriteTo": "o escribe a",
+    "backToSite": "Volver al sitio"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -343,5 +354,217 @@
     "confirmed": "Confirmed",
     "discarded": "Discarded",
     "suggestionCount": "{count, plural, =1 {1 normativa sugerida} other {# normativas sugeridas}}"
+  },
+  "landing": {
+    "meta": {
+      "title": "Nexo Design — Diseño electrónico impulsado por IA",
+      "description": "Nexo Design combina ingeniería electrónica e inteligencia artificial para diseñar, simular y validar hardware más rápido: PCB, firmware y sistemas embebidos."
+    },
+    "nav": {
+      "mission": "Misión",
+      "platform": "Plataforma",
+      "capabilities": "Capacidades",
+      "sectors": "Sectores",
+      "products": "Productos",
+      "signIn": "Sign in",
+      "contact": "Contacto"
+    },
+    "hero": {
+      "eyebrow": "Nexo Design · Ingeniería electrónica + IA",
+      "titleA": "Diseñamos la electrónica",
+      "titleB": "que la IA hace posible.",
+      "description": "Unimos décadas de ingeniería de hardware con modelos de inteligencia artificial para diseñar, simular y validar sistemas electrónicos en una fracción del tiempo.",
+      "ctaPlatform": "Ver la plataforma",
+      "ctaContact": "Hablar con ingeniería"
+    },
+    "mission": {
+      "eyebrow": "01 — Misión",
+      "title": "El hardware avanza al ritmo de sus iteraciones. Nosotros las multiplicamos.",
+      "p1": "Cada rediseño de una placa cuesta semanas. Entrenamos modelos sobre datos reales de ingeniería para que las decisiones críticas —topología, componentes, disipación— se tomen antes de fabricar el primer prototipo.",
+      "p2": "No sustituimos al ingeniero: le damos un copiloto capaz de evaluar miles de alternativas mientras él se concentra en lo que ninguna máquina resuelve, la intención del producto."
+    },
+    "stats": [
+      {
+        "value": "6×",
+        "label": "más rápido que el flujo tradicional"
+      },
+      {
+        "value": "40%",
+        "label": "reducción de iteraciones físicas"
+      },
+      {
+        "value": "120+",
+        "label": "placas llevadas a producción"
+      },
+      {
+        "value": "24/7",
+        "label": "cómputo de simulación dedicado"
+      }
+    ],
+    "platform": {
+      "eyebrow": "02 — Plataforma",
+      "title": "Un flujo de diseño continuo, de la idea al panel de fabricación.",
+      "steps": [
+        {
+          "step": "Ingesta",
+          "title": "Tus esquemáticos, nuestro modelo",
+          "body": "Importamos esquemáticos, netlists y requisitos y los convertimos en una representación entrenable del sistema."
+        },
+        {
+          "step": "Exploración",
+          "title": "Miles de variantes en paralelo",
+          "body": "Los agentes generativos exploran el espacio de diseño buscando el equilibrio entre coste, consumo y rendimiento."
+        },
+        {
+          "step": "Validación",
+          "title": "Física, no conjeturas",
+          "body": "Cada candidato pasa por solvers acelerados y reglas de fabricación reales antes de llegar a tu mesa."
+        }
+      ]
+    },
+    "capabilities": {
+      "eyebrow": "03 — Capacidades",
+      "title": "Todo el ciclo de vida electrónico bajo un mismo techo.",
+      "items": [
+        {
+          "id": "01",
+          "title": "Diseño de PCB asistido por IA",
+          "body": "Rutado, colocación y optimización de capas guiados por modelos entrenados con miles de placas validadas en producción."
+        },
+        {
+          "id": "02",
+          "title": "Simulación electromagnética",
+          "body": "Modelos sustitutos que predicen integridad de señal, EMC y térmica en segundos en lugar de horas de cómputo."
+        },
+        {
+          "id": "03",
+          "title": "Firmware y sistemas embebidos",
+          "body": "Desarrollo de firmware de bajo nivel, RTOS y edge AI sobre MCU, FPGA y SoC de última generación."
+        },
+        {
+          "id": "04",
+          "title": "Validación y test automatizado",
+          "body": "Bancos de test instrumentados y detección de anomalías por aprendizaje automático antes de la fabricación."
+        },
+        {
+          "id": "05",
+          "title": "Industrialización",
+          "body": "Del prototipo a la serie: DFM, selección de componentes y acompañamiento con fabricantes europeos."
+        },
+        {
+          "id": "06",
+          "title": "Gemelos digitales",
+          "body": "Réplicas virtuales del hardware para explorar variantes de diseño y anticipar el comportamiento en campo."
+        }
+      ]
+    },
+    "sectors": {
+      "eyebrow": "04 — Sectores",
+      "items": [
+        "Movilidad eléctrica",
+        "Aeroespacial",
+        "Robótica",
+        "Energía",
+        "Dispositivos médicos",
+        "Industria 4.0"
+      ]
+    },
+    "cta": {
+      "title": "¿Tienes un producto electrónico que diseñar?",
+      "description": "Cuéntanos el reto técnico y te respondemos con una propuesta de arquitectura en menos de 48 horas."
+    },
+    "footer": {
+      "tagline": "Ingeniería electrónica con IA"
+    }
+  },
+  "products": {
+    "meta": {
+      "title": "Productos y paquetes — Nexo Design",
+      "description": "Contrata la plataforma de diseño electrónico con IA, un equipo de ingeniería llave en mano o el análisis de normativa EU/UK para tu producto."
+    },
+    "hero": {
+      "eyebrow": "Productos",
+      "titleA": "Tres formas de diseñar",
+      "titleB": "electrónica con nosotros.",
+      "description": "Contrata la plataforma y diseña tú, delega el proyecto completo en nuestro equipo o resuelve únicamente la parte normativa. Los paquetes se combinan."
+    },
+    "featuredBadge": "Más contratado",
+    "packages": [
+      {
+        "id": "01",
+        "name": "Plataforma",
+        "tagline": "Diseña con nuestras herramientas",
+        "price": "Suscripción",
+        "body": "Acceso completo al entorno de diseño asistido por IA: exploración de topologías, rutado optimizado, simulación acelerada y validación DFM. Para equipos que ya tienen ingeniería y quieren multiplicar sus iteraciones.",
+        "features": [
+          "Entorno cloud con cómputo de simulación dedicado",
+          "Copiloto de diseño de PCB y selección de componentes",
+          "Simulación de integridad de señal, EMC y térmica",
+          "Usuarios ilimitados por proyecto y control de versiones",
+          "Soporte de ingeniería en horario laboral"
+        ],
+        "cta": "Solicitar acceso",
+        "featured": true
+      },
+      {
+        "id": "02",
+        "name": "Proyectos llave en mano",
+        "tagline": "Nuestro equipo diseña por ti",
+        "price": "Por proyecto",
+        "body": "Si no tienes equipo de diseño detrás, nos hacemos cargo del desarrollo completo: arquitectura, esquemáticos, PCB, firmware, validación e industrialización con fabricantes europeos.",
+        "features": [
+          "Arquitectura electrónica y esquemáticos",
+          "Diseño y rutado de PCB multicapa",
+          "Firmware, RTOS y edge AI",
+          "Bancos de test y validación de prototipos",
+          "Acompañamiento a producción (DFM, proveedores)"
+        ],
+        "cta": "Contar mi proyecto",
+        "featured": false
+      },
+      {
+        "id": "03",
+        "name": "Normativa EU / UK",
+        "tagline": "Solo el cumplimiento",
+        "price": "Paquete puntual",
+        "body": "Búsqueda y análisis de los requisitos normativos aplicables a tu diseño en la Unión Europea y Reino Unido. Recibes el mapa de directivas, normas armonizadas y ensayos necesarios antes de certificar.",
+        "features": [
+          "Identificación de directivas y marcados (CE / UKCA)",
+          "Normas armonizadas aplicables (EMC, LVD, RED, RoHS)",
+          "Requisitos de diseño traducidos a reglas de placa",
+          "Plan de ensayos y laboratorios recomendados",
+          "Informe entregable en 5 días laborables"
+        ],
+        "cta": "Pedir informe",
+        "featured": false
+      }
+    ],
+    "addons": {
+      "eyebrow": "Complementos",
+      "title": "Añade capacidades sobre cualquier paquete.",
+      "items": [
+        {
+          "title": "Auditoría de diseño",
+          "body": "Revisión de un diseño existente con informe de riesgos y mejoras priorizadas."
+        },
+        {
+          "title": "Gemelo digital",
+          "body": "Réplica virtual del hardware para explorar variantes y anticipar el comportamiento en campo."
+        },
+        {
+          "title": "Formación",
+          "body": "Onboarding de tu equipo en el flujo de diseño asistido por IA de Nexo."
+        },
+        {
+          "title": "Soporte prioritario",
+          "body": "Canal directo con ingeniería y SLA de respuesta en menos de 4 horas."
+        }
+      ]
+    },
+    "bottom": {
+      "title": "¿No sabes qué paquete encaja con tu producto?",
+      "ctaEngineering": "Hablar con ingeniería",
+      "ctaPlatform": "Acceder a la plataforma"
+    }
   }
 }

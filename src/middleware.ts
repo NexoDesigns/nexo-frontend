@@ -5,7 +5,7 @@ import { routing } from './i18n/routing'
 
 const intlMiddleware = createMiddleware(routing)
 
-const PUBLIC_PATHS = ['/login']
+const PUBLIC_PATHS = ['/login', '/home', '/productos']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -51,15 +51,23 @@ export async function middleware(request: NextRequest) {
   // console.log('MW user:', user?.email, '| path:', pathname)
 
   if (!user && !isPublicPath) {
-    const loginUrl = new URL(`/${currentLocale}/login`, request.url)
-    const response = NextResponse.redirect(loginUrl)
+    // Anonymous visitors on the site root see the public landing;
+    // any other protected path still goes to the login.
+    const destination = pathnameWithoutLocale === '/' ? 'home' : 'login'
+    const redirectUrl = new URL(`/${currentLocale}/${destination}`, request.url)
+    const response = NextResponse.redirect(redirectUrl)
     supabaseResponse.headers.getSetCookie().forEach((cookie) => {
       response.headers.append('Set-Cookie', cookie)
     })
     return response
   }
 
-  if (user && isPublicPath) {
+  // Logged-in users are only bounced to the dashboard from /login —
+  // they can still browse the public landing and products pages.
+  const isLoginPath =
+    pathnameWithoutLocale === '/login' || pathnameWithoutLocale.startsWith('/login/')
+
+  if (user && isLoginPath) {
     const dashboardUrl = new URL(`/${currentLocale}`, request.url)
     const response = NextResponse.redirect(dashboardUrl)
     supabaseResponse.headers.getSetCookie().forEach((cookie) => {

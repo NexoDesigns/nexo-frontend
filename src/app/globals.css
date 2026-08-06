@@ -140,6 +140,96 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Public site theme ("theme-landing") — Nexo Design marketing pages + login.
+   Scoped: overrides the shadcn CSS variables ONLY inside .theme-landing so the
+   internal dashboard keeps its existing look untouched.
+   Palette ported from the nexo-ai-horizon design (deep engineering navy + teal).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.theme-landing {
+  --background: 201 80% 5.5%;
+  --foreground: 201 29% 96%;
+  --surface: 200 62% 8.6%;
+  --surface-2: 200 47% 12.3%;
+  --card: 200 62% 8.6%;
+  --card-foreground: 201 29% 96%;
+  --popover: 200 62% 8.6%;
+  --popover-foreground: 201 29% 96%;
+  --primary: 175 76% 50%;
+  --primary-foreground: 201 80% 5.5%;
+  --secondary: 200 47% 12.3%;
+  --secondary-foreground: 201 29% 96%;
+  --muted: 200 47% 12.3%;
+  --muted-foreground: 200 10% 59%;
+  --accent: 175 76% 50%;
+  --accent-foreground: 201 80% 5.5%;
+  --destructive: 358 75% 54.5%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 99% / 0.12;
+  --input: 0 0% 99% / 0.16;
+  --ring: 175 76% 50%;
+  --radius: 0.25rem;
+  /* Complete color (not channels) — used inside color-mix() gradients */
+  --glow-c: hsl(176 100% 49%);
+
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-landing .font-mono {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+.theme-landing ::selection {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+@layer utilities {
+  /* ── Public site (theme-landing) utilities ── */
+  .eyebrow {
+    font-family: var(--font-plex-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: hsl(var(--primary));
+  }
+
+  .display-xl {
+    font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, hsl(0 0% 99% / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(0 0% 99% / 0.05) 1px, transparent 1px);
+    background-size: 88px 88px;
+  }
+
+  .video-veil {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--background) / 0.82) 0%,
+      hsl(var(--background) / 0.55) 45%,
+      hsl(var(--background)) 100%
+    );
+  }
+
+  .rise {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rise[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @layer utilities {
   /* Shimmer loading effect */
   .shimmer {
