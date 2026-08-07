@@ -4,6 +4,7 @@ import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { Providers } from '@/components/layout/Providers'
+import { publicFontVars } from '@/lib/fonts'
 import '../globals.css'
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
-      <body>
+      <body className={publicFontVars}>
         <NextIntlClientProvider messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
