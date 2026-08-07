@@ -1,8 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 
-// Placeholder wordmark until the real nexo-logo.png is added to /public/media.
-// When it lands, just change LOGO_SRC to '/media/nexo-logo.png'.
-const LOGO_SRC = '/media/nexo-logo.svg'
+const LOGO_SRC = '/media/nexo-logo.png'
 
 export function NexoLogo({ className = 'h-8 w-auto' }: { className?: string }) {
   return (
