@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   FolderKanban,
   BookOpen,
-  Cpu,
   LogOut,
   ChevronRight,
 } from 'lucide-react'
@@ -32,9 +31,12 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 ring-1 ring-primary/30">
-          <Cpu className="h-4 w-4 text-primary" />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/media/nexo-logo-mark.png"
+          alt="Nexo Design"
+          className="h-7 w-7 shrink-0 object-contain"
+        />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground leading-none">
             {tCommon('appName')}
