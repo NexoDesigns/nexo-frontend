@@ -71,7 +71,7 @@ export function PipelineView({ projectId, project }: PipelineViewProps) {
             onSelectedSolutionsChange={setSelectedResearchSolutions}
             researchQuerySummary={researchQuerySummary}
             onQuerySummaryChange={setResearchQuerySummary}
-            icNamingActiveRunId={activeRunMap['ic_naming_agent']?.run_id ?? null}
+            icSelectionActiveRunId={activeRunMap['ic_selection']?.run_id ?? null}
             activeRequirementsRun={activeRequirementsRun ?? null}
           />
           {/* Connector arrow between phases */}

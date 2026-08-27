@@ -27,6 +27,7 @@ import type {
   CustomOutputItem,
   CreateCustomOutputPayload,
   UpdateCustomOutputPayload,
+  EditorLinkResponse,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -155,6 +156,13 @@ export const runsApi = {
   recheckBom: (projectId: string, phaseId: string, runId: string) =>
     apiFetch<{ run_id: string; message: string }>(
       `/projects/${projectId}/phases/${phaseId}/runs/${runId}/bom`,
+      { method: 'POST' }
+    ),
+
+  /** Mints a short-lived, run-scoped URL for the System Diagram App (architecture-editor). */
+  getEditorLink: (projectId: string, phaseId: string, runId: string) =>
+    apiFetch<EditorLinkResponse>(
+      `/projects/${projectId}/phases/${phaseId}/runs/${runId}/editor-link`,
       { method: 'POST' }
     ),
 }

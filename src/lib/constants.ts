@@ -14,15 +14,19 @@ export const DOC_TYPES: DocumentType[] = [
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-export const APP_VERSION = '0.1.0'
+export const APP_VERSION = '0.2.0'
 
 // ─── Pipeline phases ──────────────────────────────────────────────────────────
 
 // deben ser exactamente iguales a los de supabase. IMPORTANTE!!!
+// ic_naming_agent ya no es una fase activa (su trabajo vive ahora dentro de
+// architecture_agent) — la fila sigue en Supabase por seguridad de runs
+// históricos, pero el backend la filtra fuera de /pipeline-phases.
 export const PHASE_IDS = {
   research: 'research',
   ic_selection: 'ic_selection',
-  ic_naming_agent: 'ic_naming_agent',
+  architecture_agent: 'architecture_agent',
+  passive_components: 'passive_components',
   component_selection: 'component_selection',
   netlist: 'netlist',
 } as const satisfies Record<PhaseId, PhaseId>
@@ -35,10 +39,18 @@ export const N8N_BASE_URL = 'https://nexo-n8n.onrender.com'
 export const N8N_WORKFLOW_IDS: Record<PhaseId, string | null> = {
   research: 'cfdfxR3INcoqEbo2', // v2: cfdfxR3INcoqEbo2, v1: 1DUWTbxD2PNthXV4
   ic_selection: 'Ctzas8sxKGpgE0nh',
-  ic_naming_agent: 'DbF6DMysPQgevaOJ',
+  architecture_agent: 'JgxmCIGH2VOIaia1',
+  passive_components: null, // TODO: workflow still in development
   component_selection: null, // TODO: create workflow
   netlist: null,             // TODO: create workflow
 }
+
+// ─── System Diagram App (architecture-editor) ──────────────────────────────────
+
+/** Static site (GitHub Pages) hosting the block-diagram editor for architecture_agent. */
+// export const ARCHITECTURE_EDITOR_URL = 'https://mikacelber.github.io/architecture-editor/'
+// FOR TEST!!!
+export const ARCHITECTURE_EDITOR_URL = 'http://localhost:8001/'
 
 /** Returns the n8n execution URL for a run, or null if data is missing. */
 export function n8nExecutionUrl(

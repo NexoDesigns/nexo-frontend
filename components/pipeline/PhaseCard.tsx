@@ -10,8 +10,8 @@ import { RunsList } from './RunsList'
 import { PhaseInputForm } from './PhaseInputForm'
 import { ResearchDesignPicker } from './ResearchDesignPicker'
 import { IcSelectionOutputViewer } from './IcSelectionOutputViewer'
-import { IcNamingOutputViewer } from './IcNamingOutputViewer'
-import { ComponentDesignPicker } from './ComponentDesignPicker'
+import { IcDesignPicker } from './IcDesignPicker'
+import { ArchitectureDiagramModal } from './ArchitectureDiagramModal'
 import { ComponentSelectionOutputViewer } from './ComponentSelectionOutputViewer'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -33,7 +33,8 @@ import { cn } from '@/lib/utils'
 import {
   Search,
   Cpu,
-  Tag,
+  Workflow,
+  Boxes,
   Package,
   FileCode2,
 } from 'lucide-react'
@@ -50,7 +51,8 @@ function isResearchOutputItem(value: unknown): value is ResearchOutputItem {
 const PHASE_ICONS: Record<PhaseId, React.ReactNode> = {
   research: <Search className="h-3.5 w-3.5" />,
   ic_selection: <Cpu className="h-3.5 w-3.5" />,
-  ic_naming_agent: <Tag className="h-3.5 w-3.5" />,
+  architecture_agent: <Workflow className="h-3.5 w-3.5" />,
+  passive_components: <Boxes className="h-3.5 w-3.5" />,
   component_selection: <Package className="h-3.5 w-3.5" />,
   netlist: <FileCode2 className="h-3.5 w-3.5" />,
 }
@@ -63,8 +65,8 @@ interface PhaseCardProps {
   onSelectedSolutionsChange?: (solutions: ResearchSolution[]) => void
   researchQuerySummary?: string
   onQuerySummaryChange?: (summary: string) => void
-  /** Active run ID for ic_naming_agent — needed by component_selection to show the design picker */
-  icNamingActiveRunId?: string | null
+  /** Active run ID for ic_selection — needed by architecture_agent to show the design picker */
+  icSelectionActiveRunId?: string | null
   /** Active requirements run — shown as read-only context in the research phase */
   activeRequirementsRun?: RequirementsRun | null
 }
@@ -77,7 +79,7 @@ export function PhaseCard({
   onSelectedSolutionsChange,
   researchQuerySummary,
   onQuerySummaryChange,
-  icNamingActiveRunId,
+  icSelectionActiveRunId,
   activeRequirementsRun,
 }: PhaseCardProps) {
   const t = useTranslations('pipeline')
@@ -91,33 +93,28 @@ export function PhaseCard({
   // Independent of any run — persists across card expand/collapse
   const [usePerplexity, setUsePerplexity] = useState(true)
 
-  // component_selection: which design (e.g. "A") the user has chosen
-  const [selectedComponentDesignId, setSelectedComponentDesignId] = useState<string | null>(null)
+  // architecture_agent: which ic_selection design (e.g. "A") the user has chosen
+  const [selectedIcDesignId, setSelectedIcDesignId] = useState<string | null>(null)
+  const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
   // Custom output items for this phase's active run
   const customOutputs = useCustomOutputs(projectId, phase.id, activeRunId)
 
-  // Custom output items for ic_naming (needed in component_selection to show custom designs)
-  const icNamingCustomOutputs = useCustomOutputs(
-    projectId,
-    'ic_naming_agent',
-    phase.id === 'component_selection' ? (icNamingActiveRunId ?? null) : null
-  )
-
   // Fetch the active (selected output) run details
-  // For component_selection, refetch on focus so bom_result (populated async) is always fresh
+  // For component_selection/architecture_agent, refetch on focus — bom_result and
+  // the diagram-editor approval are both populated by actions outside this tab.
   const { data: activeRun, refetch: refetchActiveRun } = useQuery({
     queryKey: ['run', projectId, phase.id, activeRunId],
     queryFn: () => runsApi.get(projectId, phase.id, activeRunId!),
     enabled: !!activeRunId,
-    refetchOnWindowFocus: phase.id === 'component_selection',
+    refetchOnWindowFocus: phase.id === 'component_selection' || phase.id === 'architecture_agent',
   })
 
-  // Fetch ic_naming active run output (only needed for component_selection phase)
-  const { data: icNamingRun } = useQuery({
-    queryKey: ['run', projectId, 'ic_naming_agent', icNamingActiveRunId],
-    queryFn: () => runsApi.get(projectId, 'ic_naming_agent', icNamingActiveRunId!),
-    enabled: phase.id === 'component_selection' && !!icNamingActiveRunId,
+  // Fetch ic_selection active run output (only needed for architecture_agent phase)
+  const { data: icSelectionRun } = useQuery({
+    queryKey: ['run', projectId, 'ic_selection', icSelectionActiveRunId],
+    queryFn: () => runsApi.get(projectId, 'ic_selection', icSelectionActiveRunId!),
+    enabled: phase.id === 'architecture_agent' && !!icSelectionActiveRunId,
   })
 
   // Polling for in-flight run
@@ -141,9 +138,10 @@ export function PhaseCard({
   const isRunning =
     pollingRun?.status === 'running' || pollingRun?.status === 'pending'
 
-  // Refetch active run when component_selection card expands — bom_result is async
+  // Refetch active run when component_selection/architecture_agent cards expand —
+  // bom_result and the diagram-editor approval are both populated asynchronously
   useEffect(() => {
-    if (phase.id === 'component_selection' && expanded && activeRunId) {
+    if ((phase.id === 'component_selection' || phase.id === 'architecture_agent') && expanded && activeRunId) {
       refetchActiveRun()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -226,32 +224,6 @@ export function PhaseCard({
     })
   }
 
-  const handleDuplicateIcNamingDesign = (designKey: string, parts: string[]) => {
-    const base = designKey.replace(/^design/i, '') || designKey
-    const existingLabels = new Set(
-      icNamingCustomOutputs.items
-        .filter((ci) => ci.source_item_id === designKey)
-        .map((ci) => (ci.data.label as string) ?? '')
-    )
-    let suffix = 1
-    while (existingLabels.has(`${base}_${suffix}`)) suffix++
-    const customLabel = `${base}_${suffix}`
-    icNamingCustomOutputs.addItem.mutate({
-      source_item_id: designKey,
-      source_item_label: customLabel,
-      data: { label: customLabel, parts },
-    })
-  }
-
-  const handleDeleteCustomIcNaming = (itemId: string) => {
-    const item = icNamingCustomOutputs.items.find((ci) => ci.id === itemId)
-    if (item) {
-      const ciLabel = (item.data.label as string) ?? item.source_item_label
-      if (selectedComponentDesignId === ciLabel) setSelectedComponentDesignId(null)
-    }
-    icNamingCustomOutputs.deleteItem.mutate(itemId)
-  }
-
   const handleDuplicateComponent = (component: Record<string, unknown>) => {
     const originalRef = String(component.ref ?? '')
     const existingRefs = new Set(
@@ -273,10 +245,6 @@ export function PhaseCard({
     await customOutputs.updateItem.mutateAsync({ itemId, data })
   }
 
-  const handleUpdateIcNamingCustom = async (itemId: string, data: Record<string, unknown>) => {
-    await icNamingCustomOutputs.updateItem.mutateAsync({ itemId, data })
-  }
-
   const recheckBomMutation = useMutation({
     mutationFn: () => runsApi.recheckBom(projectId, phase.id, activeRun!.id),
     onSuccess: () => {
@@ -284,6 +252,15 @@ export function PhaseCard({
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['run', projectId, phase.id, activeRunId] })
       }, 8000)
+    },
+  })
+
+  // Mints a fresh editor-link and opens it in a new tab — self-sufficient (token
+  // carries project/run scope), so it works even if this tab is later closed.
+  const openInNewTabMutation = useMutation({
+    mutationFn: () => runsApi.getEditorLink(projectId, 'architecture_agent', activeRun!.id),
+    onSuccess: ({ url }) => {
+      window.open(url, '_blank', 'noopener')
     },
   })
 
@@ -297,17 +274,10 @@ export function PhaseCard({
           selected_solutions: selectedResearchSolutions,
           query_summary: researchQuerySummary,
         }
-      } else if (phase.id === 'component_selection' && selectedComponentDesignId) {
-        // Check if the selected design is a custom item — if so, include its data
-        const customDesign = icNamingCustomOutputs.items.find(
-          (ci) => ((ci.data.label as string) ?? ci.source_item_label) === selectedComponentDesignId
-        )
+      } else if (phase.id === 'architecture_agent' && selectedIcDesignId) {
         custom_inputs = {
           ...inputs,
-          selected_design_id: selectedComponentDesignId,
-          ...(customDesign
-            ? { custom_design_data: { [selectedComponentDesignId]: customDesign.data.parts } }
-            : {}),
+          selected_design_id: selectedIcDesignId,
         }
       }
 
@@ -473,18 +443,19 @@ export function PhaseCard({
                 )}
               </div>
             )}
-            {phase.id === 'component_selection' && (
+            {phase.id === 'architecture_agent' && (
               <div className="mb-3">
-                <ComponentDesignPicker
-                  icNamingOutput={icNamingRun?.output_payload as Record<string, unknown> | null}
-                  selectedDesignId={selectedComponentDesignId}
-                  onSelect={(id) => { const trimmed = id?.trim(); setSelectedComponentDesignId(trimmed); }}
-                  customItems={icNamingCustomOutputs.items}
-                  onDuplicate={handleDuplicateIcNamingDesign}
-                  onUpdateCustom={handleUpdateIcNamingCustom}
-                  onDeleteCustom={handleDeleteCustomIcNaming}
+                <IcDesignPicker
+                  icSelectionOutput={icSelectionRun?.output_payload as Record<string, unknown> | null}
+                  selectedDesignId={selectedIcDesignId}
+                  onSelect={setSelectedIcDesignId}
                 />
               </div>
+            )}
+            {phase.id === 'component_selection' && (
+              <p className="mb-3 text-xs text-muted-foreground italic">
+                {t('componentSelectionDisabled')}
+              </p>
             )}
             <PhaseInputForm
               phaseId={phase.id}
@@ -496,7 +467,8 @@ export function PhaseCard({
               isLoading={isRunning || triggerMutation.isPending}
               submitDisabled={
                 (phase.id === 'ic_selection' && !selectedResearchSolutions?.length) ||
-                (phase.id === 'component_selection' && !selectedComponentDesignId)
+                (phase.id === 'architecture_agent' && !selectedIcDesignId) ||
+                phase.id === 'component_selection'
               }
               onSubmit={(payload) => triggerMutation.mutate(payload)}
             />
@@ -598,10 +570,41 @@ export function PhaseCard({
             </>
           )}
 
-          {/* IC Naming Agent output */}
-          {phase.id === 'ic_naming_agent' && activeRun?.output_payload && (
+          {/* Architecture Agent output — opens the System Diagram App instead of an inline viewer */}
+          {phase.id === 'architecture_agent' && activeRun?.status === 'completed' && (
             <>
-              <IcNamingOutputViewer output={activeRun.output_payload} />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" onClick={() => setDiagramModalOpen(true)} className="gap-1.5">
+                  {t('openDiagramEditor')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  disabled={openInNewTabMutation.isPending}
+                  onClick={() => openInNewTabMutation.mutate()}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {t('openDiagramEditorNewTab')}
+                </Button>
+              </div>
+              {openInNewTabMutation.isError && (
+                <p className="text-xs text-destructive mt-1.5">
+                  {openInNewTabMutation.error instanceof Error
+                    ? openInNewTabMutation.error.message
+                    : 'Error'}
+                </p>
+              )}
+              <ArchitectureDiagramModal
+                projectId={projectId}
+                runId={activeRun.id}
+                open={diagramModalOpen}
+                onOpenChange={setDiagramModalOpen}
+                onApproved={() => {
+                  queryClient.invalidateQueries({ queryKey: ['active-runs', projectId] })
+                  refetchActiveRun()
+                }}
+              />
               <Separator />
             </>
           )}

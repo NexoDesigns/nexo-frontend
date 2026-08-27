@@ -54,7 +54,8 @@ export interface ProjectRequirements {
 export type PhaseId =
   | 'research'
   | 'ic_selection'
-  | 'ic_naming_agent'
+  | 'architecture_agent'
+  | 'passive_components'
   | 'component_selection'
   | 'netlist'
 
@@ -64,6 +65,69 @@ export interface PipelinePhase {
   description: string
   order_index: number
   n8n_webhook_path: string
+}
+
+// ─── Architecture Agent output (System Diagram App hand-off) ─────────────────
+
+export interface ArchitectureIcComponent {
+  ic_type: string
+  description: string
+  manufacturer: string
+  ic_part_number: string
+  DatasheetUrl: string
+  selection_rationale: string
+}
+
+export interface ArchitectureGlobalNet {
+  name: string
+  type: string
+  source: string
+  consumers: string[]
+  description: string
+  high_voltage?: boolean
+}
+
+export interface ArchitectureIsolationArea {
+  id: string
+  name: string
+  reference_ground?: string
+}
+
+export interface ArchitectureGroup {
+  id: string
+  title: string
+  description: string
+  members: string[]
+}
+
+/** The editor_fixture produced by architecture_agent's n8n workflow — architecture-editor's native input shape. */
+export interface EditorFixture {
+  input: {
+    id: string
+    title: string
+    description: string
+    key_references: string[]
+    ic_components: ArchitectureIcComponent[]
+  }
+  contract: {
+    global_nets: ArchitectureGlobalNet[]
+    external_blocks: { name: string; description: string }[]
+    isolation_areas?: ArchitectureIsolationArea[]
+  }
+  groups: ArchitectureGroup[]
+}
+
+/** architecture_agent's approved output_payload — editor_fixture plus the passives_handoff
+ *  consumed by the (still in development) passive_components phase. */
+export interface ArchitectureAgentOutput {
+  editor_fixture: EditorFixture
+  passives_handoff?: Record<string, unknown>
+}
+
+/** Short-lived hand-off URL for architecture-editor (POST .../editor-link). */
+export interface EditorLinkResponse {
+  url: string
+  expires_at: number
 }
 
 // ─── Research output ─────────────────────────────────────────────────────────
