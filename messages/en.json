@@ -49,7 +49,18 @@
     "loginButton": "Log in",
     "loginLoading": "Logging in...",
     "invalidCredentials": "Invalid email or password",
-    "genericError": "Login failed. Please try again."
+    "genericError": "Login failed. Please try again.",
+    "eyebrow": "Platform access",
+    "signInTitle": "Sign in",
+    "signInDescription": "Enter Nexo Design’s AI-assisted electronics design environment.",
+    "emailCorporate": "Corporate email",
+    "emailPlaceholderCorporate": "name@company.com",
+    "submit": "Sign in",
+    "submitLoading": "Signing in...",
+    "noAccount": "Don’t have an account yet?",
+    "seePackages": "See the packages",
+    "orWriteTo": "or write to",
+    "backToSite": "Back to the site"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -344,5 +355,217 @@
     "confirmed": "Confirmed",
     "discarded": "Discarded",
     "suggestionCount": "{count, plural, =1 {1 normative suggested} other {# normatives suggested}}"
+  },
+  "landing": {
+    "meta": {
+      "title": "Nexo Design — AI-driven electronics design",
+      "description": "Nexo Design combines electronics engineering and artificial intelligence to design, simulate and validate hardware faster: PCB, firmware and embedded systems."
+    },
+    "nav": {
+      "mission": "Mission",
+      "platform": "Platform",
+      "capabilities": "Capabilities",
+      "sectors": "Sectors",
+      "products": "Products",
+      "signIn": "Sign in",
+      "contact": "Contact"
+    },
+    "hero": {
+      "eyebrow": "Nexo Design · Electronics engineering + AI",
+      "titleA": "We design the electronics",
+      "titleB": "that AI makes possible.",
+      "description": "We combine decades of hardware engineering with artificial intelligence models to design, simulate and validate electronic systems in a fraction of the time.",
+      "ctaPlatform": "See the platform",
+      "ctaContact": "Talk to engineering"
+    },
+    "mission": {
+      "eyebrow": "01 — Mission",
+      "title": "Hardware moves at the speed of its iterations. We multiply them.",
+      "p1": "Every board respin costs weeks. We train models on real engineering data so that critical decisions — topology, components, thermal design — are made before the first prototype is built.",
+      "p2": "We don’t replace the engineer: we give them a copilot able to evaluate thousands of alternatives while they focus on what no machine can solve — the intent of the product."
+    },
+    "stats": [
+      {
+        "value": "6×",
+        "label": "faster than the traditional flow"
+      },
+      {
+        "value": "40%",
+        "label": "fewer physical iterations"
+      },
+      {
+        "value": "120+",
+        "label": "boards taken to production"
+      },
+      {
+        "value": "24/7",
+        "label": "dedicated simulation compute"
+      }
+    ],
+    "platform": {
+      "eyebrow": "02 — Platform",
+      "title": "One continuous design flow, from idea to fabrication panel.",
+      "steps": [
+        {
+          "step": "Ingest",
+          "title": "Your schematics, our model",
+          "body": "We import schematics, netlists and requirements and turn them into a trainable representation of the system."
+        },
+        {
+          "step": "Exploration",
+          "title": "Thousands of variants in parallel",
+          "body": "Generative agents explore the design space searching for the balance between cost, power and performance."
+        },
+        {
+          "step": "Validation",
+          "title": "Physics, not guesses",
+          "body": "Every candidate goes through accelerated solvers and real manufacturing rules before it reaches your desk."
+        }
+      ]
+    },
+    "capabilities": {
+      "eyebrow": "03 — Capabilities",
+      "title": "The whole electronics lifecycle under one roof.",
+      "items": [
+        {
+          "id": "01",
+          "title": "AI-assisted PCB design",
+          "body": "Routing, placement and layer optimization guided by models trained on thousands of production-validated boards."
+        },
+        {
+          "id": "02",
+          "title": "Electromagnetic simulation",
+          "body": "Surrogate models that predict signal integrity, EMC and thermals in seconds instead of hours of compute."
+        },
+        {
+          "id": "03",
+          "title": "Firmware and embedded systems",
+          "body": "Low-level firmware, RTOS and edge AI development on the latest MCUs, FPGAs and SoCs."
+        },
+        {
+          "id": "04",
+          "title": "Validation and automated test",
+          "body": "Instrumented test benches and machine-learning anomaly detection before manufacturing."
+        },
+        {
+          "id": "05",
+          "title": "Industrialization",
+          "body": "From prototype to series: DFM, component selection and support with European manufacturers."
+        },
+        {
+          "id": "06",
+          "title": "Digital twins",
+          "body": "Virtual replicas of the hardware to explore design variants and anticipate behavior in the field."
+        }
+      ]
+    },
+    "sectors": {
+      "eyebrow": "04 — Sectors",
+      "items": [
+        "Electric mobility",
+        "Aerospace",
+        "Robotics",
+        "Energy",
+        "Medical devices",
+        "Industry 4.0"
+      ]
+    },
+    "cta": {
+      "title": "Do you have an electronic product to design?",
+      "description": "Tell us the technical challenge and we’ll reply with an architecture proposal in under 48 hours."
+    },
+    "footer": {
+      "tagline": "Electronics engineering with AI"
+    }
+  },
+  "products": {
+    "meta": {
+      "title": "Products and packages — Nexo Design",
+      "description": "Get the AI electronics design platform, a turnkey engineering team, or the EU/UK regulatory analysis for your product."
+    },
+    "hero": {
+      "eyebrow": "Products",
+      "titleA": "Three ways to design",
+      "titleB": "electronics with us.",
+      "description": "Subscribe to the platform and design yourself, hand the whole project to our team, or solve only the regulatory side. Packages can be combined."
+    },
+    "featuredBadge": "Most popular",
+    "packages": [
+      {
+        "id": "01",
+        "name": "Platform",
+        "tagline": "Design with our tools",
+        "price": "Subscription",
+        "body": "Full access to the AI-assisted design environment: topology exploration, optimized routing, accelerated simulation and DFM validation. For teams that already have engineering and want to multiply their iterations.",
+        "features": [
+          "Cloud environment with dedicated simulation compute",
+          "PCB design copilot and component selection",
+          "Signal integrity, EMC and thermal simulation",
+          "Unlimited users per project and version control",
+          "Engineering support during business hours"
+        ],
+        "cta": "Request access",
+        "featured": true
+      },
+      {
+        "id": "02",
+        "name": "Turnkey projects",
+        "tagline": "Our team designs for you",
+        "price": "Per project",
+        "body": "If you don’t have a design team behind you, we take over the full development: architecture, schematics, PCB, firmware, validation and industrialization with European manufacturers.",
+        "features": [
+          "Electronics architecture and schematics",
+          "Multilayer PCB design and routing",
+          "Firmware, RTOS and edge AI",
+          "Test benches and prototype validation",
+          "Support into production (DFM, suppliers)"
+        ],
+        "cta": "Tell us about your project",
+        "featured": false
+      },
+      {
+        "id": "03",
+        "name": "EU / UK compliance",
+        "tagline": "Compliance only",
+        "price": "One-off package",
+        "body": "Research and analysis of the regulatory requirements that apply to your design in the European Union and the United Kingdom. You get the map of directives, harmonized standards and required tests before certifying.",
+        "features": [
+          "Identification of directives and markings (CE / UKCA)",
+          "Applicable harmonized standards (EMC, LVD, RED, RoHS)",
+          "Design requirements translated into board rules",
+          "Test plan and recommended laboratories",
+          "Deliverable report in 5 working days"
+        ],
+        "cta": "Request report",
+        "featured": false
+      }
+    ],
+    "addons": {
+      "eyebrow": "Add-ons",
+      "title": "Add capabilities on top of any package.",
+      "items": [
+        {
+          "title": "Design audit",
+          "body": "Review of an existing design with a risk report and prioritized improvements."
+        },
+        {
+          "title": "Digital twin",
+          "body": "Virtual replica of the hardware to explore variants and anticipate behavior in the field."
+        },
+        {
+          "title": "Training",
+          "body": "Onboarding of your team into Nexo’s AI-assisted design flow."
+        },
+        {
+          "title": "Priority support",
+          "body": "Direct channel with engineering and a response SLA under 4 hours."
+        }
+      ]
+    },
+    "bottom": {
+      "title": "Not sure which package fits your product?",
+      "ctaEngineering": "Talk to engineering",
+      "ctaPlatform": "Access the platform"
+    }
   }
 }

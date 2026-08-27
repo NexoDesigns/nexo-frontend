@@ -1,9 +1,13 @@
+import { publicFontVars } from '@/lib/fonts'
+import { BackgroundVideo } from '@/components/public/BackgroundVideo'
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-background bg-grid flex items-center justify-center p-4">
-      {/* Radial gradient overlay to fade out the grid toward center */}
-      <div className="pointer-events-none absolute inset-0 bg-radial-gradient" />
-      <div className="relative z-10 w-full max-w-sm">{children}</div>
+    <div
+      className={`theme-landing ${publicFontVars} relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-20 text-foreground`}
+    >
+      <BackgroundVideo src="/media/hero.mp4" opacity={0.35} />
+      <div className="relative w-full max-w-md">{children}</div>
     </div>
   )
 }

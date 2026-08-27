@@ -11,6 +11,8 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'monospace'],
+        // Public site (theme-landing) families
+        display: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Base backgrounds — mirrors Supabase's layered dark system
@@ -47,6 +49,11 @@ const config: Config = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        // Public site (theme-landing) surfaces
+        surface: {
+          DEFAULT: 'hsl(var(--surface))',
+          2: 'hsl(var(--surface-2))',
+        },
         // Status colors for runs
         success: {
           DEFAULT: 'hsl(var(--success))',
