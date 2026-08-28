@@ -2,86 +2,91 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
-import { Link } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { NexoLogo } from '@/components/public/NexoLogo'
 import { Reveal } from '@/components/public/Reveal'
 
-const CONTACT_EMAIL = 'hola@nexodesign.ai'
-
-export default function LoginPage() {
+export default function SetPasswordPage() {
   const t = useTranslations('auth')
   const supabase = createClient()
-  const searchParams = useSearchParams()
-
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(
-    searchParams.get('error') === 'invite_link_invalid' ? t('inviteLinkInvalid') : null
-  )
-
   const locale = useLocale()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const [fullName, setFullName] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const trimmedName = fullName.trim()
+    if (!trimmedName) {
+      setError(t('fullNameRequired'))
+      return
+    }
 
-    if (authError) {
-      setError(
-        authError.message.toLowerCase().includes('invalid')
-          ? t('invalidCredentials')
-          : t('genericError')
-      )
+    if (password !== confirmPassword) {
+      setError(t('passwordMismatch'))
+      return
+    }
+
+    setLoading(true)
+
+    const { data: userData, error: updateError } = await supabase.auth.updateUser({ password })
+
+    if (updateError || !userData.user) {
+      setError(t('genericError'))
       setLoading(false)
       return
     }
 
-    // Espera a que la sesión esté escrita antes de navegar
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ full_name: trimmedName })
+      .eq('id', userData.user.id)
+
+    if (profileError) {
+      setError(t('genericError'))
+      setLoading(false)
+      return
+    }
+
     window.location.replace(`/${locale}`)
   }
 
   return (
     <>
       <Reveal>
-        <Link href="/home" className="inline-flex items-center" aria-label="Nexo Design">
-          <NexoLogo className="h-8 w-auto" />
-        </Link>
+        <NexoLogo className="h-8 w-auto" />
       </Reveal>
 
       <Reveal delay={100}>
         <div className="mt-10 border border-border bg-background/80 px-8 py-10 backdrop-blur-xl">
           <p className="eyebrow">{t('eyebrow')}</p>
-          <h1 className="display-xl mt-5 text-3xl sm:text-4xl">{t('signInTitle')}</h1>
+          <h1 className="display-xl mt-5 text-3xl sm:text-4xl">{t('setPasswordTitle')}</h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            {t('signInDescription')}
+            {t('setPasswordDescription')}
           </p>
 
-          <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor="fullName"
                 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
               >
-                {t('emailCorporate')}
+                {t('fullName')}
               </label>
               <input
-                id="email"
-                type="email"
+                id="fullName"
+                type="text"
                 required
-                autoComplete="email"
+                autoComplete="name"
                 autoFocus
-                placeholder={t('emailPlaceholderCorporate')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('fullNamePlaceholder')}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="mt-3 w-full border border-input bg-transparent px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary"
               />
             </div>
@@ -96,10 +101,30 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
+                minLength={6}
                 placeholder={t('passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="mt-3 w-full border border-input bg-transparent px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                {t('confirmPassword')}
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={6}
+                placeholder={t('passwordPlaceholder')}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="mt-3 w-full border border-input bg-transparent px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary"
               />
             </div>
@@ -112,35 +137,14 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={loading || !fullName.trim() || !password || !confirmPassword}
               className="inline-flex w-full items-center justify-center gap-2 bg-primary px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-50"
             >
-              {loading ? t('submitLoading') : t('submit')}
+              {loading ? t('submitLoading') : t('setPasswordSubmit')}
               <span aria-hidden>→</span>
             </button>
           </form>
-
-          <p className="mt-8 border-t border-border pt-6 text-xs leading-relaxed text-muted-foreground">
-            {t('noAccount')}{' '}
-            <Link href="/productos" className="text-primary hover:underline">
-              {t('seePackages')}
-            </Link>{' '}
-            {t('orWriteTo')}{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">
-              {CONTACT_EMAIL}
-            </a>
-            .
-          </p>
         </div>
-      </Reveal>
-
-      <Reveal delay={200}>
-        <Link
-          href="/home"
-          className="mt-8 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-primary"
-        >
-          <span aria-hidden>←</span> {t('backToSite')}
-        </Link>
       </Reveal>
     </>
   )

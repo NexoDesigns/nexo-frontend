@@ -60,7 +60,16 @@
     "noAccount": "¿Aún no tienes cuenta?",
     "seePackages": "Consulta los paquetes",
     "orWriteTo": "o escribe a",
-    "backToSite": "Volver al sitio"
+    "backToSite": "Volver al sitio",
+    "inviteLinkInvalid": "El enlace de invitación no es válido o ha caducado. Pide que te envíen uno nuevo.",
+    "setPasswordTitle": "Crea tu contraseña",
+    "setPasswordDescription": "Define una contraseña para terminar de activar tu cuenta de Nexo Design.",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Tu nombre y apellidos",
+    "fullNameRequired": "Introduce tu nombre completo",
+    "confirmPassword": "Confirmar contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "setPasswordSubmit": "Empezar a diseñar"
   },
   "dashboard": {
     "title": "Dashboard",

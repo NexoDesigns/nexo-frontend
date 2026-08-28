@@ -60,7 +60,16 @@
     "noAccount": "Don’t have an account yet?",
     "seePackages": "See the packages",
     "orWriteTo": "or write to",
-    "backToSite": "Back to the site"
+    "backToSite": "Back to the site",
+    "inviteLinkInvalid": "This invite link is invalid or has expired. Ask for a new one.",
+    "setPasswordTitle": "Create your password",
+    "setPasswordDescription": "Set a password to finish activating your Nexo Design account.",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Your first and last name",
+    "fullNameRequired": "Enter your full name",
+    "confirmPassword": "Confirm password",
+    "passwordMismatch": "Passwords don't match",
+    "setPasswordSubmit": "Start designing"
   },
   "dashboard": {
     "title": "Dashboard",
