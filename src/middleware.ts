@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { routing } from './i18n/routing'
+import { safeInternalRedirect } from './lib/gate'
 
 const intlMiddleware = createMiddleware(routing)
 
@@ -55,6 +56,11 @@ export async function middleware(request: NextRequest) {
     // any other protected path still goes to the login.
     const destination = pathnameWithoutLocale === '/' ? 'home' : 'login'
     const redirectUrl = new URL(`/${currentLocale}/${destination}`, request.url)
+    // Remember where they were headed so the login can put them back there —
+    // the landing page is a destination in itself, so it needs no memory.
+    if (destination === 'login') {
+      redirectUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`)
+    }
     const response = NextResponse.redirect(redirectUrl)
     supabaseResponse.headers.getSetCookie().forEach((cookie) => {
       response.headers.append('Set-Cookie', cookie)
@@ -68,8 +74,12 @@ export async function middleware(request: NextRequest) {
     pathnameWithoutLocale === '/login' || pathnameWithoutLocale.startsWith('/login/')
 
   if (user && isLoginPath) {
-    const dashboardUrl = new URL(`/${currentLocale}`, request.url)
-    const response = NextResponse.redirect(dashboardUrl)
+    // An already-signed-in user following a gated-subdomain link lands here
+    // carrying the destination. Honouring it is what makes "back to the
+    // original link" work without showing a login form at all.
+    const requested = safeInternalRedirect(request.nextUrl.searchParams.get('redirect'))
+    const target = new URL(requested ?? `/${currentLocale}`, request.url)
+    const response = NextResponse.redirect(target)
     supabaseResponse.headers.getSetCookie().forEach((cookie) => {
       response.headers.append('Set-Cookie', cookie)
     })

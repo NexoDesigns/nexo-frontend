@@ -1,0 +1,77 @@
+# Puerta de autenticación para subdominios
+
+`middleware.ts` en esta carpeta es la **fuente canónica**. Cada herramienta de
+Nexo que viva en su propio subdominio (`editor.nexodesign.ai`, y las que
+vengan) lleva una copia en la raíz de su repo.
+
+No edites la copia. Cambia esta, sube la versión de la cabecera, y vuelve a
+copiar.
+
+## Las dos mitades
+
+| Mitad | Dónde | Qué hace |
+|---|---|---|
+| Emisor | `src/app/api/auth/gate/route.ts` (este repo) | Comprueba la sesión de Supabase y acuña un ticket de 60 s |
+| Verificador | `middleware.ts` (cada subdominio) | Cambia el ticket por una cookie de sesión de 1 h y sirve, o manda al emisor |
+
+El subdominio nunca ve el JWT de Supabase. Si alguna de las herramientas
+tuviera un XSS, lo que se llevaría es una sesión de una hora para esa
+herramienta, no la cuenta de Nexo.
+
+## Añadir un subdominio nuevo
+
+1. **Copiar** `middleware.ts` a la raíz del repo.
+
+2. **Ajustar el `matcher`.** Es lo único que cambia entre sitios, y es lo que
+   controla el gasto: el middleware se factura por invocación y el matcher se
+   aplica *antes* de invocar la función, así que cada excepción es una
+   invocación ahorrada en cada carga de página. Excluye lo que ya es público
+   —librerías de terceros, logos— y no excluyas nada tuyo.
+
+   ```ts
+   matcher: ['/((?!lib/|_vercel/|favicon\\.ico|nexodesign_logo\\.jpg).*)']
+   ```
+
+3. **Variables de entorno** en el proyecto de Vercel:
+
+   | Variable | Valor |
+   |---|---|
+   | `GATE_TICKET_SECRET` | El mismo que en `nexo-frontend` |
+   | `GATE_ISSUER_URL` | `https://nexodesign.ai` |
+   | `GATE_SELF_ORIGIN` | El origen de este subdominio, sin barra final |
+
+4. **Añadir el origen** a `GATE_ALLOWED_ORIGINS` en `nexo-frontend`. El emisor
+   solo acuña tickets para orígenes de esa lista; sin esto tendríamos un open
+   redirect que además reparte credenciales firmadas.
+
+5. **`package.json`** con `{"type": "module"}` si el repo no tiene ninguno.
+   Vercel lo pide para compilar el middleware en proyectos sin framework. No
+   hacen falta dependencias.
+
+6. **`vercel.json`** para las cabeceras estáticas. Van aquí y no en el
+   middleware **a propósito**: las cabeceras de `vercel.json` las aplica la CDN
+   sin invocar nada.
+
+No hay que tocar el emisor: los pasos 3 y 4 son toda la integración.
+
+## Cosas que romperían esto
+
+- **Editar la copia en vez de la canónica.** Dos subdominios que validan
+  distinto es la clase de fallo que aparece meses después.
+- **Rotar `GATE_TICKET_SECRET` en un sitio y no en los otros.** Invalida todas
+  las sesiones de los subdominios que se queden atrás. Si lo rotas, hazlo en
+  todos a la vez.
+- **Quitar `GATE_SELF_ORIGIN`** y deducir el origen de la petición. El `aud` del
+  ticket dejaría de significar nada: un ticket de un subdominio valdría en
+  cualquier otro.
+- **Meter algo propio en las excepciones del matcher.** Queda servido a
+  cualquiera, sin aviso.
+
+## Qué NO resuelve
+
+La puerta comprueba que hay sesión en Nexo, que es lo que el resto de la
+aplicación exige hoy. **No** comprueba permisos por proyecto, porque todavía no
+existen: `routers/projects.py` devuelve todos los proyectos a cualquier usuario
+autenticado. Cuando lleguen, el sitio donde enchufarlos es
+`nexo-backend/core/authz.py`, y el emisor debe empezar a llamarlo — están
+escritos para eso.

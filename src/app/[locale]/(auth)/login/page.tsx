@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
+import { safeInternalRedirect } from '@/lib/gate'
 import { NexoLogo } from '@/components/public/NexoLogo'
 import { Reveal } from '@/components/public/Reveal'
 
@@ -46,7 +47,9 @@ export default function LoginPage() {
 
     // Espera a que la sesión esté escrita antes de navegar
     await new Promise(resolve => setTimeout(resolve, 500))
-    window.location.replace(`/${locale}`)
+    // Vuelve a donde el usuario iba — para un subdominio con puerta, eso es
+    // /api/auth/gate, que ya tiene sesión y le devuelve allí sin más pasos.
+    window.location.replace(safeInternalRedirect(searchParams.get('redirect')) ?? `/${locale}`)
   }
 
   return (

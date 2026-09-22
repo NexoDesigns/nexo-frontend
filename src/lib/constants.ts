@@ -45,12 +45,10 @@ export const N8N_WORKFLOW_IDS: Record<PhaseId, string | null> = {
   netlist: null,             // TODO: create workflow
 }
 
-// ─── System Diagram App (architecture-editor) ──────────────────────────────────
-
-/** Static site (GitHub Pages) hosting the block-diagram editor for architecture_agent. */
-// export const ARCHITECTURE_EDITOR_URL = 'https://mikacelber.github.io/architecture-editor/'
-// FOR TEST!!!
-export const ARCHITECTURE_EDITOR_URL = 'http://localhost:8001/'
+// The System Diagram App (architecture-editor) has no constant here on purpose:
+// its URL is minted by the backend, which signs a scoped token into it
+// (POST .../editor-link → runsApi.getEditorLink). ARCHITECTURE_EDITOR_URL in
+// nexo-backend is the single source of truth for where that app is deployed.
 
 /** Returns the n8n execution URL for a run, or null if data is missing. */
 export function n8nExecutionUrl(
