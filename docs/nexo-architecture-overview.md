@@ -7,7 +7,9 @@
 
 Nexo Design es una plataforma de **diseño electrónico asistido por IA**: un ingeniero crea un Proyecto y lo hace avanzar por un pipeline de fases (investigación de componentes, selección de ICs (integrated circuit), arquitectura del sistema, componentes pasivos, selección de componentes, netlist). Cada fase se ejecuta como un **workflow de n8n** con agentes LLM (Claude, OpenAI, etc), y una de las fases (`architecture_agent`) produce un diagrama de bloques que el ingeniero revisa/edita en una herramienta visual dedicada (el **Block Diagram Editor**).
 
-El sistema **no es un monorepo**: son 4 repositorios hermanos en el mismo workspace local, cada uno con una responsabilidad distinta.
+Junto al pipeline vive el **catálogo de componentes**: las fichas de datasheets de ICs que los ingenieros extraen, revisan y aprueban en `datasheets.nexodesign.ai` (repo `datasheet_extractor`). No pertenecen a ningún proyecto; los agentes las consultan para preferir componentes ya revisados.
+
+El sistema **no es un monorepo**: son repositorios hermanos en el mismo workspace local, cada uno con una responsabilidad distinta.
 
 ```mermaid
 flowchart LR
@@ -29,6 +31,11 @@ flowchart LR
 
     subgraph Editor["App independiente"]
         AE["architecture-editor<br/>Block Diagram Editor<br/>(Vercel: editor.nexodesign.ai)"]
+    end
+
+    subgraph Datasheets["datasheet_extractor (Render)"]
+        DSW["datasheets-web<br/>datasheets.nexodesign.ai"]
+        DSK["datasheets-worker<br/>(Docling + Claude)"]
     end
 
     subgraph Externos["APIs externas"]
@@ -53,6 +60,11 @@ flowchart LR
     BE -- "JWT scoped 8h (EDITOR_LINK_SECRET)" --> AE
     AE -- "GET/PATCH runs vía token" --> BE
     FE -. "iframe / nueva pestaña" .-> AE
+    DSW -- "sin sesión → /api/auth/gate" --> FE
+    DSW -- "Postgres directo (esquema datasheets) + Storage" --> SB
+    DSK -- "cola extraction_jobs + Storage" --> SB
+    BE -- "RPC del catálogo (service key)" --> SB
+    N8N -- "GET /datasheets/search (X-Api-Key)" --> BE
 ```
 
 ---
@@ -65,6 +77,7 @@ flowchart LR
 | `nexo-backend` | API central, lógica de negocio, acceso a Supabase, orquestación de n8n, integración con APIs de componentes | FastAPI (Python), Uvicorn | Render.com |
 | `architecture-editor` | Editor visual de diagramas de bloques ("Block Diagram Editor" / "System Diagram App"), app independiente embebida en el frontend | JS estático (SPA) | Vercel — `editor.nexodesign.ai`, tras la puerta de autenticación (sección 6.1) |
 | `workflows n8n` | Motor de orquestacion de los agentes IA para las fases | JSON exportado de n8n | render.com (self-hosted n8n) |
+| `datasheet_extractor` | Extracción y revisión de fichas de datasheets de ICs; el catálogo de componentes aprobados | Python: Starlette + worker (Docling, Claude) | Render.com — `datasheets.nexodesign.ai` (web) + worker, tras la puerta (sección 6.2) |
 
 La instancia de n8n en sí (`https://nexo-n8n.onrender.com`) no tiene repo propio en este workspace: los workflows se editan directamente en su UI web; el JSON exportado es solo una copia de referencia.
 
@@ -144,6 +157,10 @@ Esto evita problemas de CORS (la petición del navegador es same-origin) y ocult
 
 `routers/components.py` expone búsqueda de componentes (clasificación de pasivos → búsqueda en Digikey → verificación cruzada en Mouser) — endpoint reutilizado tanto por el frontend como por nodos HTTP Request dentro de los propios workflows de n8n.
 
+### Catálogo de datasheets
+
+`routers/datasheets.py` lee, sin escribir nunca, el catálogo de componentes aprobados (sección 6.2): `GET /datasheets/search` (palabras o inicio de part number, fabricante, encapsulado, rango de temperatura, cualificaciones, una tensión que acepte algún raíl), `GET /datasheets/by-part/{part_number}` y `GET /datasheets/{id}`. Acepta Bearer (frontend, `datasheetsApi`) y `X-Api-Key` (n8n): los agentes que sugieren componentes lo consultan para preferir un IC con ficha revisada frente a uno equivalente sin ella.
+
 ---
 
 ## 4. Base de datos (Supabase)
@@ -162,6 +179,21 @@ Esto evita problemas de CORS (la petición del navegador es same-origin) y ocult
 ### Tablas de la base de datos
 
 `profiles`, `projects`, `project_requirements`, `pipeline_phases`, `phase_runs`, `project_active_runs`, `custom_phase_output_items`, `documents`, `document_chunks`, `project_normatives`, `normative_runs`.
+
+### Esquema `datasheets` (catálogo de componentes)
+
+Esquema propio, fuera de cualquier proyecto, versionado con Supabase CLI en `datasheet_extractor/supabase/migrations/` (a diferencia del SQL manual de `nexo-backend/migrations/`):
+
+| Objeto | Qué es |
+|---|---|
+| `sheets` | una ficha por grupo de variantes (JSON completo + columnas de búsqueda: descripción, rango de temperatura, cualificaciones, rangos de alimentación, texto completo), con `created_by` / `updated_by` / `approved_by` y `revision` |
+| `sheet_events` | auditoría: quién hizo qué a qué ficha |
+| `figure_evidence`, `checkpoints` | evidencia de figuras por datasheet; pasadas del modelo ya pagadas |
+| `extraction_jobs`, `job_events` | la cola de extracciones y su progreso |
+| `approved_components` (vista), `search_components()`, `find_by_part()` | lo único que lee el resto de Nexo |
+| buckets `datasheet-figures`, `datasheet-cache` | imágenes de figuras; descargas y parses de Docling (privados) |
+
+`anon` no tiene acceso al esquema; un usuario autenticado solo puede leer la vista y llamar a las dos funciones. El esquema debe estar entre los *exposed schemas* de la API para que el backend lo consulte con supabase-py.
 
 ---
 
@@ -231,7 +263,7 @@ Si no hay aprobación en la misma pestaña (caso "nueva pestaña"), el frontend 
 
 El token scoped de la sección anterior protege los **datos** de un run, pero no la **página**: el sitio estático era descargable por cualquiera que conociera la URL. Delante de cada subdominio hay ahora una puerta que exige sesión de Nexo antes de servir nada.
 
-No es código del editor: es un patrón reutilizable para todas las herramientas que vivan en subdominios (`datasheet_extractor` será la siguiente). La fuente canónica y la guía de instalación están en `nexo-frontend/docs/gate-middleware/`.
+No es código del editor: es un patrón reutilizable para todas las herramientas que vivan en subdominios (`datasheet_extractor` es la segunda, con una implementación en Python: sección 6.2). La fuente canónica y la guía de instalación están en `nexo-frontend/docs/gate-middleware/`.
 
 ### Las dos mitades
 
@@ -267,6 +299,23 @@ sequenceDiagram
 ### Qué NO comprueba
 
 Solo autenticación, que es lo que el resto de la aplicación exige hoy (ver problema #3). El predicado vive en `nexo-backend/core/authz.py` (`assert_can_access_project`), que llaman tanto el endpoint `editor-link` como el emisor, para que el día que existan permisos por proyecto ambos se cierren a la vez y no se pueda esquivar uno pidiendo el otro.
+
+---
+
+## 6.2. Datasheet extractor (`datasheets.nexodesign.ai`)
+
+Herramienta para extraer de un datasheet (URL de TI, Analog o cualquier PDF) una ficha estructurada por variante —pinout, componentes externos, ecuaciones, límites, características, figuras—, revisarla sección a sección y aprobarla al catálogo. Documentación completa en el README de `datasheet_extractor`.
+
+| Pieza | Qué hace |
+|---|---|
+| `datasheets-web` (Render, `Dockerfile`) | La página de revisión y su API (Starlette), tras la puerta. Encola las extracciones |
+| `datasheets-worker` (Render, `Dockerfile.worker`) | Toma las extracciones de la cola (`SKIP LOCKED`, heartbeats) y ejecuta el pipeline: descarga, Docling, pasadas de Claude o del chat de Claude Premium |
+| Supabase, esquema `datasheets` | Las fichas, la auditoría, la cola y la caché (sección 4) |
+
+- **La puerta es la misma**, portada a Python (`datasheet_extractor/datasheets/gate.py`): mismo ticket de 60 s, misma cookie `nexo_gate` de 1 h, mismo callback, así que el emisor no cambia (el origen ya está en `GATE_ALLOWED_ORIGINS`). Un test la contrasta con el `middleware.ts` canónico ejecutado en Node. Diferencia: una llamada a `/api/*` sin sesión recibe 401 JSON en vez de 302, y la página se recarga para pasar por la puerta.
+- **Roles.** Primer uso real de `profiles.role` (problema #3): cualquier usuario autenticado extrae, edita y revisa; solo `admin` aprueba una ficha al catálogo o la devuelve a borrador. Toda acción queda en `datasheets.sheet_events` con su autor, y una edición sobre una ficha que otro cambió entretanto se rechaza en vez de sobrescribirla.
+- **SSRF.** El servidor descarga URLs que pega el usuario: toda petición (redirecciones incluidas) debe ir a una dirección pública.
+- **Consumidores**: el backend (`/datasheets/*`, sección 3) para n8n y el frontend; en el frontend, un enlace «Datasheets» en la barra lateral abre la herramienta en otra pestaña.
 
 ---
 
@@ -336,11 +385,19 @@ GATE_TICKET_SECRET           # firma HS256 de los tickets de subdominio (secció
 GATE_ALLOWED_ORIGINS         # subdominios para los que se acuñan tickets
 ```
 
-### Cada subdominio con puerta (`architecture-editor`, …)
+### Cada subdominio con puerta (`architecture-editor`, `datasheet_extractor`)
 ```
 GATE_TICKET_SECRET           # el mismo que en nexo-frontend
 GATE_ISSUER_URL              # https://nexodesign.ai
 GATE_SELF_ORIGIN             # el origen propio, p. ej. https://editor.nexodesign.ai
+```
+
+### `datasheet_extractor` (además de las de la puerta; plantilla en su `.env.example`)
+```
+DATASHEETS_STORAGE=supabase        # local (sheets/, cache/) fuera de Render
+DATABASE_URL                       # Postgres directo o session pooler (5432), nunca el transaction pooler
+SUPABASE_URL / SUPABASE_SERVICE_KEY  # Storage (buckets privados)
+ANTHROPIC_API_KEY                  # pasadas del modelo en modo API
 ```
 
 ### `nexo-backend`
@@ -368,9 +425,9 @@ Estas variables revelan los servicios externos integrados: **Supabase, n8n, Open
 
 ## 9. Despliegue e infraestructura
 
-El despliegue se hace directamente desde cada herramienta (vercel, render, n8n). No hay ningun workflow de CI/CD (`.github/workflows/`) en ninguno de los 4 repositorios.
+El despliegue se hace directamente desde cada herramienta (vercel, render, n8n). No hay ningun workflow de CI/CD (`.github/workflows/`) en ninguno de los repositorios.
 
-No hay tests automatizados de integración ni pipeline de CI en ningun caso.
+No hay pipeline de CI. `datasheet_extractor` es el único repo con una suite de tests (unit, contrato contra un Supabase local desechable, navegador con Playwright) y se despliega con un Blueprint de Render (`render.yaml`: servicio web + worker, dos imágenes Docker).
 
 Los repositorios viven en la organización **`NexoDesigns`**. `architecture-editor` es un proyecto de Vercel aparte del frontend (framework preset "Other", sin build command): deploys independientes y preview por PR, que es como se desarrolla ese repo. Su `vercel.json` fija las cabeceras estáticas y su `.vercelignore` deja fuera del deploy los scripts de test y `fixtures/`, que no forman parte de la app y solo llegaban a producción porque el sitio era el repo entero.
 
@@ -389,6 +446,8 @@ Los repositorios viven en la organización **`NexoDesigns`**. `architecture-edit
 | Backend ↔ architecture-editor | HTTPS (REST) | JSON | JWT scoped (query param `token`) |
 | Frontend ↔ architecture-editor | iframe / `window.open` + `postMessage` | HTML/JS + evento `postMessage` | Token embebido en la URL (sin validar `event.origin` en el listener) |
 | Navegador ↔ subdominio con puerta | HTTPS (302 + cookie) | — | Ticket HS256 de 60 s → cookie `nexo_gate` de 1 h, HttpOnly y host-only (sección 6.1) |
+| datasheet_extractor ↔ Supabase | Postgres (TLS) + HTTPS (Storage) | SQL / bytes | Credenciales de Postgres + service key |
+| n8n / Frontend → Backend `/datasheets/*` | HTTPS (GET) | JSON | `X-Api-Key` / Bearer JWT Supabase |
 | Backend → OpenAI/Digikey/Mouser/LiteLLM | HTTPS (REST) | JSON | API keys estáticas |
 
 ---
@@ -399,7 +458,7 @@ Los repositorios viven en la organización **`NexoDesigns`**. `architecture-edit
 |---|---|---|---|
 | 1 | El JWT de Supabase se decodifica **sin verificar la firma** en el backend | `nexo-backend/core/security.py` (`get_current_user_id`) | Un token manipulado con `sub`/`exp` válidos pero firma inválida podría ser aceptado. Se usa por ahora solo para el MVP, igual conviene cambiarlo ya antes de seguir creciendo el proyecto. |
 | 2 | El backend accede a Supabase con la `service_role` key en (casi) todas las operaciones | `nexo-backend/core/supabase.py` | RLS queda sin efecto real; toda la autorización depende de los checks (limitados) en los routers de FastAPI. |
-| 3 | El rol `engineer`/`admin` (`Profile.role`) existe en el modelo de datos pero no se usa en ningún control de acceso | `src/types/index.ts`, routers de `nexo-backend` | No hay separación de permisos real entre roles — cualquier usuario autenticado puede, en principio, hacer cualquier operación que un router permita. |
+| 3 | El rol `engineer`/`admin` (`Profile.role`) existe en el modelo de datos pero no se usa en ningún control de acceso | `src/types/index.ts`, routers de `nexo-backend` | No hay separación de permisos real entre roles — cualquier usuario autenticado puede, en principio, hacer cualquier operación que un router permita. Excepción: `datasheet_extractor` ya lo aplica (solo `admin` aprueba fichas al catálogo, sección 6.2). |
 | 4 | Los webhooks n8n↔backend se autentican solo con un secreto estático compartido en cabecera, sin firma HMAC del payload ni verificación de origen/IP | `nexo-backend/routers/webhooks.py`, `routers/requirements_runs.py`, `routers/normatives.py` | Si el secreto se filtra, cualquiera puede simular un callback de n8n (marcar runs como completados con output arbitrario). |
 | 5 | El listener de `postMessage` en el modal del Block Diagram Editor no valida `event.origin` | `components/pipeline/ArchitectureDiagramModal.tsx` | Cualquier página capaz de enviar un mensaje a esa ventana (ej. otro iframe malicioso si se compromete la página) podría disparar `onApproved()` suplantando al editor legítimo. **Ahora es un arreglo de una línea**: desde el traslado a Vercel el editor tiene un origen propio y fijo, así que basta comparar `event.origin` con `https://editor.nexodesign.ai`. Antes no se podía, porque el origen era el `github.io` compartido con cualquier otro usuario de Pages. |
 | 6 | No hay CSP en el frontend, ni atributo `sandbox` en los iframes (`ArchitectureDiagramModal`, `DriveEmbed`), ni pipeline de CI/CD | `next.config.ts`, `components/pipeline/ArchitectureDiagramModal.tsx`, `components/projects/DriveEmbed.tsx` | Superficie de ataque más amplia de lo necesario para contenido embebido de terceros; sin tests automáticos que detecten regresiones antes de desplegar. El editor **sí** tiene ya `frame-ancestors` (su `vercel.json`), así que solo puede ser embebido desde `nexodesign.ai`; falta el resto. |

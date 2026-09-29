@@ -9,11 +9,13 @@ import {
   LayoutDashboard,
   FolderKanban,
   BookOpen,
+  Cpu,
+  ExternalLink,
   LogOut,
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { APP_VERSION } from '@/lib/constants'
+import { APP_VERSION, DATASHEETS_URL } from '@/lib/constants'
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, labelKey: 'dashboard' },
@@ -79,6 +81,18 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {/* Tools on their own subdomain, behind the same sign-in */}
+        <a
+          href={DATASHEETS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <Cpu className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+          {t('datasheets')}
+          <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground" />
+        </a>
       </nav>
 
       {/* Bottom: user + locale */}
