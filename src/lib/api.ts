@@ -28,6 +28,9 @@ import type {
   CreateCustomOutputPayload,
   UpdateCustomOutputPayload,
   EditorLinkResponse,
+  DatasheetSearchParams,
+  DatasheetSearchResult,
+  DatasheetSheet,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -358,4 +361,24 @@ export const componentsApi = {
       method: 'POST',
       body: JSON.stringify({ components }),
     }),
+}
+
+// ─── Datasheet catalog ────────────────────────────────────────────────────────
+// Approved components with a reviewed fact sheet (datasheets.nexodesign.ai).
+
+export const datasheetsApi = {
+  search: (params: DatasheetSearchParams) => {
+    const query = new URLSearchParams()
+    for (const [key, value] of Object.entries(params)) {
+      if (value === undefined || value === null || value === '') continue
+      if (Array.isArray(value)) value.forEach((item) => query.append(key, String(item)))
+      else query.set(key, String(value))
+    }
+    return apiFetch<DatasheetSearchResult>(`/datasheets/search?${query.toString()}`)
+  },
+  /** The approved sheet covering an orderable part number; rejects (404) when none does. */
+  byPart: (partNumber: string) =>
+    apiFetch<DatasheetSheet>(`/datasheets/by-part/${encodeURIComponent(partNumber)}`),
+  get: (sheetId: string) =>
+    apiFetch<DatasheetSheet>(`/datasheets/${encodeURIComponent(sheetId)}`),
 }

@@ -75,3 +75,20 @@ existen: `routers/projects.py` devuelve todos los proyectos a cualquier usuario
 autenticado. Cuando lleguen, el sitio donde enchufarlos es
 `nexo-backend/core/authz.py`, y el emisor debe empezar a llamarlo — están
 escritos para eso.
+
+## Subdominios que no son un sitio estático en Vercel
+
+`middleware.ts` es Routing Middleware de Vercel: no corre delante de un
+servidor propio. `datasheets.nexodesign.ai` es una app Python en Render, así
+que lleva un **port** en `datasheet_extractor/datasheets/gate.py`: mismo
+ticket, misma cookie `nexo_gate`, mismo `/__gate/callback`, mismas tres
+variables. El emisor no distingue entre los dos.
+
+- **Si cambias este `middleware.ts`, cambia también `gate.py`** (y sube la
+  versión de su cabecera). Su test (`tests/test_gate.py`) ejecuta este archivo
+  con Node y comprueba que cada uno acepta los tickets y las cookies del
+  otro: un cambio que los separe lo rompe.
+- **Una diferencia deliberada**: una llamada a `/api/*` sin sesión recibe
+  `401` con JSON en vez de `302`. Un `fetch` de la página no puede seguir una
+  redirección al login; la página recarga y pasa por la puerta como
+  cualquier navegación.

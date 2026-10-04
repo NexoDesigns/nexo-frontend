@@ -462,3 +462,48 @@ export interface BomResult {
     passive_groups: Record<string, number>
   }
 }
+
+// ─── Datasheet catalog (datasheets.nexodesign.ai, nexo-backend /datasheets) ───
+
+/** An approved component: its datasheet was extracted and reviewed. */
+export interface DatasheetCatalogEntry {
+  file_name: string
+  gpn: string
+  part_numbers: string[]
+  manufacturer: string | null
+  package: string | null
+  description: string | null
+  temp_min: number | null
+  temp_max: number | null
+  qualifications: string[]
+  rohs: boolean | null
+  supplies: Record<string, unknown>[] | null
+  rank?: number | null
+}
+
+export interface DatasheetSearchParams {
+  q?: string
+  manufacturer?: string
+  package?: string
+  temp_min?: number
+  temp_max?: number
+  qualifications?: string[]
+  supply_v?: number
+  limit?: number
+}
+
+export interface DatasheetSearchResult {
+  results: DatasheetCatalogEntry[]
+  count: number
+}
+
+/** One approved sheet, with the facts the design agents read. */
+export interface DatasheetSheet extends DatasheetCatalogEntry {
+  id: string
+  pin_count: number | null
+  limits: Record<string, unknown> | null
+  facts: Record<string, unknown>
+  source_url: string | null
+  sheet_version: string | null
+  approved_at: string | null
+}
