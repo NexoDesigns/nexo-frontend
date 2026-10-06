@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 
 import { NexoLogo } from './NexoLogo'
+import { SiteLocaleSwitcher } from './SiteLocaleSwitcher'
 
 const anchors = [
-  { key: 'mission', hash: 'mision' },
-  { key: 'platform', hash: 'plataforma' },
-  { key: 'capabilities', hash: 'capacidades' },
-  { key: 'sectors', hash: 'sectores' },
+  { key: 'services', hash: 'services' },
+  { key: 'platform', hash: 'platform' },
+  { key: 'capabilities', hash: 'capabilities' },
+  { key: 'projects', hash: 'projects' },
+  { key: 'sectors', hash: 'sectors' },
 ] as const
 
 export function SiteHeader() {
@@ -37,7 +39,7 @@ export function SiteHeader() {
           <NexoLogo className="h-7 w-auto lg:h-8" />
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="hidden items-center gap-7 xl:flex">
           {anchors.map((link) => (
             <Link
               key={link.hash}
@@ -55,7 +57,8 @@ export function SiteHeader() {
           </Link>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3 sm:gap-5">
+          <SiteLocaleSwitcher />
           <Link
             href="/login"
             className="inline-flex items-center gap-2 border border-border px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:border-primary hover:text-primary"
@@ -63,7 +66,7 @@ export function SiteHeader() {
             {t('signIn')}
           </Link>
           <Link
-            href="/home#contacto"
+            href="/home#contact"
             className="group relative hidden items-center gap-2 bg-primary px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition-opacity hover:opacity-85 sm:inline-flex"
           >
             {t('contact')}

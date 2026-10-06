@@ -3,10 +3,14 @@ import { getTranslations } from 'next-intl/server'
 
 import { BackgroundVideo } from '@/components/public/BackgroundVideo'
 import { Reveal } from '@/components/public/Reveal'
+import { SectorsAccordion } from '@/components/public/SectorsAccordion'
 import { SiteHeader } from '@/components/public/SiteHeader'
 import { SiteFooter } from '@/components/public/SiteFooter'
+import { WorkflowDemo } from '@/components/public/WorkflowDemo'
 
 const CONTACT_EMAIL = 'hola@nexodesign.ai'
+// Set to '/media/workflow.mp4' once the platform recording is in /public/media.
+const WORKFLOW_VIDEO_SRC: string | null = null
 
 export async function generateMetadata({
   params,
@@ -28,15 +32,19 @@ export async function generateMetadata({
 }
 
 type Stat = { value: string; label: string }
+type Service = { id: string; tag: string; title: string; body: string; points: string[] }
 type Step = { step: string; title: string; body: string }
 type Capability = { id: string; title: string; body: string }
+type Sector = { name: string; body: string }
 
 export default async function LandingPage() {
   const t = await getTranslations('landing')
   const stats = t.raw('stats') as Stat[]
+  const services = t.raw('services.items') as Service[]
   const steps = t.raw('platform.steps') as Step[]
   const capabilities = t.raw('capabilities.items') as Capability[]
-  const sectors = t.raw('sectors.items') as string[]
+  const projectSlots = Array.from({ length: t.raw('projects.count') as number }, (_, i) => i + 1)
+  const sectors = t.raw('sectors.items') as Sector[]
 
   return (
     <div id="top" className="min-h-screen bg-background">
@@ -63,13 +71,13 @@ export default async function LandingPage() {
               </p>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <a
-                  href="#plataforma"
+                  href="#platform"
                   className="inline-flex items-center gap-2 bg-primary px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-primary-foreground transition-opacity hover:opacity-85"
                 >
                   {t('hero.ctaPlatform')}
                 </a>
                 <a
-                  href="#contacto"
+                  href="#contact"
                   className="inline-flex items-center gap-2 border border-border px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:border-primary hover:text-primary"
                 >
                   {t('hero.ctaContact')}
@@ -81,7 +89,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Mission */}
-      <section id="mision" className="relative overflow-hidden border-t border-border">
+      <section id="mission" className="relative overflow-hidden border-t border-border">
         <BackgroundVideo src="/media/mission.mp4" opacity={0.28} />
         <div className="relative mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
           <div className="grid gap-16 lg:grid-cols-[0.85fr_1.15fr]">
@@ -121,8 +129,54 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Services */}
+      <section id="services" className="border-t border-border">
+        <div className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
+          <div className="grid gap-16 lg:grid-cols-[0.85fr_1.15fr]">
+            <div>
+              <Reveal>
+                <p className="eyebrow">{t('services.eyebrow')}</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h2 className="display-xl mt-8 text-4xl sm:text-5xl">{t('services.title')}</h2>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="mt-8 max-w-md text-base leading-relaxed text-muted-foreground">
+                  {t('services.intro')}
+                </p>
+              </Reveal>
+            </div>
+            <div className="grid gap-px bg-border md:grid-cols-2">
+              {services.map((item, i) => (
+                <Reveal key={item.id} delay={i * 120}>
+                  <div className="flex h-full flex-col bg-background px-8 py-12 lg:px-10">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
+                      {item.id} · {item.tag}
+                    </span>
+                    <h3 className="mt-8 font-display text-2xl leading-tight tracking-tight">
+                      {item.title}
+                    </h3>
+                    <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                    <ul className="mt-8 space-y-3 border-t border-border pt-6">
+                      {item.points.map((point) => (
+                        <li key={point} className="flex gap-3 text-sm leading-relaxed">
+                          <span aria-hidden className="text-primary">
+                            —
+                          </span>
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Platform */}
-      <section id="plataforma" className="relative overflow-hidden border-t border-border">
+      <section id="platform" className="relative overflow-hidden border-t border-border">
         <BackgroundVideo src="/media/platform.mp4" opacity={0.35} />
         <div className="relative mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
           <Reveal>
@@ -133,12 +187,25 @@ export default async function LandingPage() {
               {t('platform.title')}
             </h2>
           </Reveal>
-          <div className="mt-20 grid gap-px border border-border bg-border lg:grid-cols-3">
+          <Reveal delay={200}>
+            <p className="mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground lg:text-lg">
+              {t('platform.description')}
+            </p>
+          </Reveal>
+          <Reveal delay={250} className="mt-16">
+            <WorkflowDemo
+              src={WORKFLOW_VIDEO_SRC}
+              label={t('platform.video.label')}
+              soon={t('platform.video.soon')}
+              caption={t('platform.video.caption')}
+            />
+          </Reveal>
+          <div className="mt-16 grid gap-px border border-border bg-border lg:grid-cols-3">
             {steps.map((item, i) => (
               <Reveal key={item.step} delay={i * 120}>
                 <div className="h-full bg-background/85 px-8 py-12 backdrop-blur-sm lg:px-10 lg:py-14">
                   <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">
-                    {item.step}
+                    {String(i + 1).padStart(2, '0')} · {item.step}
                   </span>
                   <h3 className="mt-8 font-display text-2xl leading-tight tracking-tight">
                     {item.title}
@@ -152,7 +219,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Capabilities */}
-      <section id="capacidades" className="border-t border-border">
+      <section id="capabilities" className="border-t border-border">
         <div className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
           <div className="grid gap-16 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
@@ -165,7 +232,16 @@ export default async function LandingPage() {
             </div>
             <div className="grid gap-px bg-border sm:grid-cols-2">
               {capabilities.map((cap, i) => (
-                <Reveal key={cap.id} delay={(i % 2) * 90}>
+                <Reveal
+                  key={cap.id}
+                  delay={(i % 2) * 90}
+                  // An odd last item spans both columns so the grid has no hole.
+                  className={
+                    capabilities.length % 2 === 1 && i === capabilities.length - 1
+                      ? 'sm:col-span-2'
+                      : undefined
+                  }
+                >
                   <div className="group h-full bg-background px-7 py-10 transition-colors hover:bg-surface">
                     <span className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground transition-colors group-hover:text-primary">
                       {cap.id}
@@ -182,26 +258,63 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Sectors */}
-      <section id="sectores" className="border-t border-border bg-surface/40">
-        <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-32">
+      {/* Projects — placeholder slots until the case studies are ready */}
+      <section id="projects" className="border-t border-border">
+        <div className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10 lg:py-40">
           <Reveal>
-            <p className="eyebrow">{t('sectors.eyebrow')}</p>
+            <p className="eyebrow">{t('projects.eyebrow')}</p>
           </Reveal>
-          <div className="mt-12 flex flex-wrap gap-x-12 gap-y-6">
-            {sectors.map((s, i) => (
-              <Reveal key={s} delay={i * 70}>
-                <span className="font-display text-2xl tracking-tight text-muted-foreground transition-colors hover:text-primary sm:text-3xl lg:text-4xl">
-                  {s}
-                </span>
+          <Reveal delay={100}>
+            <h2 className="display-xl mt-8 max-w-3xl text-4xl sm:text-5xl">{t('projects.title')}</h2>
+          </Reveal>
+          <Reveal delay={200}>
+            <p className="mt-8 max-w-xl text-base leading-relaxed text-muted-foreground">
+              {t('projects.description')}
+            </p>
+          </Reveal>
+          <div className="mt-16 grid gap-px border border-border bg-border md:grid-cols-3">
+            {projectSlots.map((n, i) => (
+              <Reveal key={n} delay={i * 120}>
+                <div className="grid-lines flex aspect-[4/3] h-full flex-col justify-between bg-background px-8 py-10">
+                  <span className="font-mono text-[11px] tracking-[0.2em] text-muted-foreground">
+                    {String(n).padStart(2, '0')}
+                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {t('projects.placeholder')}
+                  </span>
+                </div>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Sectors */}
+      <section id="sectors" className="border-t border-border bg-surface/40">
+        <div className="mx-auto max-w-[1400px] px-6 py-24 lg:px-10 lg:py-32">
+          <div className="grid gap-16 lg:grid-cols-[0.85fr_1.15fr]">
+            <div>
+              <Reveal>
+                <p className="eyebrow">{t('sectors.eyebrow')}</p>
+              </Reveal>
+              <Reveal delay={100}>
+                <h2 className="display-xl mt-8 text-4xl sm:text-5xl">{t('sectors.title')}</h2>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {t('sectors.hint')}
+                </p>
+              </Reveal>
+            </div>
+            <Reveal delay={150}>
+              <SectorsAccordion sectors={sectors} />
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
-      <section id="contacto" className="relative overflow-hidden border-t border-border">
+      <section id="contact" className="relative overflow-hidden border-t border-border">
         <BackgroundVideo src="/media/hero.mp4" opacity={0.35} />
         <div className="relative mx-auto max-w-[1400px] px-6 py-32 text-center lg:px-10 lg:py-44">
           <Reveal>

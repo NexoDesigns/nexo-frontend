@@ -35,6 +35,7 @@
     "dashboard": "Dashboard",
     "projects": "Proyectos",
     "knowledgeBase": "Base de conocimiento",
+    "datasheets": "Datasheets",
     "settings": "Ajustes",
     "logout": "Cerrar sesión"
   },
@@ -371,31 +372,33 @@
   },
   "landing": {
     "meta": {
-      "title": "Nexo Design — Diseño electrónico impulsado por IA",
-      "description": "Nexo Design combina ingeniería electrónica e inteligencia artificial para diseñar, simular y validar hardware más rápido: PCB, firmware y sistemas embebidos."
+      "title": "Nexo Design — Diseño electrónico acelerado por IA",
+      "description": "Nexo Design combina un equipo de ingenieros electrónicos con experiencia y su propia plataforma de IA: investigación, concepto y diagramas de bloques, selección de componentes, simulación eléctrica y captura automática de esquemáticos."
     },
     "nav": {
-      "mission": "Misión",
+      "services": "Servicios",
       "platform": "Plataforma",
       "capabilities": "Capacidades",
+      "projects": "Proyectos",
       "sectors": "Sectores",
       "products": "Productos",
       "signIn": "Sign in",
-      "contact": "Contacto"
+      "contact": "Contacto",
+      "language": "Idioma"
     },
     "hero": {
-      "eyebrow": "Nexo Design · Ingeniería electrónica + IA",
-      "titleA": "Diseñamos la electrónica",
-      "titleB": "que la IA hace posible.",
-      "description": "Unimos décadas de ingeniería de hardware con modelos de inteligencia artificial para diseñar, simular y validar sistemas electrónicos en una fracción del tiempo.",
-      "ctaPlatform": "Ver la plataforma",
-      "ctaContact": "Hablar con ingeniería"
+      "eyebrow": "Nexo Design · Electrónica acelerada por IA",
+      "titleA": "Diseño de hardware,",
+      "titleB": "acelerado por IA.",
+      "description": "Un equipo de ingenieros electrónicos con experiencia trabajando con nuestra propia plataforma de IA. Llevamos tu producto de la idea al esquemático en una fracción del tiempo habitual, como partner de ingeniería o como plataforma para tu propio equipo.",
+      "ctaPlatform": "Ver el workflow",
+      "ctaContact": "Hablar con un ingeniero"
     },
     "mission": {
       "eyebrow": "01 — Misión",
       "title": "El hardware avanza al ritmo de sus iteraciones. Nosotros las multiplicamos.",
       "p1": "Cada rediseño de una placa cuesta semanas. Entrenamos modelos sobre datos reales de ingeniería para que las decisiones críticas —topología, componentes, disipación— se tomen antes de fabricar el primer prototipo.",
-      "p2": "No sustituimos al ingeniero: le damos un copiloto capaz de evaluar miles de alternativas mientras él se concentra en lo que ninguna máquina resuelve, la intención del producto."
+      "p2": "No sustituimos a los ingenieros: son nuestros ingenieros quienes la usan. La plataforma les permite evaluar muchas más alternativas mientras se concentran en lo que ninguna máquina resuelve, la intención del producto."
     },
     "stats": [
       {
@@ -415,80 +418,137 @@
         "label": "cómputo de simulación dedicado"
       }
     ],
-    "platform": {
-      "eyebrow": "02 — Plataforma",
-      "title": "Un flujo de diseño continuo, de la idea al panel de fabricación.",
-      "steps": [
+    "services": {
+      "eyebrow": "02 — Cómo trabajamos",
+      "title": "Servicios de ingeniería o plataforma. O ambos.",
+      "intro": "Detrás de Nexo hay un equipo de ingenieros electrónicos con amplia experiencia en muchos sectores. Puedes confiarnos el producto completo, pedirnos apoyo en una fase concreta o poner nuestra plataforma de IA en manos de tu equipo.",
+      "items": [
         {
-          "step": "Ingesta",
-          "title": "Tus esquemáticos, nuestro modelo",
-          "body": "Importamos esquemáticos, netlists y requisitos y los convertimos en una representación entrenable del sistema."
+          "id": "A",
+          "tag": "Consultoría",
+          "title": "Servicios de ingeniería",
+          "body": "Nuestros ingenieros se encargan de tu proyecto, de los requisitos y la arquitectura hasta los esquemáticos, usando la plataforma para ir más rápido sin recortar en calidad.",
+          "points": [
+            "Ingenieros sénior con experiencia en múltiples sectores",
+            "Diseño completo o apoyo en fases concretas",
+            "Entregables que son tuyos: diagramas de bloques, selección de componentes, simulaciones y esquemáticos"
+          ]
         },
         {
-          "step": "Exploración",
-          "title": "Miles de variantes en paralelo",
-          "body": "Los agentes generativos exploran el espacio de diseño buscando el equilibrio entre coste, consumo y rendimiento."
-        },
-        {
-          "step": "Validación",
-          "title": "Física, no conjeturas",
-          "body": "Cada candidato pasa por solvers acelerados y reglas de fabricación reales antes de llegar a tu mesa."
+          "id": "B",
+          "tag": "Plataforma",
+          "title": "Acceso a la plataforma",
+          "body": "Tus ingenieros trabajan con el mismo workflow de IA que usamos internamente, con nuestro equipo ayudándote a adoptarlo y adaptarlo a tus procesos.",
+          "points": [
+            "El workflow completo, de la investigación al esquemático",
+            "Proyectos, documentos y ejecuciones en un solo lugar",
+            "Onboarding y soporte de nuestros ingenieros"
+          ]
         }
       ]
     },
+    "platform": {
+      "eyebrow": "03 — Plataforma",
+      "title": "De los requisitos al esquemático, en un solo workflow.",
+      "steps": [
+        {
+          "step": "Definir",
+          "title": "Describe el producto",
+          "body": "Requisitos, restricciones, normativas aplicables y documentos de referencia se reúnen en un único proyecto."
+        },
+        {
+          "step": "Generar",
+          "title": "Agentes de IA en cada fase",
+          "body": "Investigación, arquitectura, componentes, simulación y esquemático se generan fase a fase, cada una sobre la anterior."
+        },
+        {
+          "step": "Revisar",
+          "title": "El ingeniero tiene el control",
+          "body": "Cada resultado se puede inspeccionar, editar y volver a ejecutar antes de pasar a la siguiente fase."
+        }
+      ],
+      "description": "Agentes de IA hacen el trabajo pesado en cada fase del diseño, y los ingenieros revisan, editan y aprueban cada resultado antes de avanzar.",
+      "video": {
+        "label": "Demo del producto",
+        "soon": "Vídeo del workflow próximamente",
+        "caption": "La plataforma Nexo, de un proyecto nuevo al esquemático generado."
+      }
+    },
     "capabilities": {
-      "eyebrow": "03 — Capacidades",
-      "title": "Todo el ciclo de vida electrónico bajo un mismo techo.",
+      "eyebrow": "04 — Capacidades",
+      "title": "De la primera idea al esquemático.",
       "items": [
         {
           "id": "01",
-          "title": "Diseño de PCB asistido por IA",
-          "body": "Rutado, colocación y optimización de capas guiados por modelos entrenados con miles de placas validadas en producción."
+          "title": "Investigación",
+          "body": "Agentes de IA analizan requisitos, normativas aplicables, datasheets y soluciones existentes para fijar el punto de partida técnico del proyecto."
         },
         {
           "id": "02",
-          "title": "Simulación electromagnética",
-          "body": "Modelos sustitutos que predicen integridad de señal, EMC y térmica en segundos en lugar de horas de cómputo."
+          "title": "Desarrollo de concepto y diagramas de bloques",
+          "body": "Los conceptos candidatos se evalúan frente a los requisitos y se convierten en un diagrama de bloques editable de la arquitectura del sistema."
         },
         {
           "id": "03",
-          "title": "Firmware y sistemas embebidos",
-          "body": "Desarrollo de firmware de bajo nivel, RTOS y edge AI sobre MCU, FPGA y SoC de última generación."
+          "title": "Base de datos de componentes",
+          "body": "Una base de datos de componentes y datasheets para buscar, comparar y seleccionar las piezas adecuadas para cada bloque del diseño."
         },
         {
           "id": "04",
-          "title": "Validación y test automatizado",
-          "body": "Bancos de test instrumentados y detección de anomalías por aprendizaje automático antes de la fabricación."
+          "title": "Simulación eléctrica",
+          "body": "Los circuitos críticos se simulan para validar el diseño antes de comprometerse con el hardware."
         },
         {
           "id": "05",
-          "title": "Industrialización",
-          "body": "Del prototipo a la serie: DFM, selección de componentes y acompañamiento con fabricantes europeos."
-        },
-        {
-          "id": "06",
-          "title": "Gemelos digitales",
-          "body": "Réplicas virtuales del hardware para explorar variantes de diseño y anticipar el comportamiento en campo."
+          "title": "Captura automática de esquemáticos",
+          "body": "Esquemáticos y netlists generados a partir de la arquitectura validada y los componentes seleccionados, listos para revisión de ingeniería."
         }
       ]
     },
+    "projects": {
+      "eyebrow": "05 — Proyectos",
+      "title": "Proyectos destacados.",
+      "description": "Una selección de los productos que hemos diseñado con nuestros clientes.",
+      "placeholder": "Caso de estudio próximamente",
+      "count": 3
+    },
     "sectors": {
-      "eyebrow": "04 — Sectores",
+      "eyebrow": "06 — Sectores",
       "items": [
-        "Movilidad eléctrica",
-        "Aeroespacial",
-        "Robótica",
-        "Energía",
-        "Dispositivos médicos",
-        "Industria 4.0"
-      ]
+        {
+          "name": "Movilidad eléctrica",
+          "body": "Electrónica de potencia, gestión de baterías y sistemas de carga, donde la eficiencia, el comportamiento térmico y la normativa de seguridad marcan cada decisión."
+        },
+        {
+          "name": "Aeroespacial",
+          "body": "Electrónica para entornos exigentes, con requisitos estrictos de fiabilidad, trazabilidad y cualificación desde el primer concepto."
+        },
+        {
+          "name": "Robótica",
+          "body": "Placas de control de motores, sensórica y procesamiento embebido que deben ser compactas, robustas y responder en tiempo real."
+        },
+        {
+          "name": "Energía",
+          "body": "Electrónica de conversión, medida y monitorización para renovables e infraestructura de red, diseñada para una larga vida útil."
+        },
+        {
+          "name": "Dispositivos médicos",
+          "body": "Electrónica de bajo consumo y bajo ruido, diseñada teniendo en cuenta la normativa regulatoria desde las primeras fases del proyecto."
+        },
+        {
+          "name": "Industria 4.0",
+          "body": "Controladores industriales, nodos IoT y conectividad para entornos exigentes, preparados para cumplir los estándares industriales."
+        }
+      ],
+      "title": "Experiencia en múltiples sectores.",
+      "hint": "Selecciona un sector para saber más."
     },
     "cta": {
       "title": "¿Tienes un producto electrónico que diseñar?",
-      "description": "Cuéntanos el reto técnico y te respondemos con una propuesta de arquitectura en menos de 48 horas."
+      "description": "Cuéntanos el reto técnico. Nuestro equipo de ingeniería te responderá con una propuesta de arquitectura en menos de 48 horas."
     },
     "footer": {
-      "tagline": "Ingeniería electrónica con IA"
+      "tagline": "Diseño electrónico acelerado por IA"
     }
   },
   "products": {

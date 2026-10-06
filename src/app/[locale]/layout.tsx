@@ -10,7 +10,7 @@ import '../globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://nexodesign.ai'),
   title: 'Nexo Designs — AI Platform',
-  description: 'Plataforma interna de diseño electrónico asistida por IA',
+  description: 'AI-accelerated electronics design platform',
   openGraph: {
     images: ['/opengraph-image.png'],
   },

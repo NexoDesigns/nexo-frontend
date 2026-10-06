@@ -50,6 +50,11 @@ export const N8N_WORKFLOW_IDS: Record<PhaseId, string | null> = {
 // (POST .../editor-link → runsApi.getEditorLink). ARCHITECTURE_EDITOR_URL in
 // nexo-backend is the single source of truth for where that app is deployed.
 
+/** The datasheet extractor and component catalog (repo datasheet_extractor).
+ *  A plain link: its own auth gate signs the user in through /api/auth/gate,
+ *  so no token travels in the URL. */
+export const DATASHEETS_URL = 'https://datasheets.nexodesign.ai'
+
 /** Returns the n8n execution URL for a run, or null if data is missing. */
 export function n8nExecutionUrl(
   phaseId: PhaseId,
