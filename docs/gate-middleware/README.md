@@ -54,6 +54,36 @@ herramienta, no la cuenta de Nexo.
 
 No hay que tocar el emisor: los pasos 3 y 4 son toda la integración.
 
+## Generar `GATE_TICKET_SECRET`
+
+Es una clave HMAC-SHA256, no una contraseña. 32 bytes de un CSPRNG:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+```powershell
+# Equivalente sin Node (PowerShell 5.1 y Core)
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+[Convert]::ToBase64String($bytes)
+```
+
+- **32 bytes, ni más ni menos.** Son 256 bits, el tamaño de la salida de
+  SHA-256: ahí está la seguridad completa del algoritmo. Pasar de 64 bytes es
+  inútil, porque HMAC reduce por hash toda clave mayor que su bloque.
+- **`base64url`** evita `+`, `/` y `=`, que son los caracteres que se escapan
+  mal al pegar en la UI de Vercel o entre comillas en una shell.
+- **Genéralo en la terminal y pégalo en Vercel.** Si el valor pasa por un chat,
+  un log de CI o un ticket, está comprometido aunque tenga 256 bits.
+- **Márcalo Sensitive** en Vercel, para que no se pueda releer desde la UI.
+- **Que sea distinto de `EDITOR_LINK_SECRET`** y del JWT secret de Supabase.
+  Reutilizar uno hace que rotar cualquiera rompa los otros.
+
+Rotarlo es barato: las sesiones duran 1 h, así que solo provoca que la gente
+vuelva a pasar por la puerta, sin ver un login. Lo único crítico es cambiarlo
+en el frontend y en todos los subdominios **a la vez**.
+
 ## Cosas que romperían esto
 
 - **Editar la copia en vez de la canónica.** Dos subdominios que validan
