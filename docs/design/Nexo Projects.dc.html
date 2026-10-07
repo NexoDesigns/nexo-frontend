@@ -106,7 +106,7 @@ select option{background:#20262E;color:#E7ECF3}
                 <sc-if value="{{ r.isDone }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;flex-direction:column;gap:8px">
                     <sc-for list="{{ r.solutions }}" as="o" hint-placeholder-count="4">
-                      <div style="position:relative;z-index:{{ o.z }};display:flex;flex-direction:column;background:#20262E;border:1px solid #39424C;border-radius:8px">
+                      <div onContextMenu="{{ o.onCtx }}" style="position:relative;z-index:{{ o.z }};display:flex;flex-direction:column;background:#20262E;border:1px solid #39424C;border-radius:8px">
                         <div onClick="{{ o.toggleDetails }}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-radius:8px" style-hover="background:#252C35">
                           <button onClick="{{ o.toggle }}" title="Send to IC Selection" style="width:18px;height:18px;flex-shrink:0;box-sizing:border-box;padding:0;border-radius:4px;border:1.5px solid {{ o.boxBd }};background:{{ o.boxBg }};color:#FFFFFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ o.check }}</button>
                           <span style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:#2A323C;color:#C7CEDA">{{ o.id }}</span>
@@ -116,6 +116,11 @@ select option{background:#20262E;color:#E7ECF3}
                         </div>
                         <sc-if value="{{ o.detailsOpen }}">
                           <p style="margin:0;padding:0 14px 14px;font-size:12.5px;line-height:1.6;color:#C7CEDA;text-wrap:pretty;max-width:80ch">{{ o.desc }}</p>
+                        </sc-if>
+                        <sc-if value="{{ o.ctxOpen }}">
+                          <div data-pop="ctx" style="position:absolute;left:{{ o.ctxX }};top:{{ o.ctxY }};z-index:8;min-width:150px;padding:4px;background:#2A323C;border:1px solid #414B57;border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.45)">
+                            <button onClick="{{ o.duplicate }}" style="display:flex;align-items:center;gap:8px;width:100%;height:30px;padding:0 10px;background:none;border:none;border-radius:4px;color:#E7ECF3;font:inherit;font-size:12.5px;cursor:pointer;text-align:left" style-hover="background:#353E4A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Duplicate</button>
+                          </div>
                         </sc-if>
                         <sc-if value="{{ o.refOpen }}">
                           <div data-pop="ref" onClick="{{ r.stop }}" style="position:absolute;top:44px;right:8px;width:420px;display:flex;flex-direction:column;background:#20262E;border:1px solid #414B57;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);overflow:hidden">
@@ -133,6 +138,79 @@ select option{background:#20262E;color:#E7ECF3}
                         </sc-if>
                       </div>
                     </sc-for>
+                    <div onMouseEnter="{{ r.rowOn }}" onMouseLeave="{{ r.rowOff }}" style="display:flex;align-items:center;gap:6px;min-height:32px;padding:6px 0 0 2px">
+                      <sc-if value="{{ r.hasCustoms }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8D99AC">Custom solutions</span>
+                      </sc-if>
+                      <span style="flex:1"></span>
+                      <button onClick="{{ r.addCustom }}" title="Add custom solution" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;padding:0;background:transparent;border:none;border-radius:5px;color:#8D99AC;font:inherit;font-size:22px;font-weight:300;line-height:1;cursor:pointer;opacity:{{ r.addOpacity }};transition:opacity .12s, background .12s" style-hover="background:#2A323C;color:#E7ECF3">+</button>
+                    </div>
+                    <sc-for list="{{ r.customs }}" as="o" hint-placeholder-count="0">
+                      <div onContextMenu="{{ o.onCtx }}" style="position:relative;z-index:{{ o.z }};display:flex;flex-direction:column;background:#20262E;border:1px solid #39424C;border-radius:8px">
+                        <div onClick="{{ o.toggleDetails }}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-radius:8px" style-hover="background:#252C35">
+                          <button onClick="{{ o.toggle }}" title="Send to IC Selection" style="width:18px;height:18px;flex-shrink:0;box-sizing:border-box;padding:0;border-radius:4px;border:1.5px solid {{ o.boxBd }};background:{{ o.boxBg }};color:#FFFFFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ o.check }}</button>
+                          <sc-if value="{{ o.editId }}">
+                            <input type="text" autoFocus="{{ true }}" defaultValue="{{ o.id }}" onKeyDown="{{ o.onKey }}" onBlur="{{ o.saveid }}" onClick="{{ r.stop }}" onDoubleClick="{{ r.stop }}" style="box-sizing:border-box;background:#161B21;border:1px solid #C4661A;border-radius:4px;outline:none;color:#E7ECF3;font:inherit;width:44px;height:22px;padding:0 6px;font-size:11.5px;font-weight:600">
+                          </sc-if>
+                          <sc-if value="{{ o.editIdOff }}">
+                            <span onDoubleClick="{{ o.dblid }}" title="Double-click to edit" style="font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:#2A323C;color:#C7CEDA;color:{{ o.idColor }};cursor:text">{{ o.idView }}</span>
+                          </sc-if>
+                          <div style="flex:1;min-width:0;display:flex">
+                          <sc-if value="{{ o.editTitle }}">
+                            <input type="text" autoFocus="{{ true }}" defaultValue="{{ o.title }}" onKeyDown="{{ o.onKey }}" onBlur="{{ o.savetitle }}" onClick="{{ r.stop }}" onDoubleClick="{{ r.stop }}" style="box-sizing:border-box;background:#161B21;border:1px solid #C4661A;border-radius:4px;outline:none;color:#E7ECF3;font:inherit;flex:1;min-width:0;height:26px;padding:0 8px;font-size:13.5px;font-weight:600">
+                          </sc-if>
+                          <sc-if value="{{ o.editTitleOff }}">
+                            <span onDoubleClick="{{ o.dbltitle }}" title="Double-click to edit" style="flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:{{ o.titleColor }};cursor:text">{{ o.titleView }}</span>
+                          </sc-if>
+                          </div>
+                          <span style="display:inline-block;color:#8D99AC;font-size:14px;transform:rotate({{ o.rot }});transition:transform .12s">›</span>
+                          <button data-pop="ref" onClick="{{ o.toggleRefs }}" title="References" style="width:28px;height:26px;display:flex;align-items:center;justify-content:center;background:{{ o.bookBg }};border:none;border-radius:4px;color:{{ o.bookColor }};cursor:pointer;padding:0" style-hover="background:#2A323C;color:#E7ECF3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"></path><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"></path></svg></button>
+                        </div>
+                        <sc-if value="{{ o.detailsOpen }}">
+                          <div style="display:flex;padding:0 14px 14px">
+                          <sc-if value="{{ o.editDesc }}">
+                            <textarea autoFocus="{{ true }}" defaultValue="{{ o.desc }}" onKeyDown="{{ o.onKey }}" onBlur="{{ o.savedesc }}" onClick="{{ r.stop }}" onDoubleClick="{{ r.stop }}" rows="3" style="box-sizing:border-box;background:#161B21;border:1px solid #C4661A;border-radius:4px;outline:none;color:#E7ECF3;font:inherit;width:100%;padding:8px 10px;font-size:12.5px;line-height:1.6;resize:vertical"></textarea>
+                          </sc-if>
+                          <sc-if value="{{ o.editDescOff }}">
+                            <span onDoubleClick="{{ o.dbldesc }}" title="Double-click to edit" style="margin:0;font-size:12.5px;line-height:1.6;text-wrap:pretty;max-width:80ch;color:{{ o.descColor }};cursor:text">{{ o.descView }}</span>
+                          </sc-if>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ o.ctxOpen }}">
+                          <div data-pop="ctx" style="position:absolute;left:{{ o.ctxX }};top:{{ o.ctxY }};z-index:8;min-width:150px;padding:4px;background:#2A323C;border:1px solid #414B57;border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.45)">
+                            <button onClick="{{ o.duplicate }}" style="display:flex;align-items:center;gap:8px;width:100%;height:30px;padding:0 10px;background:none;border:none;border-radius:4px;color:#E7ECF3;font:inherit;font-size:12.5px;cursor:pointer;text-align:left" style-hover="background:#353E4A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Duplicate</button>
+                            <button onClick="{{ o.remove }}" style="display:flex;align-items:center;gap:8px;width:100%;height:30px;padding:0 10px;background:none;border:none;border-radius:4px;color:#FF9C85;font:inherit;font-size:12.5px;cursor:pointer;text-align:left" style-hover="background:#353E4A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>Delete</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ o.refOpen }}">
+                          <div data-pop="ref" onClick="{{ r.stop }}" style="position:absolute;top:44px;right:8px;width:420px;display:flex;flex-direction:column;background:#20262E;border:1px solid #414B57;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45);overflow:hidden">
+                            <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #39424C">
+                              <span style="flex:1;font-size:13px;font-weight:600">References · {{ o.id }}</span>
+                              <button onClick="{{ o.toggleRefs }}" style="width:24px;height:24px;background:none;border:none;color:#8D99AC;font-size:16px;cursor:pointer;padding:0" style-hover="color:#E7ECF3">×</button>
+                            </div>
+                            <sc-for list="{{ o.refList }}" as="f" hint-placeholder-count="3">
+                              <div style="display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;min-height:40px;box-sizing:border-box;border-bottom:1px solid #2D343D;font-size:13px" style-hover="background:#252C35">
+                                <sc-if value="{{ f.editTitle }}">
+                                  <input type="text" autoFocus="{{ true }}" defaultValue="{{ f.title }}" onKeyDown="{{ o.onKey }}" onBlur="{{ f.saveTitle }}" style="box-sizing:border-box;background:#161B21;border:1px solid #C4661A;border-radius:4px;outline:none;color:#E7ECF3;font:inherit;flex:1;min-width:0;height:26px;padding:0 8px;font-size:13px">
+                                </sc-if>
+                                <sc-if value="{{ f.editTitleOff }}">
+                                  <span onDoubleClick="{{ f.dblTitle }}" title="Double-click to edit" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;color:{{ f.titleColor }}">{{ f.titleView }}</span>
+                                </sc-if>
+                                <sc-if value="{{ f.editSrc }}">
+                                  <input type="text" autoFocus="{{ true }}" defaultValue="{{ f.src }}" onKeyDown="{{ o.onKey }}" onBlur="{{ f.saveSrc }}" style="box-sizing:border-box;background:#161B21;border:1px solid #C4661A;border-radius:4px;outline:none;color:#E7ECF3;font:inherit;width:140px;height:26px;padding:0 8px;font-size:12px">
+                                </sc-if>
+                                <sc-if value="{{ f.editSrcOff }}">
+                                  <span onDoubleClick="{{ f.dblSrc }}" title="Double-click to edit" style="font-size:12px;cursor:text;white-space:nowrap;color:{{ f.srcColor }}">{{ f.srcView }}</span>
+                                </sc-if>
+                                <button onClick="{{ f.remove }}" title="Remove reference" style="width:24px;height:24px;flex-shrink:0;padding:0;background:none;border:none;border-radius:4px;color:#8D99AC;font-size:15px;cursor:pointer" style-hover="background:#2A323C;color:#FF9C85">×</button>
+                              </div>
+                            </sc-for>
+                            <button onClick="{{ o.addRef }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;background:none;border:none;color:#8D99AC;font:inherit;font-size:12.5px;cursor:pointer;text-align:left" style-hover="background:#252C35;color:#E7ECF3"><span style="font-size:16px;line-height:1">+</span>Add reference</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    
                   </div>
                 </sc-if><div style="display: flex; align-items: center; gap: 10px; margin-top: -6px; padding-top: 50px">
                   
@@ -142,7 +220,7 @@ select option{background:#20262E;color:#E7ECF3}
                   </sc-if>
                   
                   <sc-if value="{{ r.isDone }}" hint-placeholder-val="{{ true }}">
-                    <button onClick="{{ r.confirm }}" disabled="{{ r.noPicks }}" style="height: 30px; padding: 0 14px; border: none; border-radius: 5px; font: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap; background: {{ r.confirmBg }}; color: {{ r.confirmColor }}; cursor: {{ r.confirmCursor }}; text-align: left">Confirm output selection</button><div style="display:flex;align-items:center;gap:8px;margin-left:6px">
+                    <button onClick="{{ r.confirm }}" disabled="{{ r.noPicks }}" style="height: 30px; padding: 0 14px; border: none; border-radius: 5px; font: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap; background: {{ r.confirmBg }}; color: {{ r.confirmColor }}; cursor: {{ r.confirmCursor }}; text-align: left">Select run</button><div style="display:flex;align-items:center;gap:8px;margin-left:6px">
                       <span onMouseEnter="{{ r.tipOn }}" onMouseLeave="{{ r.tipOff }}" style="position:relative;display:flex;color:#8D99AC;cursor:help">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
                         <sc-if value="{{ r.tip }}">
@@ -605,17 +683,81 @@ class Component extends DCLogic {
   }
   componentDidMount(){
     this._out = e => {
-      const r = this.state.r; if (!r || (!r.newOpen && !r.ref)) return;
+      const r = this.state.r; if (!r) return;
+      const inField = e.target.closest && e.target.closest('input,textarea');
+      if (r.edit && !inField && !document.activeElement.matches('input,textarea')) this.setState(s => ({ r:{ ...s.r, edit:null } }));
+      if (!r.newOpen && !r.ref && !r.ctx) return;
       const pop = e.target.closest && e.target.closest('[data-pop]');
       const k = pop ? pop.getAttribute('data-pop') : null;
       const patch = {};
       if (r.newOpen && k !== 'new') patch.newOpen = false;
       if (r.ref && k !== 'ref') patch.ref = null;
+      if (r.ctx && k !== 'ctx') patch.ctx = null;
       if (Object.keys(patch).length) this.setState(s => ({ r:{ ...s.r, ...patch } }));
     };
     document.addEventListener('mousedown', this._out);
   }
   componentWillUnmount(){ document.removeEventListener('mousedown', this._out); }
+  nextId(run, R){
+    const used = new Set([...(run.solutions || []), ...(R.customs || [])].map(o => o.id));
+    for (let i = 0; i < 26; i++) { const c = String.fromCharCode(65 + i); if (!used.has(c)) return c; }
+    return '?';
+  }
+  sol(o, custom, R, setR, run){
+    const key = o.key || o.id;
+    const on = R.picks.includes(key), det = (R.det || []).includes(key), ref = R.ref === key, ctx = R.ctx && R.ctx.key === key;
+    const ed = f => R.edit === key + ':' + f;
+    const stop = e => e && e.stopPropagation();
+    const save = f => e => {
+      if (this._cancel) { this._cancel = false; if (R.edit === key + ':' + f) setR({ edit:null }); return; }
+      const v = e.target.value;
+      this.setState(s => ({ r:{ ...s.r, edit: s.r.edit === key + ':' + f ? null : s.r.edit,
+        customs: s.r.customs.map(c => c.key === key ? { ...c, [f]: f === 'desc' ? v : v.trim() } : c) } }));
+    };
+    const dbl = f => e => { stop(e); setR({ edit:key + ':' + f, ctx:null }); };
+    const out = { ...o, key,
+      toggle:e => { stop(e); setR({ picks: on ? R.picks.filter(i => i !== key) : [...R.picks, key] }); },
+      check: on ? '✓' : '', boxBg: on ? '#C4661A' : 'transparent', boxBd: on ? '#C4661A' : '#414B57',
+      detailsOpen: det, rot: det ? '90deg' : '0deg',
+      toggleDetails:e => { if (e && e.target.closest && e.target.closest('input,textarea')) return; setR({ det: det ? R.det.filter(i => i !== key) : [...(R.det || []), key] }); },
+      refOpen: ref, z: ref || ctx ? 4 : 1, bookBg: ref ? '#2A323C' : 'transparent', bookColor: ref ? '#E7ECF3' : '#8D99AC',
+      toggleRefs:e => { stop(e); setR({ ref: ref ? null : key }); },
+      refList: custom ? [] : (o.refIdx || []).map(i => run.refs[i]),
+      onCtx:e => { e.preventDefault(); const b = e.currentTarget.getBoundingClientRect(); setR({ ctx:{ key, x:e.clientX - b.left, y:e.clientY - b.top } }); },
+      ctxOpen: ctx, ctxX: ctx ? R.ctx.x + 'px' : '0', ctxY: ctx ? R.ctx.y + 'px' : '0',
+      duplicate:e => { stop(e); const cid = 'c' + Date.now(); const copy = { key:cid, id:this.nextId(run, R), title:o.title, desc:o.desc, refs: custom ? (o.refs || []).map(x => ({ ...x })) : (o.refIdx || []).map(i => ({ ...run.refs[i] })) }; setR({ customs:[...(R.customs || []), copy], ctx:null }); }
+    };
+    const upd = fn => this.setState(s => ({ r:{ ...s.r, customs: s.r.customs.map(c => c.key === key ? fn(c) : c) } }));
+    if (custom) {
+      out.remove = e => { stop(e); this.setState(s => ({ r:{ ...s.r, ctx:null, customs: s.r.customs.filter(c => c.key !== key), picks: s.r.picks.filter(i => i !== key) } })); };
+      out.addRef = e => { stop(e); const n = (o.refs || []).length; upd(c => ({ ...c, refs:[...(c.refs || []), { title:'', src:'' }] })); setR({ edit:key + ':ref' + n + ':title' }); };
+      out.refList = (o.refs || []).map((x, i) => {
+        const fk = f => key + ':ref' + i + ':' + f;
+        const sv = f => e => {
+          if (this._cancel) { this._cancel = false; if (R.edit === fk(f)) setR({ edit:null }); return; }
+          const v = e.target.value.trim();
+          this.setState(s => ({ r:{ ...s.r, edit: s.r.edit === fk(f) ? null : s.r.edit,
+            customs: s.r.customs.map(c => c.key === key ? { ...c, refs: c.refs.map((y, j) => j === i ? { ...y, [f]: v } : y) } : c) } }));
+        };
+        return { ...x,
+          editTitle: R.edit === fk('title'), editTitleOff: R.edit !== fk('title'), saveTitle: sv('title'), dblTitle: e => { stop(e); setR({ edit:fk('title') }); },
+          titleView: x.title || 'Untitled reference', titleColor: x.title ? '#E7ECF3' : '#6F7A8B',
+          editSrc: R.edit === fk('src'), editSrcOff: R.edit !== fk('src'), saveSrc: sv('src'), dblSrc: e => { stop(e); setR({ edit:fk('src') }); },
+          srcView: x.src ? x.src + ' ↗' : 'source', srcColor: x.src ? '#8D99AC' : '#6F7A8B',
+          remove: e => { stop(e); upd(c => ({ ...c, refs: c.refs.filter((_, j) => j !== i) })); }
+        };
+      });
+    }
+    if (custom) Object.assign(out, {
+      onKey:e => { if (e.key === 'Escape') { this._cancel = true; e.target.blur(); } else if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); },
+      editId:ed('id'), editIdOff:!ed('id'), saveid:save('id'), dblid:dbl('id'), idView:o.id || '—', idColor:'#C7CEDA',
+      editTitle:ed('title'), editTitleOff:!ed('title'), savetitle:save('title'), dbltitle:dbl('title'),
+      titleView:o.title || 'Untitled solution', titleColor:o.title ? '#E7ECF3' : '#6F7A8B',
+      editDesc:ed('desc'), editDescOff:!ed('desc'), savedesc:save('desc'), dbldesc:dbl('desc'),
+      descView:o.desc || 'Double-click to add a description', descColor:o.desc ? '#C7CEDA' : '#6F7A8B'
+    });
+    return out;
+  }
   research(){
     const R = this.state.r || { sel:2, view:'solutions', picks:['A','C'], pplx:true, active:2 };
     const setR = patch => this.setState(s => ({ r:{ ...(s.r || R), ...patch } }));
@@ -638,14 +780,11 @@ class Component extends DCLogic {
         bg: R.view === id ? '#2A323C' : 'transparent', color: R.view === id ? '#E7ECF3' : '#8D99AC' })),
       vSol: done && R.view === 'solutions', vSum: done && R.view === 'summary', vRef: done && R.view === 'references',
       summary: run.summary, refs: run.refs || [],
-      solutions: (run.solutions || []).map(o => { const on = R.picks.includes(o.id), det = (R.det || []).includes(o.id), ref = R.ref === o.id; return { ...o,
-        toggle:e => { e && e.stopPropagation(); setR({ picks: on ? R.picks.filter(i => i !== o.id) : [...R.picks, o.id] }); },
-        check: on ? '✓' : '', boxBg: on ? '#C4661A' : 'transparent', boxBd: on ? '#C4661A' : '#414B57',
-        bd: on ? 'rgba(196,102,26,.55)' : '#39424C',
-        detailsOpen: det, rot: det ? '90deg' : '0deg', toggleDetails:() => setR({ det: det ? R.det.filter(i => i !== o.id) : [...(R.det || []), o.id] }),
-        refOpen: ref, z: ref ? 4 : 1, bookBg: ref ? '#2A323C' : 'transparent', bookColor: ref ? '#E7ECF3' : '#8D99AC',
-        toggleRefs:e => { e && e.stopPropagation(); setR({ ref: ref ? null : o.id }); },
-        refList: (o.refIdx || []).map(i => run.refs[i]) }; }),
+      solutions: (run.solutions || []).map(o => this.sol(o, false, R, setR, run)),
+      customs: (R.customs || []).map(o => this.sol(o, true, R, setR, run)),
+      hasCustoms: (R.customs || []).length > 0,
+      addOpacity: R.rowHover ? 1 : 0, rowOn: () => setR({ rowHover:true }), rowOff: () => setR({ rowHover:false }),
+      addCustom: () => { const cid = 'c' + Date.now(); setR({ customs:[...(R.customs || []), { key:cid, id:this.nextId(run, R), title:'', desc:'', refs:[] }], edit:cid + ':title', det:[...(R.det || []), cid] }); },
       pplxTrack: R.pplx ? '#C4661A' : '#414B57', pplxLeft: R.pplx ? '16px' : '2px',
       togglePplx: () => setR({ pplx:!R.pplx }),
       newOpen: !!R.newOpen, stop: e => e.stopPropagation(),

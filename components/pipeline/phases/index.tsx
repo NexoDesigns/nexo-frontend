@@ -5,6 +5,7 @@ import { useProjectPhases } from '@/hooks/useProjectPhases'
 import { usePipelineState } from '@/hooks/usePipelineState'
 import { PhasePageHeader } from './PhasePageHeader'
 import { PhasePanel } from './PhasePanel'
+import { ResearchPhasePage } from './research/ResearchPhasePage'
 import type { PhaseId, PipelinePhase, Project } from '@/types'
 
 export interface PhasePageProps {
@@ -33,7 +34,6 @@ export function GenericPhasePage({ project, phase }: PhasePageProps) {
   )
 }
 
-const ResearchPhasePage = GenericPhasePage
 const IcSelectionPhasePage = GenericPhasePage
 const ArchitecturePhasePage = GenericPhasePage
 const PassiveComponentsPhasePage = GenericPhasePage

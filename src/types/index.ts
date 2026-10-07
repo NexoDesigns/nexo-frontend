@@ -323,6 +323,8 @@ export interface UpsertRequirementsPayload {
 }
 
 export interface TriggerRunPayload {
+  /** Research only: also search the web and papers (Perplexity) */
+  use_perplexity?: boolean
   custom_inputs: Record<string, unknown>
 }
 

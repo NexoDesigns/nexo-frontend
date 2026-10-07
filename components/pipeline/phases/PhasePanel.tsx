@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { runsApi, requirementsRunsApi } from '@/lib/api'
+import { runsApi } from '@/lib/api'
 import { useCustomOutputs } from '@/hooks/useCustomOutputs'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { useActiveRuns, usePhaseRuns } from '@/hooks/usePipelineState'
@@ -11,16 +11,14 @@ import { useIcDesignSelection, useResearchSelection } from '@/hooks/usePhaseSele
 import { RunStatusBadge } from '../RunStatusBadge'
 import { RunsList } from '../RunsList'
 import { PhaseInputForm } from '../PhaseInputForm'
-import { ResearchDesignPicker } from '../ResearchDesignPicker'
 import { IcSelectionOutputViewer } from '../IcSelectionOutputViewer'
 import { IcDesignPicker } from '../IcDesignPicker'
 import { ArchitectureDiagramModal } from '../ArchitectureDiagramModal'
 import { ComponentSelectionOutputViewer } from '../ComponentSelectionOutputViewer'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/primitives'
-import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronDown, ChevronUp, RefreshCw, ExternalLink } from 'lucide-react'
-import type { PipelinePhase, Project, ResearchSolution } from '@/types'
+import type { PipelinePhase, Project } from '@/types'
 import type { PhaseFormPayload } from '../PhaseInputForm'
 
 interface PhasePanelProps {
@@ -30,19 +28,15 @@ interface PhasePanelProps {
 
 /**
  * Inputs, output and run history of one pipeline phase — the content of the
- * former collapsible PhaseCard, always open. Shared by every phase page until
- * each phase gets its own design.
+ * former collapsible PhaseCard, always open. Shared by the phase pages that
+ * don't have their own design yet (Research has its own page).
  */
 export function PhasePanel({ phase, project }: PhasePanelProps) {
   const projectId = project.id
   const t = useTranslations('pipeline')
-  const tCommon = useTranslations('common')
-  const tReq = useTranslations('requirements')
   const queryClient = useQueryClient()
   const [historyExpanded, setHistoryExpanded] = useState(false)
-  const [designsExpanded, setDesignsExpanded] = useState(true)
   const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
-  const [usePerplexity, setUsePerplexity] = useState(true)
   const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
   const { data: activeRuns } = useActiveRuns(projectId)
@@ -63,12 +57,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
     queryFn: () => runsApi.get(projectId, phase.id, activeRunId!),
     enabled: !!activeRunId,
     refetchOnWindowFocus: phase.id === 'component_selection' || phase.id === 'architecture_agent',
-  })
-
-  const { data: activeRequirementsRun } = useQuery({
-    queryKey: ['requirements-run', project.active_requirements_run_id],
-    queryFn: () => requirementsRunsApi.get(projectId, project.active_requirements_run_id!),
-    enabled: phase.id === 'research' && !!project.active_requirements_run_id,
   })
 
   // Polling for a run started from this page
@@ -105,33 +93,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
   }, [phase.id, activeRunId])
 
   // ─── Duplicate handlers ───────────────────────────────────────────────────
-
-  const handleDuplicateResearch = (solution: ResearchSolution) => {
-    // Build newId as "{original_id}_1", "_2", etc., skipping any already in use
-    const existingIds = new Set(
-      customOutputs.items
-        .filter((ci) => ci.source_item_id === solution.id)
-        .map((ci) => (ci.data as { id?: string }).id ?? '')
-    )
-    let suffix = 1
-    while (existingIds.has(`${solution.id}_${suffix}`)) suffix++
-    const newId = `${solution.id}_${suffix}`
-
-    customOutputs.addItem.mutate(
-      {
-        source_item_id: solution.id,
-        source_item_label: newId.slice(0, 50),
-        data: { ...solution, id: newId } as unknown as Record<string, unknown>,
-      },
-      { onSuccess: () => research.add(newId) }
-    )
-  }
-
-  const handleDeleteCustomResearch = (itemId: string) => {
-    const item = customOutputs.items.find((ci) => ci.id === itemId)
-    if (item) research.remove((item.data as { id: string }).id)
-    customOutputs.deleteItem.mutate(itemId)
-  }
 
   const handleDuplicateIcResult = (result: Record<string, unknown>) => {
     const originalId = String(result.id ?? '')
@@ -207,17 +168,7 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
         }
       }
 
-      const payload =
-        phase.id === 'research'
-          ? {
-              use_perplexity: usePerplexity,
-              custom_inputs: {
-                ...custom_inputs,
-                requirements_drive_url: activeRequirementsRun?.output_drive_url ?? null,
-              },
-            }
-          : { custom_inputs }
-      return runsApi.trigger(projectId, phase.id, payload)
+      return runsApi.trigger(projectId, phase.id, { custom_inputs })
     },
     onSuccess: ({ run_id }, { notes }) => {
       setActivePollingRunId(run_id)
@@ -232,49 +183,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
 
   return (
     <div className="space-y-4 rounded-lg border border-input bg-card p-6 animate-fade-in">
-      {/* Requirements run context — research phase only */}
-      {phase.id === 'research' && (
-        <>
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-              {tReq('requirementsRun')}
-            </p>
-            {activeRequirementsRun ? (
-              <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
-                <div className="flex items-center gap-2 text-xs min-w-0">
-                  <span className="font-mono text-muted-foreground shrink-0">
-                    {t('runNumber')}{activeRequirementsRun.run_number}
-                  </span>
-                  <RunStatusBadge status={activeRequirementsRun.status} />
-                </div>
-                {activeRequirementsRun.output_drive_url && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-xs gap-1 text-muted-foreground shrink-0"
-                    asChild
-                  >
-                    <a
-                      href={activeRequirementsRun.output_drive_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      {tReq('viewInDrive')}
-                    </a>
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                {tReq('noRequirementsRun')}
-              </p>
-            )}
-          </div>
-          <Separator />
-        </>
-      )}
-
       {/* Input form */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
@@ -316,8 +224,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
           defaultInputs={
             (activeRun?.input_payload?.custom_inputs as Record<string, unknown>) ?? {}
           }
-          usePerplexity={usePerplexity}
-          onUsePerplexityChange={setUsePerplexity}
           isLoading={isRunning || triggerMutation.isPending}
           submitDisabled={
             (phase.id === 'ic_selection' && !research.selectedSolutions.length) ||
@@ -337,66 +243,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
       )}
 
       <Separator />
-
-      {/* Selected designs — research phase only */}
-      {phase.id === 'research' && (
-        <>
-          <div>
-            <button
-              type="button"
-              onClick={() => setDesignsExpanded((v) => !v)}
-              className="flex items-center gap-2 cursor-pointer mb-2"
-            >
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                {t('selectedDesigns')}
-              </p>
-              {!designsExpanded && research.selectedSolutions.length > 0 && (
-                <span className="text-[10px] text-primary font-medium">
-                  {research.selectedSolutions.map((s) => s.id).join(', ')} {tCommon('selected')}
-                </span>
-              )}
-              {designsExpanded ? (
-                <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </button>
-            {designsExpanded && (
-              <div className="animate-fade-in">
-                {!activeRunId ? (
-                  <p className="text-xs text-muted-foreground italic">
-                    {t('selectRunFirst')}
-                  </p>
-                ) : !activeRun ? (
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-32 flex-1 min-w-[180px]" />
-                    ))}
-                  </div>
-                ) : activeRun.output_payload ? (
-                  <ResearchDesignPicker
-                    output={activeRun.output_payload}
-                    selectedSolutions={research.selectedSolutions}
-                    onToggle={(solution) => research.toggle(solution.id)}
-                    customItems={customOutputs.items}
-                    onDuplicate={handleDuplicateResearch}
-                    onUpdateCustom={handleUpdateCustom}
-                    onDeleteCustom={handleDeleteCustomResearch}
-                  />
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">
-                    {t('noDesignsInOutput')}
-                  </p>
-                )}
-                {research.saveError && (
-                  <p className="mt-1.5 text-xs text-destructive">{t('selectionSaveError')}</p>
-                )}
-              </div>
-            )}
-          </div>
-          <Separator />
-        </>
-      )}
 
       {/* IC Selection output */}
       {phase.id === 'ic_selection' && activeRun?.output_payload && (

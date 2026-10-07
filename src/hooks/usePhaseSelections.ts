@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { phaseSelectionsApi, runsApi } from '@/lib/api'
 import { useActiveRuns } from '@/hooks/usePipelineState'
 import { useCustomOutputs } from '@/hooks/useCustomOutputs'
-import type { PhaseId, PhaseSelection, ResearchOutputItem, ResearchSolution } from '@/types'
+import { parseResearchOutput } from '@/lib/research'
+import type { PhaseId, PhaseSelection, ResearchSolution } from '@/types'
 
 // ─── Saved selections (backend) ───────────────────────────────────────────────
 
@@ -60,21 +61,6 @@ export function usePhaseSelections(projectId: string) {
 }
 
 // ─── Research → IC Selection ──────────────────────────────────────────────────
-
-function isResearchOutputItem(value: unknown): value is ResearchOutputItem {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'solutions' in value &&
-    Array.isArray((value as Record<string, unknown>).solutions)
-  )
-}
-
-export function parseResearchOutput(raw: unknown): ResearchOutputItem[] {
-  if (isResearchOutputItem(raw)) return [raw]
-  if (Array.isArray(raw)) return raw.filter(isResearchOutputItem)
-  return []
-}
 
 /**
  * Which research solutions (originals and edited copies) are sent to IC

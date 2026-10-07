@@ -33,26 +33,42 @@ export function PhasePageHeader({ projectId, phase, state, previousPhase }: Phas
       </div>
 
       {state?.locked && previousPhase && (
-        <div className="flex items-start gap-3 rounded-md border border-warning/35 bg-warning/[.08] px-3.5 py-3 text-[13px]">
-          <Lock className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-          <div className="flex flex-col gap-0.5">
-            <span className="font-semibold text-foreground">{t('blockedTitle')}</span>
-            <span className="text-muted-foreground">
-              {t.rich('blockedBody', {
-                phase: phaseName(previousPhase),
-                link: (chunks) => (
-                  <Link
-                    href={`/projects/${projectId}/pipeline/${previousPhase.id}`}
-                    className="text-[#E0894A] hover:text-[#F0A56B] hover:underline"
-                  >
-                    {chunks}
-                  </Link>
-                ),
-              })}
-            </span>
-          </div>
-        </div>
+        <PhaseBlockedBanner projectId={projectId} previousPhase={previousPhase} />
       )}
+    </div>
+  )
+}
+
+/** The phase's input comes from a phase that has no active run yet. */
+export function PhaseBlockedBanner({
+  projectId,
+  previousPhase,
+}: {
+  projectId: string
+  previousPhase: PipelinePhase
+}) {
+  const t = useTranslations('pipeline')
+  const phaseName = usePhaseName()
+
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-warning/35 bg-warning/[.08] px-3.5 py-3 text-[13px]">
+      <Lock className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+      <div className="flex flex-col gap-0.5">
+        <span className="font-semibold text-foreground">{t('blockedTitle')}</span>
+        <span className="text-muted-foreground">
+          {t.rich('blockedBody', {
+            phase: phaseName(previousPhase),
+            link: (chunks) => (
+              <Link
+                href={`/projects/${projectId}/pipeline/${previousPhase.id}`}
+                className="text-[#E0894A] hover:text-[#F0A56B] hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </span>
+      </div>
     </div>
   )
 }
