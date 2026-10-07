@@ -1,0 +1,112 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
+import { useQuery } from '@tanstack/react-query'
+import { usePathname, useRouter, Link } from '@/i18n/routing'
+import { useAuth } from '@/hooks/useAuth'
+import { projectsApi } from '@/lib/api'
+import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/primitives'
+import { UserAvatar } from './UserAvatar'
+
+function NexoMark() {
+  return (
+    <svg viewBox="0 0 1920 1920" width="24" height="24" className="shrink-0 rounded" aria-hidden="true">
+      <rect width="1920" height="1920" fill="#FFFFFF" />
+      <polygon
+        fill="#161B21"
+        points="330,440 630,440 1360,1170 1360,660 700,0 1040,0 1360,320 1600,320 1600,1490 1300,1490 570,760 570,1270 1220,1920 890,1920 570,1600 330,1600"
+      />
+    </svg>
+  )
+}
+
+function UpDownChevron() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-muted-foreground" aria-hidden="true">
+      <path d="M3 4l2-2 2 2M3 6l2 2 2-2" />
+    </svg>
+  )
+}
+
+function Slash() {
+  return <span className="text-lg font-light text-border" aria-hidden="true">/</span>
+}
+
+export function TopBar() {
+  const t = useTranslations('nav')
+  const pathname = usePathname()
+  const router = useRouter()
+  const { user } = useAuth()
+
+  const { data: projects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: projectsApi.list,
+  })
+
+  const currentId = pathname.match(/^\/projects\/([^/]+)/)?.[1]
+  const currentProject =
+    currentId && currentId !== 'new' ? projects?.find((p) => p.id === currentId) : undefined
+
+  return (
+    <header className="flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
+      <Link href="/" className="flex items-center gap-2.5">
+        <NexoMark />
+        <span className="flex gap-[5px] whitespace-nowrap text-sm text-foreground">
+          <span className="font-bold tracking-[.04em]">NEXO</span>
+          <span className="text-muted-foreground">Design</span>
+        </span>
+      </Link>
+
+      <Slash />
+
+      {/* Organisation: static until multi-tenant SaaS lands (TODO: org switcher). */}
+      <span className="flex h-[30px] items-center gap-2 whitespace-nowrap px-2 text-[13px] font-medium text-foreground">
+        <span className="flex h-5 w-5 items-center justify-center rounded bg-[#3A2A1E] text-[10px] font-bold text-[#F0A56B]">
+          N
+        </span>
+        {t('org')}
+      </span>
+
+      <Slash />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(
+            'flex h-[30px] max-w-[280px] items-center gap-2 whitespace-nowrap rounded-[5px] px-2 text-[13px] outline-none transition-colors hover:bg-card focus-visible:ring-1 focus-visible:ring-ring',
+            currentProject ? 'font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <span className="truncate">{currentProject?.name ?? t('selectProject')}</span>
+          <UpDownChevron />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="max-h-[60vh] w-64 overflow-y-auto">
+          {projects && projects.length > 0 ? (
+            projects.map((p) => (
+              <DropdownMenuItem
+                key={p.id}
+                onSelect={() => router.push(`/projects/${p.id}`)}
+                className={cn('text-[13px]', p.id === currentId && 'font-semibold text-foreground')}
+              >
+                <span className="truncate">{p.name}</span>
+              </DropdownMenuItem>
+            ))
+          ) : (
+            <DropdownMenuItem disabled className="text-[13px]">
+              {t('noProjects')}
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div className="flex-1" />
+
+      <UserAvatar user={user} />
+    </header>
+  )
+}

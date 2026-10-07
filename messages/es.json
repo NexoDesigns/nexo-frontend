@@ -37,7 +37,10 @@
     "knowledgeBase": "Base de conocimiento",
     "datasheets": "Datasheets",
     "settings": "Ajustes",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "org": "Nexo Design",
+    "selectProject": "Seleccionar proyecto",
+    "noProjects": "Aún no hay proyectos"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -112,7 +115,33 @@
     "requirementsSaved": "Requisitos guardados correctamente",
     "projectCreated": "Proyecto creado correctamente",
     "deleteConfirm": "¿Seguro que quieres archivar este proyecto?",
-    "deleteDescription": "El proyecto pasará a estado archivado. Puedes restaurarlo más tarde."
+    "deleteDescription": "El proyecto pasará a estado archivado. Puedes restaurarlo más tarde.",
+    "descriptionPlaceholder": "Breve descripción del proyecto...",
+    "createError": "No se pudo crear el proyecto",
+    "searchPlaceholder": "Buscar proyectos",
+    "allStatuses": "Todos los estados",
+    "sort": "Ordenar",
+    "sortLastEdited": "Última edición",
+    "sortName": "Nombre",
+    "viewTiles": "Mosaico",
+    "viewTable": "Tabla",
+    "noMatchTitle": "Ningún proyecto coincide",
+    "noMatchHint": "Borra la búsqueda o elige otro estado.",
+    "edited": "Editado {time}",
+    "colProject": "Proyecto",
+    "colCurrentStage": "Etapa actual",
+    "colStageProgress": "Progreso por etapa",
+    "colStatus": "Estado",
+    "colEdited": "Editado",
+    "stageShort": {
+      "requirements": "Req.",
+      "research": "Investig.",
+      "ic_selection": "ICs",
+      "architecture_agent": "Arq.",
+      "passive_components": "Pasivos",
+      "component_selection": "Compon.",
+      "netlist": "Netlist"
+    }
   },
   "requirements": {
     "title": "Requisitos",

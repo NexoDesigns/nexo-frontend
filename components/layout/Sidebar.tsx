@@ -4,80 +4,44 @@ import { useTranslations } from 'next-intl'
 import { usePathname, Link } from '@/i18n/routing'
 import { useAuth } from '@/hooks/useAuth'
 import { LocaleSwitcher } from './LocaleSwitcher'
+import { UserAvatar, getUserDisplayName } from './UserAvatar'
 import { cn } from '@/lib/utils'
-import {
-  LayoutDashboard,
-  FolderKanban,
-  BookOpen,
-  Cpu,
-  ExternalLink,
-  LogOut,
-  ChevronRight,
-} from 'lucide-react'
+import { ExternalLink, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { APP_VERSION, DATASHEETS_URL } from '@/lib/constants'
 
 const navItems = [
-  { href: '/', icon: LayoutDashboard, labelKey: 'dashboard' },
-  { href: '/projects', icon: FolderKanban, labelKey: 'projects' },
-  { href: '/knowledge-base', icon: BookOpen, labelKey: 'knowledgeBase' },
+  { href: '/', labelKey: 'dashboard' },
+  { href: '/projects', labelKey: 'projects' },
+  { href: '/knowledge-base', labelKey: 'knowledgeBase' },
 ] as const
+
+const itemBase = 'flex items-center gap-2.5 rounded-[5px] py-2 pr-2.5 text-[13px] transition-colors'
+const itemIdle = 'pl-[23px] text-muted-foreground hover:bg-card hover:text-foreground'
 
 export function Sidebar() {
   const t = useTranslations('nav')
-  const tCommon = useTranslations('common')
   const pathname = usePathname()
   const { user, signOut } = useAuth()
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-      {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/media/nexo-logo-mark.png"
-          alt="Nexo Design"
-          className="h-7 w-7 shrink-0 object-contain"
-        />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground leading-none">
-            {tCommon('appName')}
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            {tCommon('appNameSubtitle')}
-          </p>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">
-        {navItems.map(({ href, icon: Icon, labelKey }) => {
-          const isActive =
-            href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(href)
+    <aside className="flex w-[216px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
+        {navItems.map(({ href, labelKey }) => {
+          const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
 
           return (
-            <Link key={href} href={href}>
-              <span
-                className={cn(
-                  'group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                )}
-              >
-                <Icon
-                  className={cn(
-                    'h-4 w-4 shrink-0 transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                  )}
-                />
-                {t(labelKey)}
-                {isActive && (
-                  <ChevronRight className="ml-auto h-3 w-3 text-muted-foreground" />
-                )}
-              </span>
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                itemBase,
+                isActive ? 'bg-accent pl-2.5 font-semibold text-foreground' : itemIdle
+              )}
+            >
+              {isActive && <span className="h-4 w-[3px] shrink-0 rounded-sm bg-primary" />}
+              {t(labelKey)}
             </Link>
           )
         })}
@@ -87,34 +51,33 @@ export function Sidebar() {
           href={DATASHEETS_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className={cn(itemBase, itemIdle)}
         >
-          <Cpu className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
           {t('datasheets')}
-          <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground" />
+          <ExternalLink className="ml-auto h-3 w-3" />
         </a>
       </nav>
 
-      {/* Bottom: user + locale */}
-      <div className="border-t border-sidebar-border p-2 space-y-1">
-        <div className="flex items-center justify-between px-2 py-1">
-          <span className="text-xs text-muted-foreground truncate max-w-[110px]">
-            {user?.user_metadata?.full_name ?? user?.email ?? '—'}
-          </span>
+      {/* Bottom: user, language, version, logout */}
+      <div className="flex flex-col gap-2 border-t border-input px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <UserAvatar user={user} />
+          <span className="truncate text-[13px] text-[#C7CEDA]">{getUserDisplayName(user)}</span>
+        </div>
+        <div className="flex items-center gap-1">
           <LocaleSwitcher />
+          <span className="text-[10px] text-muted-foreground/60">v{APP_VERSION}</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="ml-auto text-muted-foreground hover:text-foreground"
+            onClick={signOut}
+            title={t('logout')}
+            aria-label={t('logout')}
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </Button>
         </div>
-        <div className="flex items-center justify-between px-2 py-0.5">
-          <span className="text-[10px] text-muted-foreground/50">v{APP_VERSION}</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground text-xs h-8"
-          onClick={signOut}
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          {t('logout')}
-        </Button>
       </div>
     </aside>
   )

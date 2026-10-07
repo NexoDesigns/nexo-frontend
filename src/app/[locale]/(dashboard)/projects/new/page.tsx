@@ -93,7 +93,7 @@ export default function NewProjectPage() {
               </Label>
               <Textarea
                 id="description"
-                placeholder="Breve descripción del proyecto..."
+                placeholder={t('descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -104,7 +104,7 @@ export default function NewProjectPage() {
               <p className="text-xs text-destructive">
                 {createMutation.error instanceof Error
                   ? createMutation.error.message
-                  : 'Error al crear el proyecto'}
+                  : t('createError')}
               </p>
             )}
 
@@ -119,7 +119,7 @@ export default function NewProjectPage() {
                 ) : (
                   <FolderPlus className="h-3.5 w-3.5" />
                 )}
-                {t('create')} proyecto
+                {t('create')}
               </Button>
             </div>
           </form>

@@ -1,8 +1,16 @@
-import { Space_Grotesk, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
+import { Inter, Space_Grotesk, DM_Sans, IBM_Plex_Mono } from 'next/font/google'
+
+// Platform (logged-in app) typeface — redesign v2.
+export const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 // Typefaces for the public site (theme-landing) — landing, productos, login.
-// The dashboard keeps its own fonts; these are exposed as CSS variables and
-// only consumed inside the .theme-landing scope.
+// Exposed as CSS variables and consumed inside the .theme-landing scope
+// (IBM Plex Mono is also the platform's monospace).
 
 export const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -23,4 +31,4 @@ export const ibmPlexMono = IBM_Plex_Mono({
   display: 'swap',
 })
 
-export const publicFontVars = `${spaceGrotesk.variable} ${dmSans.variable} ${ibmPlexMono.variable}`
+export const publicFontVars = `${inter.variable} ${spaceGrotesk.variable} ${dmSans.variable} ${ibmPlexMono.variable}`
