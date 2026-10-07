@@ -5,6 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 import { usePathname, useRouter, Link } from '@/i18n/routing'
 import { useAuth } from '@/hooks/useAuth'
 import { projectsApi } from '@/lib/api'
+import { usePipelinePhases } from '@/hooks/useProjectPhases'
+import { PROJECT_TABS, useProjectTabLabel, type ProjectTab } from '@/components/projects/ProjectTabs'
+import { usePhaseName } from '@/components/pipeline/usePhaseName'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -49,9 +52,19 @@ export function TopBar() {
     queryFn: projectsApi.list,
   })
 
-  const currentId = pathname.match(/^\/projects\/([^/]+)/)?.[1]
+  const { data: allPhases } = usePipelinePhases()
+  const tabLabel = useProjectTabLabel()
+  const phaseName = usePhaseName()
+
+  // /projects/{id}/{tab}/{phaseId}
+  const [, , currentId, tabSegment, phaseSegment] = pathname.split('/')
   const currentProject =
-    currentId && currentId !== 'new' ? projects?.find((p) => p.id === currentId) : undefined
+    pathname.startsWith('/projects/') && currentId && currentId !== 'new'
+      ? projects?.find((p) => p.id === currentId)
+      : undefined
+  const tab = PROJECT_TABS.find((t) => t.id === tabSegment)?.id as ProjectTab | undefined
+  const phase =
+    tab === 'pipeline' && phaseSegment ? allPhases?.find((p) => p.id === phaseSegment) : undefined
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
@@ -103,6 +116,28 @@ export function TopBar() {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {currentProject && tab && (
+        <>
+          <Slash />
+          {phase ? (
+            <Link
+              href={`/projects/${currentId}/${tab}`}
+              className="whitespace-nowrap text-[13px] text-muted-foreground hover:text-[#F0A56B]"
+            >
+              {tabLabel(tab)}
+            </Link>
+          ) : (
+            <span className="whitespace-nowrap text-[13px] text-foreground">{tabLabel(tab)}</span>
+          )}
+        </>
+      )}
+      {currentProject && phase && (
+        <>
+          <Slash />
+          <span className="whitespace-nowrap text-[13px] text-foreground">{phaseName(phase)}</span>
+        </>
+      )}
 
       <div className="flex-1" />
 

@@ -133,6 +133,7 @@
     "colStageProgress": "Progreso por etapa",
     "colStatus": "Estado",
     "colEdited": "Editado",
+    "notFound": "Proyecto no encontrado",
     "stageShort": {
       "requirements": "Req.",
       "research": "Investig.",
@@ -170,6 +171,18 @@
   },
   "pipeline": {
     "title": "Pipeline de diseño",
+    "tile": {
+      "active": "Ejecución #{number} activa",
+      "running": "Ejecutando",
+      "failed": "Última ejecución fallida",
+      "notStarted": "Sin empezar",
+      "locked": "Ejecuta antes {phase}"
+    },
+    "blockedTitle": "A esta fase le falta su entrada",
+    "blockedBody": "Usa la ejecución activa de la fase anterior. <link>Ejecuta antes {phase}</link> y marca una ejecución como activa.",
+    "launchError": "No se pudo lanzar la ejecución",
+    "refresh": "Actualizar",
+    "selectionSaveError": "No se pudo guardar tu selección. Se perderá al recargar.",
     "research": "Research",
     "ic_selection": "Selección de ICs",
     "architecture_agent": "Architecture Agent",

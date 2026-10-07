@@ -133,6 +133,7 @@
     "colStageProgress": "Stage progress",
     "colStatus": "Status",
     "colEdited": "Edited",
+    "notFound": "Project not found",
     "stageShort": {
       "requirements": "Reqs",
       "research": "Research",
@@ -170,6 +171,18 @@
   },
   "pipeline": {
     "title": "Design pipeline",
+    "tile": {
+      "active": "Run #{number} active",
+      "running": "Running",
+      "failed": "Last run failed",
+      "notStarted": "Not started",
+      "locked": "Run {phase} first"
+    },
+    "blockedTitle": "This phase is missing its input",
+    "blockedBody": "It uses the active run of the previous phase. <link>Run {phase} first</link> and mark a run as active.",
+    "launchError": "Could not start the run",
+    "refresh": "Refresh",
+    "selectionSaveError": "Your selection could not be saved. It will be lost when you reload.",
     "research": "Research",
     "ic_selection": "IC Selection",
     "architecture_agent": "Architecture Agent",

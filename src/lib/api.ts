@@ -31,6 +31,7 @@ import type {
   DatasheetSearchParams,
   DatasheetSearchResult,
   DatasheetSheet,
+  PhaseSelection,
 } from '@/types'
 
 const BASE_URL = '/api/backend'
@@ -120,6 +121,23 @@ export const projectsApi = {
 
 export const phasesApi = {
   list: () => apiFetch<PipelinePhase[]>('/pipeline-phases'),
+}
+
+// ─── Phase output selections ─────────────────────────────────────────────────
+
+export const phaseSelectionsApi = {
+  list: (projectId: string) =>
+    apiFetch<PhaseSelection[]>(`/projects/${projectId}/phase-selections`),
+
+  upsert: (
+    projectId: string,
+    phaseId: string,
+    payload: { source_run_id: string; selected_ids: string[] }
+  ) =>
+    apiFetch<PhaseSelection>(`/projects/${projectId}/phase-selections/${phaseId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
 }
 
 // ─── Phase runs ───────────────────────────────────────────────────────────────

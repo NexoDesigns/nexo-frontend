@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { useQuery } from '@tanstack/react-query'
-import { phasesApi } from '@/lib/api'
+import { useProjectPhases } from '@/hooks/useProjectPhases'
 import { cn } from '@/lib/utils'
 
 export type StageState = 'done' | 'current' | 'locked'
@@ -29,17 +28,12 @@ const SHORT_LABEL_IDS = new Set([
 /** Requirements followed by the server's pipeline phases, in order. */
 export function useProjectStages(): ProjectStage[] {
   const t = useTranslations('projects')
-  const { data: phases } = useQuery({
-    queryKey: ['pipeline-phases'],
-    queryFn: phasesApi.list,
-    staleTime: Infinity,
-  })
+  const { phases } = useProjectPhases()
 
   return useMemo(() => {
-    const ordered = [...(phases ?? [])].sort((a, b) => a.order_index - b.order_index)
     return [
       { id: 'requirements', name: t('requirements') },
-      ...ordered.map((p) => ({ id: p.id as string, name: p.name })),
+      ...phases.map((p) => ({ id: p.id as string, name: p.name })),
     ].map(({ id, name }) => ({
       id,
       title: name,

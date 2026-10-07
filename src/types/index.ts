@@ -219,6 +219,17 @@ export interface ProjectActiveRun {
   updated_at: string
 }
 
+// Saved selection of a phase run's output items to send to the next phase
+// (research → solution ids, ic_selection → [design id])
+export interface PhaseSelection {
+  project_id: string
+  phase_id: PhaseId
+  source_run_id: string
+  selected_ids: string[]
+  updated_by: string | null
+  updated_at: string
+}
+
 // ─── Documents ───────────────────────────────────────────────────────────────
 
 export type DocumentType =
