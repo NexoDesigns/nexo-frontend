@@ -15,19 +15,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/primitives'
+import { NexoLogo } from '@/components/public/NexoLogo'
 import { UserAvatar } from './UserAvatar'
-
-function NexoMark() {
-  return (
-    <svg viewBox="0 0 1920 1920" width="24" height="24" className="shrink-0 rounded" aria-hidden="true">
-      <rect width="1920" height="1920" fill="#FFFFFF" />
-      <polygon
-        fill="#161B21"
-        points="330,440 630,440 1360,1170 1360,660 700,0 1040,0 1360,320 1600,320 1600,1490 1300,1490 570,760 570,1270 1220,1920 890,1920 570,1600 330,1600"
-      />
-    </svg>
-  )
-}
 
 function UpDownChevron() {
   return (
@@ -69,7 +58,7 @@ export function TopBar() {
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
       <Link href="/" className="flex items-center gap-2.5">
-        <NexoMark />
+        <NexoLogo className="h-6 w-6 rounded" />
         <span className="flex gap-[5px] whitespace-nowrap text-sm text-foreground">
           <span className="font-bold tracking-[.04em]">NEXO</span>
           <span className="text-muted-foreground">Design</span>
