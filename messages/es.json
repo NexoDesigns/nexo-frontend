@@ -262,6 +262,7 @@
     "icDesignPickerNoData": "No hay diseños disponibles. Ejecuta primero IC Selection.",
     "componentSelectionDisabled": "Component Selection está temporalmente deshabilitado — se rediseñará en torno al nuevo flujo de Architecture Agent / Passive Components.",
     "openDiagramEditor": "Abrir editor de diagrama",
+    "closeEditor": "Cerrar editor",
     "openDiagramEditorNewTab": "Abrir en pestaña nueva",
     "architectureDiagramTitle": "System Diagram App",
     "architectureDiagramLoadError": "No se pudo obtener el enlace al editor de diagrama",

@@ -18,6 +18,130 @@ input::placeholder{color:#6F7A8B}
 select option{background:#20262E;color:#E7ECF3}
 </style>
 </helmet>
+<section data-screen-label="Architecture editor stage" style="padding:56px 64px 0;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#8D99AC">Turn 5 · Stage page</div>
+    <div style="font-size:22px;font-weight:600">Design pipeline · Architecture editor</div>
+  </div>
+  <div id="5a" style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="background:#C4661A;color:#FFFFFF;font-weight:700;font-size:13px;padding:3px 9px;border-radius:4px">5a</span>
+      <span style="font-size:14px;color:#8D99AC">Open the diagram editor to fill the center. Collapse run history to give it the full width.</span>
+    </div>
+    <div data-screen-label="5a Architecture editor" style="width:1280px;height:820px;display:flex;flex-direction:column;background:#1B2027;border:1px solid #414B57;border-radius:8px;overflow:hidden">
+      <div style="height:48px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 16px;background:#161B21;border-bottom:1px solid #414B57">
+        <div style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 1920 1920" width="24" height="24" style="border-radius:4px;flex-shrink:0"><rect width="1920" height="1920" fill="#FFFFFF"></rect><polygon fill="#161B21" points="330,440 630,440 1360,1170 1360,660 700,0 1040,0 1360,320 1600,320 1600,1490 1300,1490 570,760 570,1270 1220,1920 890,1920 570,1600 330,1600"></polygon></svg><span style="display:flex;gap:5px;font-size:14px;white-space:nowrap"><span style="font-weight:700;letter-spacing:.04em">NEXO</span><span style="color:#8D99AC">Design</span></span></div>
+        <span style="color:#414B57;font-size:18px;font-weight:300">/</span>
+        <button style="display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;background:none;border:none;border-radius:5px;color:#E7ECF3;font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#20262E"><span style="width:20px;height:20px;border-radius:4px;background:#3A2A1E;color:#F0A56B;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">S</span>Sardi Electronics<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#8D99AC" stroke-width="1.4"><path d="M3 4l2-2 2 2M3 6l2 2 2-2"></path></svg></button>
+        <span style="color:#414B57;font-size:18px;font-weight:300">/</span>
+        <button style="display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;background:none;border:none;border-radius:5px;color:#E7ECF3;font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#20262E">Sardi IC<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#8D99AC" stroke-width="1.4"><path d="M3 4l2-2 2 2M3 6l2 2 2-2"></path></svg></button>
+        <span style="color:#414B57;font-size:18px;font-weight:300">/</span>
+        <a href="#3a" style="font-size:13px;color:#8D99AC;white-space:nowrap">Design pipeline</a>
+        <span style="color:#414B57;font-size:18px;font-weight:300">/</span>
+        <span style="font-size:13px;color:#E7ECF3;white-space:nowrap">Architecture editor</span>
+        <div style="flex:1"></div>
+        <sc-if value="{{ ar.open }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ ar.closeEditor }}" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:none;color:#E7ECF3;border:1px solid #414B57;border-radius:5px;font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="border-color:#C4661A;background:#20262E"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"></path></svg>Close editor</button>
+        </sc-if>
+        <span style="width:28px;height:28px;border-radius:50%;background:#3A4350;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">AM</span>
+      </div>
+      <div style="flex:1;min-height:0;display:flex">
+        <aside style="width:216px;flex-shrink:0;background:#161B21;border-right:1px solid #414B57;display:flex;flex-direction:column">
+          <nav style="display:flex;flex-direction:column;gap:2px;padding:12px 8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:5px;background:#2A323C;font-size:13px;font-weight:600;color:#E7ECF3"><span style="width:3px;height:16px;border-radius:2px;background:#C4661A"></span>Projects</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 23px;border-radius:5px;font-size:13px;color:#8D99AC" style-hover="background:#20262E;color:#E7ECF3">Components</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 23px;border-radius:5px;font-size:13px;color:#8D99AC" style-hover="background:#20262E;color:#E7ECF3">Manufacturers</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 8px 23px;border-radius:5px;font-size:13px;color:#8D99AC" style-hover="background:#20262E;color:#E7ECF3">Datasheet extractor</div>
+          </nav>
+        </aside>
+        <sc-if value="{{ ar.open }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:#161A20;overflow:hidden">
+            <img src="public/arch-diagram-demo.png" alt="Block diagram editor (demo)" style="width:100%;height:100%;object-fit:contain;display:block">
+          </div>
+        </sc-if>
+        <sc-if value="{{ ar.closed }}" hint-placeholder-val="{{ true }}">
+          <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #414B57;flex-shrink:0">
+              <span style="display:flex;align-items:center;padding:0 14px;height:42px;font-size:13px;color:#8D99AC;white-space:nowrap">Description</span>
+              <span style="display:flex;align-items:center;padding:0 14px;height:42px;font-size:13px;color:#8D99AC;white-space:nowrap">Requirements</span>
+              <span style="display:flex;align-items:center;padding:0 14px;height:42px;font-size:13px;color:#8D99AC;white-space:nowrap">Normatives</span>
+              <span style="display:flex;align-items:center;padding:0 14px;height:42px;font-size:13px;font-weight:600;color:#E7ECF3;box-shadow:inset 0 -2px 0 #C4661A;white-space:nowrap">Design pipeline</span>
+              <span style="display:flex;align-items:center;padding:0 14px;height:42px;font-size:13px;color:#8D99AC;white-space:nowrap">Documents</span>
+            </div>
+            <div style="flex:1;min-height:0;padding:24px 28px 28px;display:flex;flex-direction:column;gap:24px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <h1 style="margin:0;font-size:24px;font-weight:600">Architecture editor</h1>
+                <span style="flex:1"></span>
+                <div style="position:relative">
+                  <button onClick="{{ ar.toggleNew }}" style="display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;background:#C4661A;color:#FFFFFF;border:none;border-radius:5px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#D2732A"><span style="font-size:16px;line-height:1">+</span>New Run</button>
+                  <sc-if value="{{ ar.newOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:40px;right:0;z-index:5;width:340px;display:flex;flex-direction:column;gap:14px;padding:16px;background:#20262E;border:1px solid #414B57;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.45)">
+                      <span style="font-size:14px;font-weight:600">New run</span>
+                      <label style="display:flex;flex-direction:column;gap:6px">
+                        <span style="font-size:12px;color:#8D99AC">Input from Research</span>
+                        <select style="height:34px;padding:0 10px;background:#161B21;color:#E7ECF3;border:1px solid #39424C;border-radius:5px;font:inherit;font-size:13px">
+                          <option>Run #2 · confirmed selection</option><option>Run #1</option>
+                        </select>
+                      </label>
+                      <div style="display:flex;justify-content:flex-end;gap:8px">
+                        <button onClick="{{ ar.toggleNew }}" style="height:30px;padding:0 12px;background:none;color:#E7ECF3;border:1px solid #414B57;border-radius:5px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap">Cancel</button>
+                        <button onClick="{{ ar.toggleNew }}" style="height:30px;padding:0 14px;background:#C4661A;color:#FFFFFF;border:none;border-radius:5px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#D2732A">Run</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:20px">
+                <span style="font-size:16px;font-weight:600">Run {{ ar.runN }}</span>
+                <sc-if value="{{ ar.isActive }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(95,190,109,.14);color:#5FBE6D">Active</span></sc-if>
+                <span style="flex:1"></span>
+                <sc-if value="{{ ar.canUse }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ ar.use }}" style="height:28px;padding:0 12px;background:none;color:#E7ECF3;border:1px solid #414B57;border-radius:5px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap" style-hover="border-color:#C4661A">Use this run</button>
+                </sc-if>
+                <span style="font-size:12px;color:#8D99AC">{{ ar.who }}</span>
+              </div>
+              <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:1px dashed #414B57;border-radius:8px">
+                <sc-if value="{{ ar.isDone }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+                  <button onClick="{{ ar.openEditor }}" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 20px;background:#C4661A;color:#FFFFFF;border:none;border-radius:6px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#D2732A"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="6" rx="1"></rect><rect x="14" y="15" width="7" height="6" rx="1"></rect><path d="M10 6h4v12"></path></svg>Open diagram editor</button>
+                  <span style="font-size:12.5px;color:#8D99AC;white-space:nowrap">{{ ar.stats }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ar.isRunning }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:13px;color:#8D99AC">Running. You can leave this page; it keeps going.</span>
+                </sc-if>
+                <sc-if value="{{ ar.isFailed }}" hint-placeholder-val="{{ false }}">
+                  <span style="max-width:420px;padding:12px 14px;border-radius:6px;background:rgba(255,122,92,.08);border:1px solid rgba(255,122,92,.35);font-size:13px;line-height:1.5;color:#FFB3A1;text-align:center">{{ ar.error }}</span>
+                </sc-if>
+              </div>
+            </div>
+          </main>
+        </sc-if>
+        <sc-if value="{{ ar.showHist }}" hint-placeholder-val="{{ true }}">
+          <aside style="width:280px;flex-shrink:0;border-left:1px solid #414B57;background:#161B21;overflow-y:auto;padding:14px 14px 18px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;padding:0 0 4px 2px">
+              <span style="flex:1;font-size:13px;font-weight:600">Run history</span>
+              <button onClick="{{ ar.toggleHist }}" title="Hide run history" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;padding:0;background:none;border:none;border-radius:4px;color:#8D99AC;cursor:pointer" style-hover="background:#2A323C;color:#E7ECF3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"></path></svg></button>
+            </div>
+            <sc-for list="{{ ar.runs }}" as="x" hint-placeholder-count="3">
+              <button onClick="{{ x.select }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:{{ x.bg }};border:1px solid {{ x.bd }};border-radius:6px;color:#E7ECF3;font:inherit;cursor:pointer;text-align:left">
+                <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ x.dot }}"></span>
+                <span style="font-size:13px;font-weight:600">#{{ x.n }}</span>
+                <span style="flex:1;min-width:0;font-size:12px;color:#8D99AC;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ x.sub }}</span>
+                <sc-if value="{{ x.isActive }}"><span style="font-size:10.5px;padding:1px 7px;border-radius:9px;background:rgba(95,190,109,.14);color:#5FBE6D">Active</span></sc-if>
+              </button>
+            </sc-for>
+          </aside>
+        </sc-if>
+        <sc-if value="{{ ar.hideHist }}" hint-placeholder-val="{{ false }}">
+          <div style="width:32px;flex-shrink:0;border-left:1px solid #414B57;background:#161B21;display:flex;flex-direction:column;align-items:center;padding-top:14px">
+            <button onClick="{{ ar.toggleHist }}" title="Show run history" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;padding:0;background:none;border:none;border-radius:4px;color:#8D99AC;cursor:pointer" style-hover="background:#2A323C;color:#E7ECF3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6l-6 6 6 6M11 6l-6 6 6 6"></path></svg></button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</section>
 <section data-screen-label="Research stage" style="padding:56px 64px 0;display:flex;flex-direction:column;gap:28px">
   <div style="display:flex;flex-direction:column;gap:6px">
     <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#8D99AC">Turn 4 · Stage page</div>
@@ -794,7 +918,30 @@ class Component extends DCLogic {
       running: RUNS.some(x => x.status === 'running')
     };
   }
-  renderVals(){ return { a:this.view('a'), b:this.view('b'), r:this.research() }; }
+  arch(){
+    const A = { sel:3, active:3, open:false, hide:false, newOpen:false, ...(this.state.ar || {}) };
+    const setA = p => this.setState(s => ({ ar:{ ...A, ...(s.ar || {}), ...p } }));
+    const RUNS = [
+      { n:4, status:'running', who:'A. Marín', when:'just now', sub:'Running…' },
+      { n:3, status:'done', who:'A. Marín', when:'Oct 7, 16:12', dur:'4m 10s', sub:'36 blocks · 88 conn.', stats:'36 blocks · 88 connections · 22 issues' },
+      { n:2, status:'done', who:'L. Sardi', when:'Oct 5, 11:40', dur:'3m 52s', sub:'31 blocks · 74 conn.', stats:'31 blocks · 74 connections · 30 issues' },
+      { n:1, status:'failed', who:'L. Sardi', when:'Oct 4, 09:03', sub:'Failed', error:'No confirmed Research selection was found. Confirm at least one solution in Research and run again.' }
+    ];
+    const run = RUNS.find(x => x.n === A.sel) || RUNS[1], done = run.status === 'done';
+    return {
+      runs: RUNS.map(x => { const on = x.n === A.sel, isActive = x.n === A.active; return { ...x, isActive,
+        select:() => setA({ sel:x.n, open:false }),
+        dot: x.status === 'running' ? '#E0894A' : x.status === 'failed' ? '#FF7A5C' : isActive ? '#5FBE6D' : '#8D99AC',
+        bd: on ? '#C4661A' : '#39424C', bg: on ? '#252C35' : '#20262E' }; }),
+      runN:'#' + run.n, who: run.who + ' · ' + run.when + (run.dur ? ' · ' + run.dur : ''),
+      isActive: done && A.sel === A.active, canUse: done && A.sel !== A.active, use:() => setA({ active:A.sel }),
+      isDone: done, isRunning: run.status === 'running', isFailed: run.status === 'failed', error: run.error, stats: run.stats,
+      open: A.open, closed: !A.open, openEditor:() => setA({ open:true, newOpen:false }), closeEditor:() => setA({ open:false }),
+      showHist: !A.hide, hideHist: A.hide, toggleHist:() => setA({ hide:!A.hide }),
+      newOpen: A.newOpen, toggleNew:() => setA({ newOpen:!A.newOpen })
+    };
+  }
+  renderVals(){ return { a:this.view('a'), b:this.view('b'), r:this.research(), ar:this.arch() }; }
 }
 </script>
 </body>

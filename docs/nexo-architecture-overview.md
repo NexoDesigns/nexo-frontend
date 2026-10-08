@@ -103,7 +103,7 @@ src/lib/api.ts                  único cliente HTTP hacia el backend
 src/lib/constants.ts            IDs de workflows n8n, URL del block diagram editor
 src/lib/supabase/               clientes Supabase (browser/server)
 src/middleware.ts               auth + i18n middleware
-components/pipeline/            UI del pipeline de fases (PhaseCard, PipelineView, ArchitectureDiagramModal…)
+components/pipeline/            UI del pipeline de fases (PhaseCard, PipelineView, phases/architecture/ArchitectureEditorFrame…)
 ```
 
 ### Comunicación con el backend
@@ -253,7 +253,7 @@ sequenceDiagram
 
 El editor **no tiene sesión de Supabase ni credenciales propias** — el token scoped (project+run, 8h) es lo único que necesita para hablar con el backend, sin exponer nunca el JWT real del usuario.
 
-⚠️ El listener de `postMessage` en `ArchitectureDiagramModal.tsx` **no valida `event.origin`** — ver sección 11.
+⚠️ El listener de `postMessage` en `ArchitectureEditorFrame.tsx` **no valida `event.origin`** — ver sección 11.
 
 Si no hay aprobación en la misma pestaña (caso "nueva pestaña"), el frontend detecta el cambio por polling/`refetchOnWindowFocus`, no por un mecanismo push.
 
@@ -460,6 +460,6 @@ Los repositorios viven en la organización **`NexoDesigns`**. `architecture-edit
 | 2 | El backend accede a Supabase con la `service_role` key en (casi) todas las operaciones | `nexo-backend/core/supabase.py` | RLS queda sin efecto real; toda la autorización depende de los checks (limitados) en los routers de FastAPI. |
 | 3 | El rol `engineer`/`admin` (`Profile.role`) existe en el modelo de datos pero no se usa en ningún control de acceso | `src/types/index.ts`, routers de `nexo-backend` | No hay separación de permisos real entre roles — cualquier usuario autenticado puede, en principio, hacer cualquier operación que un router permita. Excepción: `datasheet_extractor` ya lo aplica (solo `admin` aprueba fichas al catálogo, sección 6.2). |
 | 4 | Los webhooks n8n↔backend se autentican solo con un secreto estático compartido en cabecera, sin firma HMAC del payload ni verificación de origen/IP | `nexo-backend/routers/webhooks.py`, `routers/requirements_runs.py`, `routers/normatives.py` | Si el secreto se filtra, cualquiera puede simular un callback de n8n (marcar runs como completados con output arbitrario). |
-| 5 | El listener de `postMessage` en el modal del Block Diagram Editor no valida `event.origin` | `components/pipeline/ArchitectureDiagramModal.tsx` | Cualquier página capaz de enviar un mensaje a esa ventana (ej. otro iframe malicioso si se compromete la página) podría disparar `onApproved()` suplantando al editor legítimo. **Ahora es un arreglo de una línea**: desde el traslado a Vercel el editor tiene un origen propio y fijo, así que basta comparar `event.origin` con `https://editor.nexodesign.ai`. Antes no se podía, porque el origen era el `github.io` compartido con cualquier otro usuario de Pages. |
-| 6 | No hay CSP en el frontend, ni atributo `sandbox` en los iframes (`ArchitectureDiagramModal`, `DriveEmbed`), ni pipeline de CI/CD | `next.config.ts`, `components/pipeline/ArchitectureDiagramModal.tsx`, `components/projects/DriveEmbed.tsx` | Superficie de ataque más amplia de lo necesario para contenido embebido de terceros; sin tests automáticos que detecten regresiones antes de desplegar. El editor **sí** tiene ya `frame-ancestors` (su `vercel.json`), así que solo puede ser embebido desde `nexodesign.ai`; falta el resto. |
+| 5 | El listener de `postMessage` en el Block Diagram Editor embebido no valida `event.origin` | `components/pipeline/phases/architecture/ArchitectureEditorFrame.tsx` | Cualquier página capaz de enviar un mensaje a esa ventana (ej. otro iframe malicioso si se compromete la página) podría disparar `onApproved()` suplantando al editor legítimo. **Ahora es un arreglo de una línea**: desde el traslado a Vercel el editor tiene un origen propio y fijo, así que basta comparar `event.origin` con `https://editor.nexodesign.ai`. Antes no se podía, porque el origen era el `github.io` compartido con cualquier otro usuario de Pages. |
+| 6 | No hay CSP en el frontend, ni atributo `sandbox` en los iframes (`ArchitectureEditorFrame`, `DriveEmbed`), ni pipeline de CI/CD | `next.config.ts`, `components/pipeline/phases/architecture/ArchitectureEditorFrame.tsx`, `components/projects/DriveEmbed.tsx` | Superficie de ataque más amplia de lo necesario para contenido embebido de terceros; sin tests automáticos que detecten regresiones antes de desplegar. El editor **sí** tiene ya `frame-ancestors` (su `vercel.json`), así que solo puede ser embebido desde `nexodesign.ai`; falta el resto. |
 | 7 | Las credenciales de DigiKey y Mouser están commiteadas en `architecture-editor/credential/*.json` y `app.js` las descarga desde el navegador | `architecture-editor/app.js:5027`, `credential/` | Estuvieron públicas mientras el repo sirvió GitHub Pages: **hay que rotarlas**, y siguen en el historial de git. La puerta de la sección 6.1 las tapa frente a anónimos, pero no frente a cualquier usuario autenticado de Nexo ni frente al historial. El arreglo de fondo es que el editor pida la búsqueda a `nexo-backend/routers/components.py`, que ya hace DigiKey→Mouser, con su token scoped. |

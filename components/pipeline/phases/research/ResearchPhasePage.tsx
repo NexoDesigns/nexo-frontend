@@ -282,7 +282,7 @@ export function ResearchPhasePage({ project, phase }: PhasePageProps) {
               )}
 
               {status === 'failed' && (
-                <div className="rounded-md border border-[rgba(255,122,92,.35)] bg-[rgba(255,122,92,.08)] px-3.5 py-3 text-[13px] leading-normal text-[#FFB3A1]">
+                <div className="max-h-[40vh] overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-[rgba(255,122,92,.35)] bg-[rgba(255,122,92,.08)] px-3.5 py-3 text-[13px] leading-normal text-[#FFB3A1]">
                   {viewedRun?.error_message || t('runFailedNotice', { number: viewedRun?.run_number ?? '' })}
                 </div>
               )}

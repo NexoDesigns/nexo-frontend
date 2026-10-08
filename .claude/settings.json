@@ -22,7 +22,9 @@
       "Bash(echo \"EXIT_CODE=$?\")",
       "Read(//c/Users/Usuario/Documents/Nexo Design/**)",
       "Bash(node -e ' *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(cd \"/c/Users/Usuario/Documents/Nexo Design/nexo-frontend\" && cat src/lib/gate.ts; ls docs; grep -rln \"gate\" docs | head; ls ..)",
+      "Bash(cd \"/c/Users/Usuario/Documents/Nexo Design\" && cat nexo-frontend/docs/gate-middleware/README.md; ls -a architecture-editor; cat architecture-editor/middleware.* 2>/dev/null | head -150)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Usuario\\.claude",

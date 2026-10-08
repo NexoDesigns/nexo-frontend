@@ -3,12 +3,13 @@
 import { useTranslations } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
 import { usePathname, useRouter, Link } from '@/i18n/routing'
-import { useAuth } from '@/hooks/useAuth'
+import { useArchitectureEditor, useOpenEditorInNewTab } from '@/hooks/useArchitectureEditor'
 import { projectsApi } from '@/lib/api'
-import { usePipelinePhases } from '@/hooks/useProjectPhases'
+import { getProjectPhases, usePipelinePhases } from '@/hooks/useProjectPhases'
 import { PROJECT_TABS, useProjectTabLabel, type ProjectTab } from '@/components/projects/ProjectTabs'
 import { usePhaseName } from '@/components/pipeline/usePhaseName'
 import { cn } from '@/lib/utils'
+import { ExternalLink, Loader2, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,7 +17,6 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/primitives'
 import { NexoLogo } from '@/components/public/NexoLogo'
-import { UserAvatar } from './UserAvatar'
 
 function UpDownChevron() {
   return (
@@ -32,9 +32,9 @@ function Slash() {
 
 export function TopBar() {
   const t = useTranslations('nav')
+  const tPipeline = useTranslations('pipeline')
   const pathname = usePathname()
   const router = useRouter()
-  const { user } = useAuth()
 
   const { data: projects } = useQuery({
     queryKey: ['projects'],
@@ -44,6 +44,8 @@ export function TopBar() {
   const { data: allPhases } = usePipelinePhases()
   const tabLabel = useProjectTabLabel()
   const phaseName = usePhaseName()
+  const editor = useArchitectureEditor()
+  const openInNewTab = useOpenEditorInNewTab(editor.projectId, editor.editorRunId)
 
   // /projects/{id}/{tab}/{phaseId}
   const [, , currentId, tabSegment, phaseSegment] = pathname.split('/')
@@ -52,8 +54,9 @@ export function TopBar() {
       ? projects?.find((p) => p.id === currentId)
       : undefined
   const tab = PROJECT_TABS.find((t) => t.id === tabSegment)?.id as ProjectTab | undefined
+  const projectPhases = currentProject ? getProjectPhases(currentProject, allPhases ?? []) : []
   const phase =
-    tab === 'pipeline' && phaseSegment ? allPhases?.find((p) => p.id === phaseSegment) : undefined
+    tab === 'pipeline' && phaseSegment ? projectPhases.find((p) => p.id === phaseSegment) : undefined
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
@@ -124,13 +127,59 @@ export function TopBar() {
       {currentProject && phase && (
         <>
           <Slash />
-          <span className="whitespace-nowrap text-[13px] text-foreground">{phaseName(phase)}</span>
+          {/* Switch phase without going back to the overview, like the project switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex h-[30px] items-center gap-2 whitespace-nowrap rounded-[5px] px-2 text-[13px] text-foreground outline-none transition-colors hover:bg-card focus-visible:ring-1 focus-visible:ring-ring">
+              {phaseName(phase)}
+              <UpDownChevron />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="max-h-[60vh] w-56 overflow-y-auto">
+              {projectPhases.map((p) => (
+                <DropdownMenuItem
+                  key={p.id}
+                  onSelect={() => router.push(`/projects/${currentId}/pipeline/${p.id}`)}
+                  className={cn('text-[13px]', p.id === phase.id && 'font-semibold text-foreground')}
+                >
+                  {phaseName(p)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </>
       )}
 
       <div className="flex-1" />
 
-      <UserAvatar user={user} />
+      {/* Architecture diagram editor open (design 5a) */}
+      {editor.isEditorOpen && (
+        <>
+          <button
+            type="button"
+            onClick={() => openInNewTab.mutate()}
+            disabled={openInNewTab.isPending}
+            title={openInNewTab.isError ? tPipeline('architectureDiagramLoadError') : tPipeline('openDiagramEditorNewTab')}
+            aria-label={tPipeline('openDiagramEditorNewTab')}
+            className={cn(
+              'flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-border text-muted-foreground transition-colors hover:border-primary hover:bg-card hover:text-foreground disabled:opacity-50',
+              openInNewTab.isError && 'border-destructive text-destructive'
+            )}
+          >
+            {openInNewTab.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ExternalLink className="h-3.5 w-3.5" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={editor.closeEditor}
+            className="flex h-[30px] items-center gap-1.5 whitespace-nowrap rounded-[5px] border border-border px-3 text-[12.5px] font-medium text-foreground transition-colors hover:border-primary hover:bg-card"
+          >
+            <X className="h-3 w-3" />
+            {tPipeline('closeEditor')}
+          </button>
+        </>
+      )}
     </header>
   )
 }

@@ -46,3 +46,11 @@ export const POPOVER = Object.freeze({
   /** Research solution references */
   referencesWidth: 420,
 })
+
+/** App nav sidebar, docked left with the SidePanel mechanics (design 5a). */
+export const NAV_PANEL = Object.freeze({
+  /** Width on first visit, px */
+  defaultWidth: 216,
+  /** Narrowest width a drag can leave it at, px */
+  minWidth: 180,
+})

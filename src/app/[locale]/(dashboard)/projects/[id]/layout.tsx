@@ -3,6 +3,7 @@
 import { use } from 'react'
 import { useTranslations } from 'next-intl'
 import { useProject } from '@/hooks/useProject'
+import { useArchitectureEditor } from '@/hooks/useArchitectureEditor'
 import { ProjectTabs } from '@/components/projects/ProjectTabs'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -16,6 +17,8 @@ export default function ProjectLayout({
   const { id } = use(params)
   const t = useTranslations('projects')
   const { data: project, isLoading } = useProject(id)
+  // The diagram editor takes the tabs' space too (design 5a)
+  const { isEditorOpen } = useArchitectureEditor()
 
   if (isLoading) {
     return (
@@ -40,7 +43,7 @@ export default function ProjectLayout({
 
   return (
     <div className="flex h-full flex-col animate-fade-in">
-      <ProjectTabs projectId={id} />
+      {!isEditorOpen && <ProjectTabs projectId={id} />}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
     </div>
   )

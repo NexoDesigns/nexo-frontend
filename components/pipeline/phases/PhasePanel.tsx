@@ -7,17 +7,15 @@ import { runsApi } from '@/lib/api'
 import { useCustomOutputs } from '@/hooks/useCustomOutputs'
 import { useRunStatus } from '@/hooks/useRunStatus'
 import { useActiveRuns, usePhaseRuns } from '@/hooks/usePipelineState'
-import { useIcDesignSelection, useResearchSelection } from '@/hooks/usePhaseSelections'
+import { useResearchSelection } from '@/hooks/usePhaseSelections'
 import { RunStatusBadge } from '../RunStatusBadge'
 import { RunsList } from '../RunsList'
 import { PhaseInputForm } from '../PhaseInputForm'
 import { IcSelectionOutputViewer } from '../IcSelectionOutputViewer'
-import { IcDesignPicker } from '../IcDesignPicker'
-import { ArchitectureDiagramModal } from '../ArchitectureDiagramModal'
 import { ComponentSelectionOutputViewer } from '../ComponentSelectionOutputViewer'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/primitives'
-import { ChevronDown, ChevronUp, RefreshCw, ExternalLink } from 'lucide-react'
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import type { PipelinePhase, Project } from '@/types'
 import type { PhaseFormPayload } from '../PhaseInputForm'
 
@@ -29,7 +27,7 @@ interface PhasePanelProps {
 /**
  * Inputs, output and run history of one pipeline phase — the content of the
  * former collapsible PhaseCard, always open. Shared by the phase pages that
- * don't have their own design yet (Research has its own page).
+ * don't have their own design yet (Research and Architecture have their own pages).
  */
 export function PhasePanel({ phase, project }: PhasePanelProps) {
   const projectId = project.id
@@ -37,26 +35,23 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
   const queryClient = useQueryClient()
   const [historyExpanded, setHistoryExpanded] = useState(false)
   const [activePollingRunId, setActivePollingRunId] = useState<string | null>(null)
-  const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
   const { data: activeRuns } = useActiveRuns(projectId)
   const activeRunId = activeRuns?.find((a) => a.phase_id === phase.id)?.run_id ?? null
 
   // Saved selections that link this phase to its neighbours
   const research = useResearchSelection(projectId)
-  const icDesign = useIcDesignSelection(projectId)
 
   // Custom output items for this phase's active run
   const customOutputs = useCustomOutputs(projectId, phase.id, activeRunId)
 
-  // Active (selected output) run details. For component_selection/architecture_agent,
-  // refetch on focus — bom_result and the diagram-editor approval are both populated
-  // by actions outside this tab.
+  // Active (selected output) run details. For component_selection, refetch on
+  // focus — bom_result is populated by actions outside this tab.
   const { data: activeRun, refetch: refetchActiveRun } = useQuery({
     queryKey: ['run', projectId, phase.id, activeRunId],
     queryFn: () => runsApi.get(projectId, phase.id, activeRunId!),
     enabled: !!activeRunId,
-    refetchOnWindowFocus: phase.id === 'component_selection' || phase.id === 'architecture_agent',
+    refetchOnWindowFocus: phase.id === 'component_selection',
   })
 
   // Polling for a run started from this page
@@ -84,9 +79,9 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
   const isRunning =
     pollingRun?.status === 'running' || pollingRun?.status === 'pending' || !!hasRunInFlight
 
-  // bom_result and the diagram-editor approval are populated asynchronously
+  // bom_result is populated asynchronously
   useEffect(() => {
-    if ((phase.id === 'component_selection' || phase.id === 'architecture_agent') && activeRunId) {
+    if (phase.id === 'component_selection' && activeRunId) {
       refetchActiveRun()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,15 +137,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
     },
   })
 
-  // Mints a fresh editor-link and opens it in a new tab — self-sufficient (token
-  // carries project/run scope), so it works even if this tab is later closed.
-  const openInNewTabMutation = useMutation({
-    mutationFn: () => runsApi.getEditorLink(projectId, 'architecture_agent', activeRun!.id),
-    onSuccess: ({ url }) => {
-      window.open(url, '_blank', 'noopener')
-    },
-  })
-
   const triggerMutation = useMutation({
     mutationFn: ({ inputs }: PhaseFormPayload) => {
       let custom_inputs: Record<string, unknown> = inputs as Record<string, unknown>
@@ -160,11 +146,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
           ...inputs,
           selected_solutions: research.selectedSolutions,
           query_summary: research.querySummary,
-        }
-      } else if (phase.id === 'architecture_agent' && icDesign.selectedDesignId) {
-        custom_inputs = {
-          ...inputs,
-          selected_design_id: icDesign.selectedDesignId,
         }
       }
 
@@ -202,18 +183,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
             )}
           </div>
         )}
-        {phase.id === 'architecture_agent' && (
-          <div className="mb-3">
-            <IcDesignPicker
-              icSelectionOutput={icDesign.icSelectionRun?.output_payload as Record<string, unknown> | null}
-              selectedDesignId={icDesign.selectedDesignId}
-              onSelect={icDesign.setDesignId}
-            />
-            {icDesign.saveError && (
-              <p className="mt-1.5 text-xs text-destructive">{t('selectionSaveError')}</p>
-            )}
-          </div>
-        )}
         {phase.id === 'component_selection' && (
           <p className="mb-3 text-xs text-muted-foreground italic">
             {t('componentSelectionDisabled')}
@@ -227,7 +196,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
           isLoading={isRunning || triggerMutation.isPending}
           submitDisabled={
             (phase.id === 'ic_selection' && !research.selectedSolutions.length) ||
-            (phase.id === 'architecture_agent' && !icDesign.selectedDesignId) ||
             phase.id === 'component_selection'
           }
           onSubmit={(payload) => triggerMutation.mutate(payload)}
@@ -253,45 +221,6 @@ export function PhasePanel({ phase, project }: PhasePanelProps) {
             onDuplicate={(result) => handleDuplicateIcResult(result as unknown as Record<string, unknown>)}
             onUpdateCustom={handleUpdateCustom}
             onDeleteCustom={(id) => customOutputs.deleteItem.mutate(id)}
-          />
-          <Separator />
-        </>
-      )}
-
-      {/* Architecture Agent output — opens the System Diagram App instead of an inline viewer */}
-      {phase.id === 'architecture_agent' && activeRun?.status === 'completed' && (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={() => setDiagramModalOpen(true)} className="gap-1.5">
-              {t('openDiagramEditor')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              disabled={openInNewTabMutation.isPending}
-              onClick={() => openInNewTabMutation.mutate()}
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {t('openDiagramEditorNewTab')}
-            </Button>
-          </div>
-          {openInNewTabMutation.isError && (
-            <p className="text-xs text-destructive mt-1.5">
-              {openInNewTabMutation.error instanceof Error
-                ? openInNewTabMutation.error.message
-                : t('architectureDiagramLoadError')}
-            </p>
-          )}
-          <ArchitectureDiagramModal
-            projectId={projectId}
-            runId={activeRun.id}
-            open={diagramModalOpen}
-            onOpenChange={setDiagramModalOpen}
-            onApproved={() => {
-              queryClient.invalidateQueries({ queryKey: ['active-runs', projectId] })
-              refetchActiveRun()
-            }}
           />
           <Separator />
         </>

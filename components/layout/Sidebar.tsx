@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils'
 import { ExternalLink, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { APP_VERSION, DATASHEETS_URL } from '@/lib/constants'
+import { NAV_PANEL } from '@/lib/design-constants'
+import { SidePanel } from './SidePanel'
 
 const navItems = [
   { href: '/', labelKey: 'dashboard' },
@@ -25,8 +27,16 @@ export function Sidebar() {
   const { user, signOut } = useAuth()
 
   return (
-    <aside className="flex w-[216px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-3">
+    // Docked left with the same resize / hide / reveal mechanics as the run history
+    <SidePanel
+      side="left"
+      storageKey="nav"
+      defaultWidth={NAV_PANEL.defaultWidth}
+      minWidth={NAV_PANEL.minWidth}
+      className="border-sidebar-border"
+      bodyClassName="flex flex-col"
+    >
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">
         {navItems.map(({ href, labelKey }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
 
@@ -79,6 +89,6 @@ export function Sidebar() {
           </Button>
         </div>
       </div>
-    </aside>
+    </SidePanel>
   )
 }
