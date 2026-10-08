@@ -18,6 +18,20 @@ El subdominio nunca ve el JWT de Supabase. Si alguna de las herramientas
 tuviera un XSS, lo que se llevaría es una sesión de una hora para esa
 herramienta, no la cuenta de Nexo.
 
+## Enlazar a una herramienta desde la app
+
+Nunca con la URL directa: siempre con `gatedUrl(url)` (`src/lib/gate.ts`), que
+pasa por `/api/auth/gate` **del origen donde está la app**. Así el ticket lo
+acuña quien tiene la sesión (producción, un preview o `localhost`) y la
+herramienta abre sin login. Con la URL directa, el subdominio rebota a su
+`GATE_ISSUER_URL` (producción), que no ve sesiones de otros orígenes y enseña
+el login.
+
+En `localhost` esto arregla las pestañas nuevas, pero **no** el editor en
+iframe: el CSP `frame-ancestors` solo admite `https://nexodesign.ai` y la
+cookie `SameSite=Lax` no se guarda en un iframe de otro sitio. Es a propósito;
+en local, ábrelo en pestaña nueva.
+
 ## Añadir un subdominio nuevo
 
 1. **Copiar** `middleware.ts` a la raíz del repo.

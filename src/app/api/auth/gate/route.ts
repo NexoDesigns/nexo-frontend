@@ -12,6 +12,10 @@ import {
 /**
  * Ticket issuer for the gated subdomains (see src/lib/gate.ts).
  *
+ * The app links to its tools through this route on its own origin (gatedUrl),
+ * so the ticket comes from wherever the user is signed in. A tool's own
+ * bounce, below, lands on its GATE_ISSUER_URL instead.
+ *
  *   editor.nexodesign.ai  →  /api/auth/gate?next=<the URL they wanted>
  *                         →  (login, if there is no session)
  *                         →  editor.nexodesign.ai/__gate/callback?ticket=…
@@ -45,6 +49,18 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Unknown or missing destination', { status: 400 })
   }
 
+  // getUser() refreshes an expired access token, which rotates the refresh
+  // token. The new cookies MUST reach the browser: with the old refresh token
+  // its next refresh is a reuse, and Supabase's reuse detection can then
+  // revoke the whole session.
+  const refreshed: { name: string; value: string; options?: Record<string, unknown> }[] = []
+  const withSession = (response: NextResponse) => {
+    refreshed.forEach(({ name, value, options }) =>
+      response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+    )
+    return response
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -53,8 +69,9 @@ export async function GET(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        // Nothing to write back: this request only ever ends in a redirect.
-        setAll() {},
+        setAll(cookiesToSet: typeof refreshed) {
+          refreshed.push(...cookiesToSet)
+        },
       },
     }
   )
@@ -69,7 +86,7 @@ export async function GET(request: NextRequest) {
   if (!user) {
     const loginUrl = new URL(`/${localeFrom(request)}/login`, url.origin)
     loginUrl.searchParams.set('redirect', `${url.pathname}${url.search}`)
-    return NextResponse.redirect(loginUrl)
+    return withSession(NextResponse.redirect(loginUrl))
   }
 
   // Page-level access is authentication only, matching what the rest of Nexo
@@ -94,7 +111,9 @@ export async function GET(request: NextRequest) {
   callback.searchParams.set('next', target.pathWithQuery)
 
   // no-store: this response carries a credential in its Location header.
-  return NextResponse.redirect(callback, {
-    headers: { 'Cache-Control': 'no-store' },
-  })
+  return withSession(
+    NextResponse.redirect(callback, {
+      headers: { 'Cache-Control': 'no-store' },
+    })
+  )
 }

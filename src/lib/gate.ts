@@ -34,6 +34,22 @@ export const GATE_SESSION_TTL_SECONDS = 60 * 60
 /** Path every gated subdomain reserves for spending a ticket. */
 export const GATE_CALLBACK_PATH = '/__gate/callback'
 
+/**
+ * How the app links to a gated tool: through ITS OWN gate, on whatever origin
+ * the user is signed in on (nexodesign.ai, a preview, localhost). The ticket is
+ * minted right here and the tool opens without a login.
+ *
+ * Linking to the tool directly works only when the user is signed in on the
+ * tool's GATE_ISSUER_URL (production): the tool bounces to that issuer, which
+ * sees no session from any other origin and shows its login page.
+ *
+ * Needs GATE_TICKET_SECRET and the tool's origin in GATE_ALLOWED_ORIGINS on the
+ * origin serving the app.
+ */
+export function gatedUrl(toolUrl: string): string {
+  return `/api/auth/gate?next=${encodeURIComponent(toolUrl)}`
+}
+
 // ─── HS256 over Web Crypto ────────────────────────────────────────────────────
 
 function b64url(input: string | Uint8Array): string {

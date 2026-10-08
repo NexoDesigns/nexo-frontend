@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
 import { runsApi } from '@/lib/api'
+import { gatedUrl } from '@/lib/gate'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface ArchitectureEditorFrameProps {
@@ -55,7 +56,7 @@ export function ArchitectureEditorFrame({ projectId, runId, onApproved }: Archit
       )}
       {link && (
         <iframe
-          src={link.url}
+          src={gatedUrl(link.url)}
           className="h-full w-full flex-1 border-0"
           title={t('architectureDiagramTitle')}
           allow="clipboard-read; clipboard-write"

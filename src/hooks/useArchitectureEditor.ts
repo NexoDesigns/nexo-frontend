@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { usePathname, useRouter } from '@/i18n/routing'
 import { runsApi } from '@/lib/api'
+import { gatedUrl } from '@/lib/gate'
 
 const EDITOR_PARAM = 'editor'
 
@@ -46,7 +47,7 @@ export function useOpenEditorInNewTab(projectId: string | null, runId: string | 
   return useMutation({
     mutationFn: () => runsApi.getEditorLink(projectId!, 'architecture_agent', runId!),
     onSuccess: ({ url }) => {
-      window.open(url, '_blank', 'noopener')
+      window.open(gatedUrl(url), '_blank', 'noopener')
     },
   })
 }

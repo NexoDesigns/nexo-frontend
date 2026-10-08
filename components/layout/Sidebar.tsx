@@ -10,6 +10,7 @@ import { ExternalLink, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { APP_VERSION, DATASHEETS_URL } from '@/lib/constants'
 import { NAV_PANEL } from '@/lib/design-constants'
+import { gatedUrl } from '@/lib/gate'
 import { SidePanel } from './SidePanel'
 
 const navItems = [
@@ -58,7 +59,7 @@ export function Sidebar() {
 
         {/* Tools on their own subdomain, behind the same sign-in */}
         <a
-          href={DATASHEETS_URL}
+          href={gatedUrl(DATASHEETS_URL)}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(itemBase, itemIdle)}
